@@ -635,18 +635,17 @@ function initialize() {
         
         console.log('Application initialized successfully');
         showToast('Aplicación inicializada correctamente', 'success');
-        
-    } catch (error) {
+          } catch (error) {
         console.error('Error during initialization:', error);
         showToast('Error durante la inicialización: ' + error.message, 'error');
     }
 }
 
+// Make initialize function globally available immediately
+window.initialize = initialize;
+
 // --- Initialize when DOM is ready ---
 document.addEventListener('DOMContentLoaded', initialize);
-
-// Make initialize function globally available
-window.initialize = initialize;
 
 // Make functions globally available for onclick handlers
 window.deleteFunction = deleteFunction;
