@@ -67,6 +67,7 @@ function addRequirement() {
     
     saveToLocalStorage();
     renderRequirementsList();
+    renderTreeView(); // Update tree view
     updateParentRequirementOptions();
     clearForm();
     updatePreview();
@@ -236,6 +237,7 @@ function deleteRequirement(index) {
         recalculateIds();
         saveToLocalStorage();
         renderRequirementsList();
+        renderTreeView(); // Update tree view
         updateParentRequirementOptions();
         updatePreview();
         showToast('Requisito eliminado', 'info');
@@ -253,6 +255,7 @@ function clearAllRequirements() {
         reqCounter = { level1: 0, level2: 0 };
         saveToLocalStorage();
         renderRequirementsList();
+        renderTreeView(); // Update tree view
         updateParentRequirementOptions();
         updatePreview();
         showToast('Todos los requisitos han sido eliminados', 'info');
@@ -325,6 +328,7 @@ function moveRequirementUp(index) {
         recalculateIds();
         saveToLocalStorage();
         renderRequirementsList();
+        renderTreeView(); // Update tree view
         updateParentRequirementOptions();
         showToast('Requisito movido hacia arriba', 'info');
         console.log(`Moved requirement from position ${index} to ${index - 1}`);
@@ -341,6 +345,7 @@ function moveRequirementDown(index) {
         recalculateIds();
         saveToLocalStorage();
         renderRequirementsList();
+        renderTreeView(); // Update tree view
         updateParentRequirementOptions();
         showToast('Requisito movido hacia abajo', 'info');
         console.log(`Moved requirement from position ${index} to ${index + 1}`);
@@ -358,6 +363,7 @@ function moveRequirementToTop(index) {
         recalculateIds();
         saveToLocalStorage();
         renderRequirementsList();
+        renderTreeView(); // Update tree view
         showToast('Requisito movido al inicio', 'info');
         console.log(`Moved requirement from position ${index} to top (position 0)`);
     }
@@ -374,6 +380,7 @@ function moveRequirementToBottom(index) {
         recalculateIds();
         saveToLocalStorage();
         renderRequirementsList();
+        renderTreeView(); // Update tree view
         showToast('Requisito movido al final', 'info');
         console.log(`Moved requirement from position ${index} to bottom (position ${allRequirements.length - 1})`);
     }
@@ -465,6 +472,7 @@ function convertToLevel2(index) {
     recalculateIds();
     saveToLocalStorage();
     renderRequirementsList();
+    renderTreeView(); // Update tree view
     updateParentRequirementOptions();
     showToast(`Requisito convertido a nivel 2 bajo ${parentReq.id}`, 'success');
 }
@@ -489,6 +497,7 @@ function convertToLevel1(index) {
     recalculateIds();
     saveToLocalStorage();
     renderRequirementsList();
+    renderTreeView(); // Update tree view
     updateParentRequirementOptions();
     showToast('Requisito convertido a nivel 1', 'success');
 }
@@ -554,6 +563,7 @@ function loadFromLocalStorage() {
             recalculateIds();
             
             renderRequirementsList();
+            renderTreeView(); // Update tree view
             updateParentRequirementOptions();
             updatePreview();
         } catch (error) {
@@ -595,6 +605,283 @@ function updateParentRequirementOptions() {
     });
 }
 
+// --- Tree View Functions ---
+function renderTreeView() {
+    const treeView = document.getElementById('treeView');
+    if (!treeView) return;
+
+    if (allRequirements.length === 0) {
+        treeView.innerHTML = `
+            <div class="tree-empty-state">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v1H8V5z"></path>
+                </svg>
+                <p class="text-lg font-medium mb-2">No hay requisitos para mostrar</p>
+                <p class="text-sm">¡Crea algunos requisitos primero en la pestaña "Crear Requisito"!</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Build tree structure
+    const treeHTML = buildTreeHTML();
+    
+    treeView.innerHTML = `
+        <div class="tree-container">
+            ${treeHTML}
+        </div>
+    `;
+
+    // Add event listeners for tree interactions
+    addTreeEventListeners();
+}
+
+function buildTreeHTML() {
+    const level1Requirements = allRequirements.filter(req => req.level === 1);
+    let html = '';
+
+    level1Requirements.forEach(req => {
+        const children = allRequirements.filter(child => child.parentId === req.id);
+        html += buildTreeNode(req, children, 1);
+    });
+
+    return html;
+}
+
+function buildTreeNode(requirement, children, level) {
+    const hasChildren = children && children.length > 0;
+    const nodeId = `tree-node-${requirement.id}`;
+    const childrenId = `tree-children-${requirement.id}`;
+    
+    // Determine component display
+    const componentDisplay = requirement.component === 'Ambos' ? 'HMI, ECI' : requirement.component;
+    
+    // Truncate behavior for display
+    const behaviorDisplay = requirement.behavior.length > 50 
+        ? requirement.behavior.substring(0, 50) + '...' 
+        : requirement.behavior;
+
+    let html = `
+        <div class="tree-node" data-requirement-id="${requirement.id}">
+            <div class="tree-node-content level-${level}" 
+                 onmouseenter="showRequirementTooltip(event, '${requirement.id}')"
+                 onmouseleave="hideRequirementTooltip()">
+                
+                <button class="tree-toggle ${hasChildren ? '' : 'no-children'}" 
+                        onclick="toggleTreeNode('${requirement.id}')"
+                        ${!hasChildren ? 'disabled' : ''}>
+                    ${hasChildren ? '−' : '•'}
+                </button>
+                
+                <div class="tree-node-info">
+                    <div class="tree-node-details">
+                        <span class="tree-node-id level-${level}">${requirement.id}</span>
+                        <span class="tree-node-variable">${requirement.variable}</span>
+                        <span class="tree-node-behavior">${behaviorDisplay}</span>
+                    </div>
+                    
+                    <div class="tree-node-badges">
+                        <span class="tree-badge component">${componentDisplay}</span>
+                        <span class="tree-badge level">Nivel ${level}</span>
+                    </div>
+                </div>
+            </div>
+    `;
+
+    if (hasChildren) {
+        html += `
+            <div class="tree-children" id="${childrenId}">
+        `;
+        
+        children.forEach(child => {
+            html += buildTreeNode(child, [], 2);
+        });
+        
+        html += `
+            </div>
+        `;
+    }
+
+    html += `</div>`;
+    return html;
+}
+
+function toggleTreeNode(requirementId) {
+    const childrenContainer = document.getElementById(`tree-children-${requirementId}`);
+    const toggleButton = document.querySelector(`[onclick="toggleTreeNode('${requirementId}')"]`);
+    
+    if (!childrenContainer || !toggleButton) return;
+
+    const isCollapsed = childrenContainer.classList.contains('collapsed');
+    
+    if (isCollapsed) {
+        childrenContainer.classList.remove('collapsed');
+        toggleButton.textContent = '−';
+        toggleButton.classList.remove('collapsed');
+    } else {
+        childrenContainer.classList.add('collapsed');
+        toggleButton.textContent = '+';
+        toggleButton.classList.add('collapsed');
+    }
+}
+
+function expandAllTreeNodes() {
+    const allChildren = document.querySelectorAll('.tree-children');
+    const allToggleButtons = document.querySelectorAll('.tree-toggle:not(.no-children)');
+    
+    allChildren.forEach(children => {
+        children.classList.remove('collapsed');
+    });
+    
+    allToggleButtons.forEach(button => {
+        button.textContent = '−';
+        button.classList.remove('collapsed');
+    });
+}
+
+function collapseAllTreeNodes() {
+    const allChildren = document.querySelectorAll('.tree-children');
+    const allToggleButtons = document.querySelectorAll('.tree-toggle:not(.no-children)');
+    
+    allChildren.forEach(children => {
+        children.classList.add('collapsed');
+    });
+    
+    allToggleButtons.forEach(button => {
+        button.textContent = '+';
+        button.classList.add('collapsed');
+    });
+}
+
+function showRequirementTooltip(event, requirementId) {
+    const tooltip = document.getElementById('requirementTooltip');
+    const requirement = allRequirements.find(req => req.id === requirementId);
+    
+    if (!tooltip || !requirement) return;
+
+    // Build tooltip content - more compact version
+    const parentInfo = requirement.parentId 
+        ? `<div class="tooltip-section">
+             <span class="tooltip-label">Padre:</span>
+             <span class="tooltip-value">${requirement.parentId}</span>
+           </div>`
+        : '';
+
+    const componentDisplay = requirement.component === 'Ambos' ? 'HMI, ECI' : requirement.component;
+    
+    // Truncate long text for better display
+    const behaviorTruncated = requirement.behavior.length > 80 
+        ? requirement.behavior.substring(0, 80) + '...' 
+        : requirement.behavior;
+    
+    const justificationTruncated = requirement.justification.length > 80 
+        ? requirement.justification.substring(0, 80) + '...' 
+        : requirement.justification;
+
+    tooltip.querySelector('.tooltip-content').innerHTML = `
+        <div class="tooltip-section">
+            <span class="tooltip-label">ID:</span>
+            <span class="tooltip-value">${requirement.id}</span>
+            ${parentInfo ? ` | <span class="tooltip-label">Padre:</span> <span class="tooltip-value">${requirement.parentId}</span>` : ''}
+        </div>
+        <div class="tooltip-section">
+            <span class="tooltip-label">Variable:</span>
+            <span class="tooltip-value">${requirement.variable}</span>
+        </div>
+        <div class="tooltip-section">
+            <span class="tooltip-label">Componente:</span>
+            <span class="tooltip-value">${componentDisplay}</span>
+            | <span class="tooltip-label">Modo:</span>
+            <span class="tooltip-value">${requirement.mode}</span>
+        </div>
+        <div class="tooltip-section">
+            <span class="tooltip-label">Comportamiento:</span>
+            <span class="tooltip-value">${behaviorTruncated}</span>
+        </div>
+        <div class="tooltip-section">
+            <span class="tooltip-label">Latencia:</span>
+            <span class="tooltip-value">${requirement.latency}</span>
+            | <span class="tooltip-label">Tolerancia:</span>
+            <span class="tooltip-value">${requirement.tolerance}</span>
+        </div>
+        <div class="tooltip-section">
+            <span class="tooltip-label">Justificación:</span>
+            <span class="tooltip-value">${justificationTruncated}</span>
+        </div>
+    `;
+
+    // Position tooltip
+    const rect = event.target.getBoundingClientRect();
+    
+    // Get scroll positions
+    const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+    
+    // Calculate position considering scroll
+    const targetLeft = rect.left + scrollX;
+    const targetTop = rect.top + scrollY;
+    const targetWidth = rect.width;
+    const targetHeight = rect.height;
+    
+    // Get tooltip dimensions (temporarily show it to measure)
+    tooltip.style.visibility = 'hidden';
+    tooltip.classList.remove('hidden');
+    const tooltipRect = tooltip.getBoundingClientRect();
+    const tooltipWidth = tooltipRect.width;
+    const tooltipHeight = tooltipRect.height;
+    tooltip.classList.add('hidden');
+    tooltip.style.visibility = 'visible';
+    
+    // Calculate initial position (centered above the target)
+    let left = targetLeft + (targetWidth / 2) - (tooltipWidth / 2);
+    let top = targetTop - tooltipHeight - 10;
+    
+    // Adjust if tooltip would go off screen horizontally
+    const viewportWidth = window.innerWidth;
+    if (left < scrollX + 10) {
+        left = scrollX + 10;
+    } else if (left + tooltipWidth > scrollX + viewportWidth - 10) {
+        left = scrollX + viewportWidth - tooltipWidth - 10;
+    }
+    
+    // Adjust if tooltip would go off screen vertically
+    if (top < scrollY + 10) {
+        // Show below the target instead
+        top = targetTop + targetHeight + 10;
+    }
+    
+    // Ensure tooltip doesn't go below viewport
+    if (top + tooltipHeight > scrollY + window.innerHeight - 10) {
+        top = scrollY + window.innerHeight - tooltipHeight - 10;
+    }
+
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${top}px`;
+    tooltip.classList.remove('hidden');
+}
+
+function hideRequirementTooltip() {
+    const tooltip = document.getElementById('requirementTooltip');
+    if (tooltip) {
+        tooltip.classList.add('hidden');
+    }
+}
+
+function addTreeEventListeners() {
+    // Add event listeners for expand/collapse buttons
+    const expandAllBtn = document.getElementById('expandAllBtn');
+    const collapseAllBtn = document.getElementById('collapseAllBtn');
+    
+    if (expandAllBtn) {
+        expandAllBtn.addEventListener('click', expandAllTreeNodes);
+    }
+    
+    if (collapseAllBtn) {
+        collapseAllBtn.addEventListener('click', collapseAllTreeNodes);
+    }
+}
+
 // Make functions globally available
 window.addRequirement = addRequirement;
 window.clearAllRequirements = clearAllRequirements;
@@ -612,3 +899,9 @@ window.convertRequirementLevel = convertRequirementLevel;
 window.convertRequirementLevel = convertRequirementLevel;
 window.convertToLevel2 = convertToLevel2;
 window.convertToLevel1 = convertToLevel1;
+window.renderTreeView = renderTreeView;
+window.toggleTreeNode = toggleTreeNode;
+window.expandAllTreeNodes = expandAllTreeNodes;
+window.collapseAllTreeNodes = collapseAllTreeNodes;
+window.showRequirementTooltip = showRequirementTooltip;
+window.hideRequirementTooltip = hideRequirementTooltip;

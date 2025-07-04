@@ -83,10 +83,12 @@ function initializeDOMElements() {
     domElements.configTab = document.getElementById('configTab');
     domElements.createTab = document.getElementById('createTab');
     domElements.listTab = document.getElementById('listTab');
+    domElements.treeTab = document.getElementById('treeTab');
     domElements.guidelinesTab = document.getElementById('guidelinesTab');
     domElements.configContent = document.getElementById('configContent');
     domElements.createContent = document.getElementById('createContent');
     domElements.listContent = document.getElementById('listContent');
+    domElements.treeContent = document.getElementById('treeContent');
     domElements.guidelinesContent = document.getElementById('guidelinesContent');
     
     // Output elements
@@ -482,6 +484,11 @@ function switchTab(event, tabId) {
     
     // Add active class to the clicked button
     event.target.classList.add('active');
+    
+    // If switching to tree view, render the tree
+    if (tabId === 'treeContent') {
+        renderTreeView();
+    }
 }
 
 function initializeTabs() {
@@ -490,11 +497,13 @@ function initializeTabs() {
     const configTabBtn = document.getElementById('configTab');
     const createTabBtn = document.getElementById('createTab');
     const listTabBtn = document.getElementById('listTab');
+    const treeTabBtn = document.getElementById('treeTab');
     const guidelinesTabBtn = document.getElementById('guidelinesTab');
     
     if (configTabBtn) configTabBtn.addEventListener('click', (e) => switchTab(e, 'configContent'));
     if (createTabBtn) createTabBtn.addEventListener('click', (e) => switchTab(e, 'createContent'));
     if (listTabBtn) listTabBtn.addEventListener('click', (e) => switchTab(e, 'listContent'));
+    if (treeTabBtn) treeTabBtn.addEventListener('click', (e) => switchTab(e, 'treeContent'));
     if (guidelinesTabBtn) guidelinesTabBtn.addEventListener('click', (e) => switchTab(e, 'guidelinesContent'));
     
     console.log('Tabs initialized');
