@@ -262,27 +262,31 @@ function clearAllRequirements() {
 function recalculateIds() {
     let level1Counter = 0;
     const level2Counters = {}; // Para cada padre, contar sus hijos
+    const parentIdMap = {}; // Map old parent IDs to new ones
     
     // Primero, asignar IDs a los requisitos de nivel 1 y preparar contadores
     allRequirements.forEach((req, index) => {
         if (req.level === 1) {
+            const oldId = req.id;
             const newId = `R${level1Counter}`;
             
-            // Si el ID cambió, actualizar las referencias de los hijos
-            if (req.id !== newId) {
-                const oldId = req.id;
-                req.id = newId;
-                
-                // Actualizar parentId de todos los hijos que referencian el ID antiguo
-                allRequirements.forEach(childReq => {
-                    if (childReq.parentId === oldId) {
-                        childReq.parentId = newId;
-                    }
-                });
+            // Store the mapping for updating children references
+            if (oldId && oldId !== newId) {
+                parentIdMap[oldId] = newId;
             }
             
-            level2Counters[req.id] = 0;
+            req.id = newId;
+            level2Counters[newId] = 0;
             level1Counter++;
+        }
+    });
+    
+    // Update parent references for level 2 requirements based on mapping
+    allRequirements.forEach((req) => {
+        if (req.level === 2 && req.parentId) {
+            if (parentIdMap[req.parentId]) {
+                req.parentId = parentIdMap[req.parentId];
+            }
         }
     });
     
@@ -294,6 +298,13 @@ function recalculateIds() {
                 const parentNumber = req.parentId.replace('R', ''); // Extraer número del padre
                 req.id = `R${parentNumber}-${level2Counters[req.parentId]}`;
                 level2Counters[req.parentId]++;
+            } else {
+                // Si el padre no existe, convertir a nivel 1
+                console.warn(`Parent ${req.parentId} not found for requirement, converting to level 1`);
+                req.level = 1;
+                req.parentId = null;
+                req.id = `R${level1Counter}`;
+                level1Counter++;
             }
         }
     });
@@ -307,9 +318,14 @@ function recalculateIds() {
 function moveRequirementUp(index) {
     if (index > 0) {
         [allRequirements[index], allRequirements[index - 1]] = [allRequirements[index - 1], allRequirements[index]];
+        
+        // Update parent relationships for moved level 2 requirements
+        updateParentRelationshipsAfterMove();
+        
         recalculateIds();
         saveToLocalStorage();
         renderRequirementsList();
+        updateParentRequirementOptions();
         showToast('Requisito movido hacia arriba', 'info');
         console.log(`Moved requirement from position ${index} to ${index - 1}`);
     }
@@ -318,9 +334,14 @@ function moveRequirementUp(index) {
 function moveRequirementDown(index) {
     if (index < allRequirements.length - 1) {
         [allRequirements[index], allRequirements[index + 1]] = [allRequirements[index + 1], allRequirements[index]];
+        
+        // Update parent relationships for moved level 2 requirements
+        updateParentRelationshipsAfterMove();
+        
         recalculateIds();
         saveToLocalStorage();
         renderRequirementsList();
+        updateParentRequirementOptions();
         showToast('Requisito movido hacia abajo', 'info');
         console.log(`Moved requirement from position ${index} to ${index + 1}`);
     }
@@ -330,6 +351,10 @@ function moveRequirementToTop(index) {
     if (index > 0) {
         const requirement = allRequirements.splice(index, 1)[0];
         allRequirements.unshift(requirement);
+        
+        // Update parent relationships for moved level 2 requirements
+        updateParentRelationshipsAfterMove();
+        
         recalculateIds();
         saveToLocalStorage();
         renderRequirementsList();
@@ -342,12 +367,43 @@ function moveRequirementToBottom(index) {
     if (index < allRequirements.length - 1) {
         const requirement = allRequirements.splice(index, 1)[0];
         allRequirements.push(requirement);
+        
+        // Update parent relationships for moved level 2 requirements
+        updateParentRelationshipsAfterMove();
+        
         recalculateIds();
         saveToLocalStorage();
         renderRequirementsList();
         showToast('Requisito movido al final', 'info');
         console.log(`Moved requirement from position ${index} to bottom (position ${allRequirements.length - 1})`);
     }
+}
+
+// --- Helper function to update parent relationships after moving ---
+function updateParentRelationshipsAfterMove() {
+    allRequirements.forEach((req, index) => {
+        if (req.level === 2) {
+            // For each level 2 requirement, find its correct parent
+            // Look backwards to find the nearest level 1 requirement
+            let newParentId = null;
+            
+            for (let i = index - 1; i >= 0; i--) {
+                if (allRequirements[i].level === 1) {
+                    newParentId = allRequirements[i].id;
+                    break;
+                }
+            }
+            
+            // If no parent found, convert to level 1
+            if (!newParentId) {
+                req.level = 1;
+                req.parentId = null;
+                console.log(`Converted requirement at index ${index} to level 1 (no parent found)`);
+            } else {
+                req.parentId = newParentId;
+            }
+        }
+    });
 }
 
 // --- Level Conversion Functions ---
