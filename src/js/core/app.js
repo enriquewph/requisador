@@ -787,19 +787,319 @@ function initialize() {
 // Make initialize function globally available immediately
 window.initialize = initialize;
 
-// --- Initialize when DOM is ready ---
-document.addEventListener('DOMContentLoaded', initialize);
+/**
+ * Re-initialize DOM elements after dynamic content load
+ * This function is called when a new tab is loaded dynamically
+ */
+function initializeDOMElementsForCurrentTab() {
+    console.log('🔄 Re-initializing DOM elements for current tab...');
+    
+    // Re-cache DOM elements that might exist in the current tab - call the original function directly
+    // Form elements
+    domElements.componentSelect = document.getElementById('componentSelect');
+    domElements.functionSelect = document.getElementById('functionSelect');
+    domElements.variableSelect = document.getElementById('variableSelect');
+    domElements.modeSelect = document.getElementById('modeSelect');
+    domElements.parentRequirementSelect = document.getElementById('parentRequirementSelect');
+    domElements.conditionInput = document.getElementById('conditionInput');
+    domElements.behaviorInput = document.getElementById('behaviorInput');
+    domElements.latencyInput = document.getElementById('latencyInput');
+    domElements.toleranceInput = document.getElementById('toleranceInput');
+    domElements.justificationInput = document.getElementById('justificationInput');
+    domElements.generatePromptBtn = document.getElementById('generatePromptBtn');
+    
+    // Buttons
+    domElements.addReqBtn = document.getElementById('addReqBtn');
+    domElements.clearAllBtn = document.getElementById('clearAllBtn');
+    domElements.exportCsvBtn = document.getElementById('exportCsvBtn');
+    domElements.exportLatexBtn = document.getElementById('exportLatexBtn');
+    
+    // Lists and displays
+    domElements.requirementsList = document.getElementById('requirementsList');
+    domElements.functionsList = document.getElementById('functionsList');
+    domElements.variablesList = document.getElementById('variablesList');
+    domElements.componentsList = document.getElementById('componentsList');
+    domElements.functionsPreview = document.getElementById('functionsPreview');
+    domElements.variablesPreview = document.getElementById('variablesPreview');
+    
+    // Configuration elements
+    domElements.newFunctionInput = document.getElementById('newFunctionInput');
+    domElements.addFunctionBtn = document.getElementById('addFunctionBtn');
+    domElements.newVariableInput = document.getElementById('newVariableInput');
+    domElements.addVariableBtn = document.getElementById('addVariableBtn');
+    domElements.resetConfigBtn = document.getElementById('resetConfigBtn');
+    domElements.newComponentInput = document.getElementById('newComponentInput');
+    domElements.addComponentBtn = document.getElementById('addComponentBtn');
+    
+    // Project import/export
+    domElements.importProjectBtn = document.getElementById('importProjectBtn');
+    domElements.exportProjectBtn = document.getElementById('exportProjectBtn');
+    domElements.importFileInput = document.getElementById('importFileInput');
+    
+    // About modal
+    domElements.aboutBtn = document.getElementById('aboutBtn');
+    domElements.aboutModal = document.getElementById('aboutModal');
+    domElements.closeAboutModal = document.getElementById('closeAboutModal');
+    
+    // Output elements
+    domElements.outputId = document.getElementById('outputId');
+    domElements.outputComponent = document.getElementById('outputComponent');
+    domElements.outputFunction = document.getElementById('outputFunction');
+    domElements.outputVariable = document.getElementById('outputVariable');
+    domElements.outputLogic = document.getElementById('outputLogic');
+    domElements.outputLatency = document.getElementById('outputLatency');
+    domElements.outputJustification = document.getElementById('outputJustification');
+    
+    // Re-populate selects if they exist in current tab
+    if (domElements.functionSelect) {
+        updateSelects();
+    }
+    
+    // Re-render config lists if in config tab
+    if (document.getElementById('functionsList')) {
+        renderConfigLists();
+    }
+    
+    // Re-render requirements if in list or tree tab
+    if (document.getElementById('requirementsList')) {
+        if (typeof renderRequirementsList === 'function') {
+            renderRequirementsList();
+        }
+    }
+    
+    if (document.getElementById('treeView')) {
+        if (typeof renderTreeView === 'function') {
+            renderTreeView();
+        }
+    }
+    
+    // Update parent requirements dropdown if in create tab
+    if (document.getElementById('parentRequirementSelect')) {
+        if (typeof updateParentRequirementOptions === 'function') {
+            updateParentRequirementOptions();
+        }
+    }
+    
+    console.log('✅ DOM elements re-initialized for current tab');
+}
 
-// Make functions globally available for onclick handlers
+/**
+ * Bind event listeners for the current tab content
+ * This function is called after dynamic content load
+ */
+function bindEventListenersForCurrentTab() {
+    console.log('🔗 Binding event listeners for current tab...');
+    
+    try {
+        // Core requirement management
+        const addReqBtn = document.getElementById('addReqBtn');
+        if (addReqBtn) {
+            addReqBtn.addEventListener('click', addRequirement);
+        }
+        
+        const clearAllBtn = document.getElementById('clearAllBtn');
+        if (clearAllBtn) {
+            clearAllBtn.addEventListener('click', clearAllRequirements);
+        }
+        
+        // Export buttons
+        const exportCsvBtn = document.getElementById('exportCsvBtn');
+        if (exportCsvBtn) {
+            exportCsvBtn.addEventListener('click', exportToCSV);
+        }
+        
+        const exportLatexBtn = document.getElementById('exportLatexBtn');
+        if (exportLatexBtn) {
+            exportLatexBtn.addEventListener('click', exportToLaTeX);
+        }
+        
+        // Configuration management
+        const addFunctionBtn = document.getElementById('addFunctionBtn');
+        if (addFunctionBtn) {
+            addFunctionBtn.addEventListener('click', addFunction);
+        }
+        
+        const addVariableBtn = document.getElementById('addVariableBtn');
+        if (addVariableBtn) {
+            addVariableBtn.addEventListener('click', addVariable);
+        }
+        
+        const addComponentBtn = document.getElementById('addComponentBtn');
+        if (addComponentBtn) {
+            addComponentBtn.addEventListener('click', addComponent);
+        }
+        
+        const resetConfigBtn = document.getElementById('resetConfigBtn');
+        if (resetConfigBtn) {
+            resetConfigBtn.addEventListener('click', () => {
+                resetToDefaults();
+                renderConfigLists();
+                updateSelects();
+                showToast('Configuración restaurada a valores por defecto', 'info');
+            });
+        }
+        
+        // Real-time preview updates for create tab
+        const functionSelect = document.getElementById('functionSelect');
+        if (functionSelect) {
+            functionSelect.addEventListener('change', updatePreview);
+        }
+        
+        const variableSelect = document.getElementById('variableSelect');
+        if (variableSelect) {
+            variableSelect.addEventListener('change', updatePreview);
+        }
+        
+        const componentSelect = document.getElementById('componentSelect');
+        if (componentSelect) {
+            componentSelect.addEventListener('change', updateModeOptions);
+        }
+        
+        const modeSelect = document.getElementById('modeSelect');
+        if (modeSelect) {
+            modeSelect.addEventListener('change', updatePreview);
+        }
+        
+        const parentRequirementSelect = document.getElementById('parentRequirementSelect');
+        if (parentRequirementSelect) {
+            parentRequirementSelect.addEventListener('change', updatePreview);
+        }
+        
+        const conditionInput = document.getElementById('conditionInput');
+        if (conditionInput) {
+            conditionInput.addEventListener('input', updatePreview);
+        }
+        
+        const behaviorInput = document.getElementById('behaviorInput');
+        if (behaviorInput) {
+            behaviorInput.addEventListener('input', updatePreview);
+        }
+        
+        const latencyInput = document.getElementById('latencyInput');
+        if (latencyInput) {
+            latencyInput.addEventListener('input', updatePreview);
+        }
+        
+        const toleranceInput = document.getElementById('toleranceInput');
+        if (toleranceInput) {
+            toleranceInput.addEventListener('input', updatePreview);
+        }
+        
+        const justificationInput = document.getElementById('justificationInput');
+        if (justificationInput) {
+            justificationInput.addEventListener('input', updatePreview);
+        }
+        
+        // Generate prompt button
+        const generatePromptBtn = document.getElementById('generatePromptBtn');
+        if (generatePromptBtn) {
+            generatePromptBtn.addEventListener('click', generateJustificationPrompt);
+        }
+        
+        // Enter key handlers
+        const newFunctionInput = document.getElementById('newFunctionInput');
+        if (newFunctionInput) {
+            newFunctionInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') addFunction();
+            });
+        }
+        
+        const newVariableInput = document.getElementById('newVariableInput');
+        if (newVariableInput) {
+            newVariableInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') addVariable();
+            });
+        }
+        
+        const newComponentInput = document.getElementById('newComponentInput');
+        if (newComponentInput) {
+            newComponentInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') addComponent();
+            });
+        }
+        
+        // Tree view buttons
+        const expandAllBtn = document.getElementById('expandAllBtn');
+        if (expandAllBtn && typeof expandAllTreeNodes === 'function') {
+            expandAllBtn.addEventListener('click', expandAllTreeNodes);
+        }
+        
+        const collapseAllBtn = document.getElementById('collapseAllBtn');
+        if (collapseAllBtn && typeof collapseAllTreeNodes === 'function') {
+            collapseAllBtn.addEventListener('click', collapseAllTreeNodes);
+        }
+        
+        // Header buttons (should be available across all tabs)
+        const aboutBtn = document.getElementById('aboutBtn');
+        if (aboutBtn) {
+            aboutBtn.addEventListener('click', showAboutModal);
+        }
+        
+        const closeAboutModal = document.getElementById('closeAboutModal');
+        if (closeAboutModal) {
+            closeAboutModal.addEventListener('click', hideAboutModal);
+        }
+        
+        const exportProjectBtn = document.getElementById('exportProjectBtn');
+        if (exportProjectBtn) {
+            exportProjectBtn.addEventListener('click', exportProject);
+        }
+        
+        const importProjectBtn = document.getElementById('importProjectBtn');
+        if (importProjectBtn) {
+            importProjectBtn.addEventListener('click', importProject);
+        }
+        
+        const aboutModal = document.getElementById('aboutModal');
+        if (aboutModal) {
+            aboutModal.addEventListener('click', (e) => {
+                if (e.target === aboutModal) hideAboutModal();
+            });
+        }
+        
+        console.log('✅ Event listeners bound for current tab');
+        
+    } catch (error) {
+        console.error('❌ Error binding event listeners:', error);
+    }
+}
+
+/**
+ * Update UI elements after tab change
+ */
+function updateUIForCurrentTab() {
+    console.log('🎨 Updating UI for current tab...');
+    
+    // Update preview if in create tab
+    if (document.getElementById('outputId')) {
+        updatePreview();
+    }
+    
+    // Update requirements count if in list tab
+    const requirementsCount = document.getElementById('requirementsCount');
+    if (requirementsCount) {
+        requirementsCount.textContent = `Total: ${allRequirements.length} requisitos`;
+    }
+    
+    console.log('✅ UI updated for current tab');
+}
+
+// Export functions for use in modular loading
+window.initializeDOMElementsForCurrentTab = initializeDOMElementsForCurrentTab;
+window.bindEventListenersForCurrentTab = bindEventListenersForCurrentTab;
+window.updateUIForCurrentTab = updateUIForCurrentTab;
+
+// Export with simpler names for compatibility (but don't override the original functions)
+window.reinitializeDOMElements = initializeDOMElementsForCurrentTab;
+window.bindEventListeners = bindEventListenersForCurrentTab;
+window.updateUI = updateUIForCurrentTab;
+
+// Make functions globally available immediately
 window.deleteFunction = deleteFunction;
 window.deleteVariable = deleteVariable;
 window.deleteComponent = deleteComponent;
 window.addModeToComponent = addModeToComponent;
 window.deleteModeFromComponent = deleteModeFromComponent;
-window.moveRequirementUp = moveRequirementUp;
-window.moveRequirementDown = moveRequirementDown;
-window.moveRequirementToTop = moveRequirementToTop;
-window.moveRequirementToBottom = moveRequirementToBottom;
-window.deleteRequirement = deleteRequirement;
+// Movement and deletion functions are exposed by requirements.js module
 window.showAboutModal = showAboutModal;
 window.hideAboutModal = hideAboutModal;

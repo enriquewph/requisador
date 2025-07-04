@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Requisador de Requisitos</title>
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Suppress Tailwind CSS production warning for CDN usage
+        tailwind.config = {
+            darkMode: 'class',
+            // Add any custom configuration here if needed
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body class="text-gray-900">
+
+    <!-- Header will be loaded here -->
+    <div id="header-container"></div>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-12">
+
+        <!-- Introduction -->
+        <section class="text-center mb-16">
+            <h2 class="text-4xl md:text-5xl font-extrabold mb-4">Define el Comportamiento de tu Sistema</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                Esta guía interactiva te ayudará a crear requisitos de comportamiento y rendimiento claros, completos y consistentes, siguiendo la metodología del handbook.
+            </p>
+        </section>
+
+        <!-- Tab Navigation -->
+        <div class="bg-white rounded-t-lg shadow-sm">
+            <div class="flex border-b overflow-x-auto">
+                <button id="configTab" class="tab-button active">Configuración del Sistema</button>
+                <button id="createTab" class="tab-button">Crear Requisito</button>
+                <button id="listTab" class="tab-button">Lista de Requisitos</button>
+                <button id="treeTab" class="tab-button">Vista de Árbol</button>
+                <button id="guidelinesTab" class="tab-button">Lineamientos para Requisitos</button>
+            </div>
+        </div>
+
+        <!-- Tab Contents Container -->
+        <div class="bg-white rounded-b-lg shadow-md">
+            <!-- Tab contents will be loaded dynamically here -->
+            <div id="tab-content-container">
+                <!-- Default loading message -->
+                <div class="p-6 md:p-8 text-center">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p class="text-gray-600">Cargando aplicación...</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- About Modal will be loaded here -->
+    <div id="modal-container"></div>
+
+    <!-- Footer will be loaded here -->
+    <div id="footer-container"></div>
+
+    <!-- Core Configuration -->
+    <script src="./js/core/config.js"></script>
+    
+    <!-- Utilities -->
+    <script src="./js/utils/page-loader.js"></script>
+    <script src="./js/utils/init.js"></script>
+    
+    <!-- Core Application -->
+    <script src="./js/core/app.js"></script>
+    
+    <!-- Modules -->
+    <script src="./js/modules/requirements.js"></script>
+    <script src="./js/modules/export.js"></script>
+
+    <!-- Application Initialization -->
+    <script>
+        // Initialize the application when DOM is ready
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Starting Requisador de Requisitos v0.1');
+            
+            try {
+                // Load all components first
+                await PageLoader.loadComponents([
+                    { url: AppConfig.paths.components.header, targetId: 'header-container' },
+                    { url: AppConfig.paths.components.aboutModal, targetId: 'modal-container' },
+                    { url: AppConfig.paths.components.footer, targetId: 'footer-container' }
+                ]);
+                
+                // Load the initial tab content (config by default)
+                await PageLoader.loadHTML(AppConfig.paths.pages.config, 'tab-content-container');
+                
+                // Initialize the application
+                if (typeof window.initialize === 'function') {
+                    console.log('🔧 Initializing application...');
+                    window.initialize();
+                    console.log('✅ Application initialized successfully!');
+                } else {
+                    console.error('❌ Initialize function not found');
+                }
+                
+                // Setup tab navigation
+                setupTabNavigation();
+                
+                console.log('🎉 Application loaded and ready!');
+                
+            } catch (error) {
+                console.error('❌ Error during application initialization:', error);
+                document.getElementById('tab-content-container').innerHTML = `
+                    <div class="p-6 md:p-8 text-center">
+                        <div class="text-red-600 mb-4">
+                            <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Error al cargar la aplicación</h3>
+                        <p class="text-gray-600 mb-4">Hubo un problema al inicializar el Requisador de Requisitos.</p>
+                        <button onclick="location.reload()" class="btn btn-primary">Reintentar</button>
+                    </div>
+                `;
+            }
+        });
+
+        // Setup tab navigation functionality
+        function setupTabNavigation() {
+            const tabs = AppConfig.tabs;
+            
+            tabs.forEach(tab => {
+                const button = document.getElementById(tab.buttonId);
+                if (button) {
+                    button.addEventListener('click', async () => {
+                        // Remove active class from all tab buttons
+                        tabs.forEach(t => {
+                            const btn = document.getElementById(t.buttonId);
+                            if (btn) btn.classList.remove('active');
+                        });
+                        
+                        // Add active class to clicked button
+                        button.classList.add('active');
+                        
+                        // Load corresponding page content
+                        try {
+                            await PageLoader.loadHTML(tab.pagePath, 'tab-content-container');
+                            
+                            // Re-initialize DOM elements and event listeners for the new content
+                            if (typeof window.reinitializeDOMElements === 'function') {
+                                window.reinitializeDOMElements();
+                            }
+                            if (typeof window.bindEventListeners === 'function') {
+                                window.bindEventListeners();
+                            }
+                            if (typeof window.updateUI === 'function') {
+                                window.updateUI();
+                            }
+                            
+                        } catch (error) {
+                            console.error(`Error loading tab content for ${tab.id}:`, error);
+                            document.getElementById('tab-content-container').innerHTML = `
+                                <div class="p-6 md:p-8 text-center">
+                                    <p class="text-red-600">Error al cargar el contenido de la pestaña.</p>
+                                </div>
+                            `;
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>
