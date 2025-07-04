@@ -50,6 +50,7 @@ function initializeDOMElements() {
     domElements.latencyInput = document.getElementById('latencyInput');
     domElements.toleranceInput = document.getElementById('toleranceInput');
     domElements.justificationInput = document.getElementById('justificationInput');
+    domElements.generatePromptBtn = document.getElementById('generatePromptBtn');
     
     // Buttons
     domElements.addReqBtn = document.getElementById('addReqBtn');
@@ -530,18 +531,76 @@ function loadInitialExample() {
     updatePreview();
 }
 
-// --- About Modal Functions ---
-function showAboutModal() {
-    if (domElements.aboutModal) {
-        domElements.aboutModal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden'; // Prevent background scrolling
-    }
-}
+/**
+ * Generate a prompt for AI to create justification based on current requirement parameters
+ */
+function generateJustificationPrompt() {
+    try {
+        // Get all current form values
+        const functionValue = domElements.functionSelect?.value || 'No especificado';
+        const variableValue = domElements.variableSelect?.value || 'No especificado';
+        const componentValue = domElements.componentSelect?.value || 'No especificado';
+        const modeValue = domElements.modeSelect?.value || 'No especificado';
+        const conditionValue = domElements.conditionInput?.value || 'Ninguna condición específica';
+        const behaviorValue = domElements.behaviorInput?.value || 'No especificado';
+        const latencyValue = domElements.latencyInput?.value || 'No especificado';
+        const toleranceValue = domElements.toleranceInput?.value || 'No especificado';
+        
+        // Get parent requirement info if applicable
+        const parentReqValue = domElements.parentRequirementSelect?.value || '';
+        const parentInfo = parentReqValue ? `\n- Requisito padre: ${parentReqValue}` : '\n- Tipo: Requisito de nivel 1';
+        
+        // Build the comprehensive prompt
+        const prompt = `En base al informe anteriormente enviado, genere una justificación técnica para este requisito de sistema:
 
-function hideAboutModal() {
-    if (domElements.aboutModal) {
-        domElements.aboutModal.classList.add('hidden');
-        document.body.style.overflow = 'auto'; // Restore scrolling
+PARÁMETROS DEL REQUISITO:
+- Función asociada: ${functionValue}
+- Variable controlada: ${variableValue}
+- Componente: ${componentValue}
+- Modo del sistema: ${modeValue}${parentInfo}
+- Condición: ${conditionValue}
+- Comportamiento requerido: ${behaviorValue}
+- Latencia máxima: ${latencyValue}
+- Tolerancia: ${toleranceValue}
+
+SOLICITUD:
+Proporcione una justificación técnica clara y concisa que explique:
+1. ¿Por qué es necesario este requisito para el sistema?
+2. ¿Cómo contribuye al funcionamiento correcto del sistema?
+3. ¿Qué riesgos se mitigan con este requisito?
+4. ¿Cómo se relaciona con la funcionalidad general del sistema?
+
+La justificación debe ser específica, técnica y alineada con los estándares de ingeniería de sistemas.`;
+
+        // Copy to clipboard
+        navigator.clipboard.writeText(prompt).then(() => {
+            showToast('Prompt copiado al portapapeles exitosamente', 'success');
+        }).catch(err => {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = prompt;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                showToast('Prompt copiado al portapapeles exitosamente', 'success');
+            } catch (copyErr) {
+                console.error('Error copying to clipboard:', copyErr);
+                showToast('Error al copiar al portapapeles. Contenido mostrado en consola.', 'error');
+                console.log('PROMPT GENERADO:\n', prompt);
+            }
+            
+            document.body.removeChild(textArea);
+        });
+        
+    } catch (error) {
+        console.error('Error generating prompt:', error);
+        showToast('Error al generar el prompt: ' + error.message, 'error');
     }
 }
 
@@ -659,6 +718,11 @@ function initialize() {
         }
         if (domElements.justificationInput) {
             domElements.justificationInput.addEventListener('input', updatePreview);
+        }
+        
+        // Generate prompt button
+        if (domElements.generatePromptBtn) {
+            domElements.generatePromptBtn.addEventListener('click', generateJustificationPrompt);
         }
         
         // Enter key handlers for adding functions and variables
