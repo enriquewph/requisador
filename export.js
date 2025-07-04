@@ -218,3 +218,10 @@ function downloadFile(content, filename, mimeType) {
     // Clean up the object URL
     setTimeout(() => URL.revokeObjectURL(url), 100);
 }
+
+// Make functions globally available
+window.exportToCSV = exportToCSV;
+window.exportToLaTeX = exportToLaTeX;
+window.exportProject = exportProject;
+window.importProject = importProject;
+window.handleFileImport = handleFileImport;

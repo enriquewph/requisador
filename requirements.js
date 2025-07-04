@@ -251,3 +251,16 @@ function loadFromLocalStorage() {
         }
     }
 }
+
+// Make functions globally available
+window.addRequirement = addRequirement;
+window.clearAllRequirements = clearAllRequirements;
+window.loadFromLocalStorage = loadFromLocalStorage;
+window.saveToLocalStorage = saveToLocalStorage;
+window.renderRequirementsList = renderRequirementsList;
+window.deleteRequirement = deleteRequirement;
+window.moveRequirementUp = moveRequirementUp;
+window.moveRequirementDown = moveRequirementDown;
+window.moveRequirementToTop = moveRequirementToTop;
+window.moveRequirementToBottom = moveRequirementToBottom;
+window.recalculateIds = recalculateIds;

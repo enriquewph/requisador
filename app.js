@@ -645,6 +645,9 @@ function initialize() {
 // --- Initialize when DOM is ready ---
 document.addEventListener('DOMContentLoaded', initialize);
 
+// Make initialize function globally available
+window.initialize = initialize;
+
 // Make functions globally available for onclick handlers
 window.deleteFunction = deleteFunction;
 window.deleteVariable = deleteVariable;
