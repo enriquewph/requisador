@@ -903,9 +903,9 @@
 
             outputLatency.textContent = latencyInput.value || '[LATENCIA]';
             outputJustification.textContent = justificationInput.value || '[JUSTIFICACIÓN]';
-        }
-
-        function addRequirement() {
+        }        function addRequirement() {
+            console.log('addRequirement function called');
+            
             if (!behaviorInput.value || !justificationInput.value || !latencyInput.value) {
                 alert('Por favor, completa todos los campos para añadir el requisito.');
                 return;
@@ -923,12 +923,17 @@
                 tolerance: toleranceInput.value,
                 justification: justificationInput.value
             };
+            
+            console.log('New requirement:', newReq);
+            
             allRequirements.push(newReq);
             reqCounter++;
             saveToLocalStorage();
             renderRequirementsList();
             clearForm();
             updatePreview();
+            
+            console.log('Requirement added successfully');
         }
         
         function renderRequirementsList() {
@@ -1179,14 +1184,21 @@
             
             // Add active class to the clicked button
             event.target.classList.add('active');
-        }
-
-        // Add event listeners for tab buttons
+        }        // Add event listeners for tab buttons
         function initializeTabs() {
-            document.getElementById('configTab').addEventListener('click', (e) => switchTab(e, 'configContent'));
-            document.getElementById('createTab').addEventListener('click', (e) => switchTab(e, 'createContent'));
-            document.getElementById('listTab').addEventListener('click', (e) => switchTab(e, 'listContent'));
-            document.getElementById('guidelinesTab').addEventListener('click', (e) => switchTab(e, 'guidelinesContent'));
+            console.log('Initializing tabs...');
+            
+            const configTabBtn = document.getElementById('configTab');
+            const createTabBtn = document.getElementById('createTab');
+            const listTabBtn = document.getElementById('listTab');
+            const guidelinesTabBtn = document.getElementById('guidelinesTab');
+            
+            if (configTabBtn) configTabBtn.addEventListener('click', (e) => switchTab(e, 'configContent'));
+            if (createTabBtn) createTabBtn.addEventListener('click', (e) => switchTab(e, 'createContent'));
+            if (listTabBtn) listTabBtn.addEventListener('click', (e) => switchTab(e, 'listContent'));
+            if (guidelinesTabBtn) guidelinesTabBtn.addEventListener('click', (e) => switchTab(e, 'guidelinesContent'));
+            
+            console.log('Tabs initialized');
         }
 
         // --- Project Import/Export Functions ---
@@ -1310,24 +1322,74 @@
             
             // Clear the input so the same file can be selected again
             event.target.value = '';
-        }
-
-        // --- Initialize Application ---
+        }        // --- Initialize Application ---
         function initialize() {
-            initializeTabs();
-            loadConfig();
-            populateSelect(functionSelect, allFunctions);
-            populateSelect(variableSelect, allVariables);
-            updateComponentOptions();
-            renderConfigLists();
-            loadFromLocalStorage();
-            loadInitialExample();
-            updatePreview();
-            
-            // Add event listeners for project import/export
-            exportProjectBtn.addEventListener('click', exportProject);
-            importProjectBtn.addEventListener('click', importProject);
-            importFileInput.addEventListener('change', handleFileImport);
+            try {
+                initializeTabs();
+                loadConfig();
+                populateSelect(functionSelect, allFunctions);
+                populateSelect(variableSelect, allVariables);
+                updateComponentOptions();
+                renderConfigLists();
+                loadFromLocalStorage();
+                loadInitialExample();
+                updatePreview();
+                
+                // Add event listeners for all buttons and inputs
+                if (addReqBtn) addReqBtn.addEventListener('click', addRequirement);
+                if (clearAllBtn) clearAllBtn.addEventListener('click', clearAllRequirements);
+                if (exportCsvBtn) exportCsvBtn.addEventListener('click', exportToCSV);
+                if (exportLatexBtn) exportLatexBtn.addEventListener('click', exportToLaTeX);
+                
+                // Configuration event listeners
+                if (addFunctionBtn) addFunctionBtn.addEventListener('click', addFunction);
+                if (addVariableBtn) addVariableBtn.addEventListener('click', addVariable);
+                if (addComponentBtn) addComponentBtn.addEventListener('click', addComponent);
+                if (resetConfigBtn) resetConfigBtn.addEventListener('click', resetToDefaults);
+                
+                // Input event listeners for real-time preview updates
+                if (functionSelect) functionSelect.addEventListener('change', updatePreview);
+                if (variableSelect) variableSelect.addEventListener('change', updatePreview);
+                if (componentSelect) componentSelect.addEventListener('change', updateModeOptions);
+                if (modeSelect) modeSelect.addEventListener('change', updatePreview);
+                if (conditionInput) conditionInput.addEventListener('input', updatePreview);
+                if (behaviorInput) behaviorInput.addEventListener('input', updatePreview);
+                if (latencyInput) latencyInput.addEventListener('input', updatePreview);
+                if (toleranceInput) toleranceInput.addEventListener('input', updatePreview);
+                if (justificationInput) justificationInput.addEventListener('input', updatePreview);
+                
+                // Enter key handlers for adding functions and variables
+                if (newFunctionInput) {
+                    newFunctionInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            addFunction();
+                        }
+                    });
+                }
+                if (newVariableInput) {
+                    newVariableInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            addVariable();
+                        }
+                    });
+                }
+                if (newComponentInput) {
+                    newComponentInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            addComponent();
+                        }
+                    });
+                }
+                
+                // Add event listeners for project import/export
+                if (exportProjectBtn) exportProjectBtn.addEventListener('click', exportProject);
+                if (importProjectBtn) importProjectBtn.addEventListener('click', importProject);
+                if (importFileInput) importFileInput.addEventListener('change', handleFileImport);
+                
+                console.log('Application initialized successfully');
+            } catch (error) {
+                console.error('Error during initialization:', error);
+            }
         }
 
         // --- Initial Load ---
