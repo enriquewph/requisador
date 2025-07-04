@@ -584,3 +584,69 @@ select:focus, input:focus, textarea:focus {
     margin: 0 auto 1rem;
     color: #d1d5db;
 }
+
+/* About Modal Styles */
+#aboutModal {
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.3s ease-out;
+}
+
+#aboutModal .bg-white {
+    animation: slideIn 0.3s ease-out;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.about-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+/* Smooth hover effects for About modal links */
+#aboutModal a {
+    transition: all 0.2s ease;
+}
+
+#aboutModal a:hover {
+    transform: translateY(-1px);
+}
+
+/* Custom scrollbar for About modal */
+#aboutModal .overflow-y-auto::-webkit-scrollbar {
+    width: 6px;
+}
+
+#aboutModal .overflow-y-auto::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+#aboutModal .overflow-y-auto::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+#aboutModal .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}

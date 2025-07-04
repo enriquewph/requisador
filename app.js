@@ -79,6 +79,11 @@ function initializeDOMElements() {
     domElements.exportProjectBtn = document.getElementById('exportProjectBtn');
     domElements.importFileInput = document.getElementById('importFileInput');
     
+    // About modal
+    domElements.aboutBtn = document.getElementById('aboutBtn');
+    domElements.aboutModal = document.getElementById('aboutModal');
+    domElements.closeAboutModal = document.getElementById('closeAboutModal');
+    
     // Tab elements
     domElements.configTab = document.getElementById('configTab');
     domElements.createTab = document.getElementById('createTab');
@@ -525,6 +530,21 @@ function loadInitialExample() {
     updatePreview();
 }
 
+// --- About Modal Functions ---
+function showAboutModal() {
+    if (domElements.aboutModal) {
+        domElements.aboutModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    }
+}
+
+function hideAboutModal() {
+    if (domElements.aboutModal) {
+        domElements.aboutModal.classList.add('hidden');
+        document.body.style.overflow = 'auto'; // Restore scrolling
+    }
+}
+
 // --- Main Initialize Function ---
 function initialize() {
     try {
@@ -673,9 +693,23 @@ function initialize() {
             domElements.importProjectBtn.addEventListener('click', importProject);
             console.log('Import project button listener attached');
         }
-        if (domElements.importFileInput) {
-            domElements.importFileInput.addEventListener('change', handleFileImport);
-            console.log('Import file input listener attached');
+        
+        // Add event listeners for About modal
+        if (domElements.aboutBtn) {
+            domElements.aboutBtn.addEventListener('click', showAboutModal);
+            console.log('About button listener attached');
+        }
+        if (domElements.closeAboutModal) {
+            domElements.closeAboutModal.addEventListener('click', hideAboutModal);
+            console.log('Close About modal button listener attached');
+        }
+        if (domElements.aboutModal) {
+            domElements.aboutModal.addEventListener('click', (e) => {
+                if (e.target === domElements.aboutModal) {
+                    hideAboutModal();
+                }
+            });
+            console.log('About modal background click listener attached');
         }
         
         console.log('Application initialized successfully');
@@ -703,3 +737,5 @@ window.moveRequirementDown = moveRequirementDown;
 window.moveRequirementToTop = moveRequirementToTop;
 window.moveRequirementToBottom = moveRequirementToBottom;
 window.deleteRequirement = deleteRequirement;
+window.showAboutModal = showAboutModal;
+window.hideAboutModal = hideAboutModal;
