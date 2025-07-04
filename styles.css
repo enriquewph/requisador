@@ -289,3 +289,32 @@ select:focus, input:focus, textarea:focus {
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
+
+/* Nested requirements styles */
+.nested-requirement {
+    background-color: #eff6ff;
+    border-left: 3px solid #3b82f6;
+}
+
+.requirement-level-2 {
+    background-color: #f0f9ff;
+    border-left: 3px solid #0ea5e9;
+}
+
+.requirement-indentation {
+    padding-left: 1.5rem;
+    position: relative;
+}
+
+.requirement-indentation::before {
+    content: "└─";
+    position: absolute;
+    left: 0.5rem;
+    color: #3b82f6;
+    font-weight: bold;
+}
+
+/* Step number for parent requirement selection */
+.step-number.bg-purple-600 {
+    background-color: #7c3aed;
+}

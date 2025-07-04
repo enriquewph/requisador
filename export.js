@@ -23,7 +23,7 @@ function exportToCSV() {
     allRequirements.forEach((req, index) => {
         const component = req.component === 'Ambos' ? 'HMI, ECI' : req.component;
         const row = [
-            `R${index}`,
+            req.id, // Use the actual ID instead of R${index}
             component,
             req.func,
             req.variable,
@@ -80,7 +80,9 @@ function exportToLaTeX() {
     allRequirements.forEach((req, index) => {
         const condition = req.condition === '-' ? 'N/A' : req.condition;
         const component = req.component === 'Ambos' ? 'HMI, ECI' : req.component;
-        latexContent += `R${index} & ${escapeLatexCell(component)} & ${escapeLatexCell(req.func)} & ${escapeLatexCell(req.variable)} & ${escapeLatexCell(req.mode)} & ${escapeLatexCell(condition)} & ${escapeLatexCell(req.behavior)} \\\\\n`;
+        // Add indentation for level 2 requirements in LaTeX
+        const indentation = req.level === 2 ? '\\quad ' : '';
+        latexContent += `${indentation}${escapeLatexCell(req.id)} & ${escapeLatexCell(component)} & ${escapeLatexCell(req.func)} & ${escapeLatexCell(req.variable)} & ${escapeLatexCell(req.mode)} & ${escapeLatexCell(condition)} & ${escapeLatexCell(req.behavior)} \\\\\n`;
     });
 
     latexContent += `\\end{longtable}

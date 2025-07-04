@@ -26,7 +26,10 @@ const defaultModes = {
 const defaultComponents = ['HMI', 'ECI', 'Ambos'];
 
 // Global variables
-let reqCounter = 0;
+let reqCounter = {
+    level1: 0,
+    level2: 0
+};
 let allRequirements = [];
 
 // --- DOM Elements Cache ---
@@ -41,6 +44,7 @@ function initializeDOMElements() {
     domElements.functionSelect = document.getElementById('functionSelect');
     domElements.variableSelect = document.getElementById('variableSelect');
     domElements.modeSelect = document.getElementById('modeSelect');
+    domElements.parentRequirementSelect = document.getElementById('parentRequirementSelect');
     domElements.conditionInput = document.getElementById('conditionInput');
     domElements.behaviorInput = document.getElementById('behaviorInput');
     domElements.latencyInput = document.getElementById('latencyInput');
@@ -383,7 +387,29 @@ function updateModeOptions() {
 function updatePreview() {
     if (!domElements.outputId) return;
     
-    domElements.outputId.textContent = `R${reqCounter}`;
+    // Calculate the preview ID based on current selections
+    const parentId = domElements.parentRequirementSelect?.value;
+    let previewId;
+    
+    if (parentId) {
+        // Level 2 requirement
+        const childrenCount = allRequirements.filter(req => req.parentId === parentId).length;
+        previewId = `R2-${childrenCount}`;
+    } else {
+        // Level 1 requirement
+        previewId = `R1-${reqCounter.level1}`;
+    }
+    
+    domElements.outputId.textContent = previewId;
+    
+    // Add parent info if this is a sub-requirement
+    if (parentId) {
+        const parentReq = allRequirements.find(req => req.id === parentId);
+        if (parentReq) {
+            domElements.outputId.innerHTML = `${previewId} <span class="text-purple-400 text-sm">(sub-req de ${parentId})</span>`;
+        }
+    }
+    
     const displayComponent = domElements.componentSelect?.value === 'Ambos' ? 'HMI, ECI' : domElements.componentSelect?.value || 'N/A';
     domElements.outputComponent.textContent = displayComponent;
     domElements.outputFunction.textContent = domElements.functionSelect?.value || 'N/A';
@@ -517,6 +543,12 @@ function initialize() {
         loadFromLocalStorage();
         console.log('Requirements loaded from localStorage');
         
+        // Update parent requirement options
+        if (typeof updateParentRequirementOptions === 'function') {
+            updateParentRequirementOptions();
+            console.log('Parent requirement options updated');
+        }
+        
         // Load initial example
         loadInitialExample();
         console.log('Initial example loaded');
@@ -579,6 +611,9 @@ function initialize() {
         }
         if (domElements.modeSelect) {
             domElements.modeSelect.addEventListener('change', updatePreview);
+        }
+        if (domElements.parentRequirementSelect) {
+            domElements.parentRequirementSelect.addEventListener('change', updatePreview);
         }
         if (domElements.conditionInput) {
             domElements.conditionInput.addEventListener('input', updatePreview);
