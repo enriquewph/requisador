@@ -436,8 +436,223 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
-// Include all other functions from the original script...
-// (I'll continue with the rest of the functions in the next part due to length)
+// --- Tab Navigation Functions ---
+function switchTab(event, tabId) {
+    // Hide all tab contents
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabContents.forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    // Remove active class from all tab buttons
+    const tabButtons = document.querySelectorAll('.tab-button');
+    tabButtons.forEach(button => {
+        button.classList.remove('active');
+    });
+    
+    // Show the selected tab content
+    document.getElementById(tabId).classList.add('active');
+    
+    // Add active class to the clicked button
+    event.target.classList.add('active');
+}
 
-// --- Load the rest of the application script ---
-// This file will be split into multiple modules for better organization
+function initializeTabs() {
+    console.log('Initializing tabs...');
+    
+    const configTabBtn = document.getElementById('configTab');
+    const createTabBtn = document.getElementById('createTab');
+    const listTabBtn = document.getElementById('listTab');
+    const guidelinesTabBtn = document.getElementById('guidelinesTab');
+    
+    if (configTabBtn) configTabBtn.addEventListener('click', (e) => switchTab(e, 'configContent'));
+    if (createTabBtn) createTabBtn.addEventListener('click', (e) => switchTab(e, 'createContent'));
+    if (listTabBtn) listTabBtn.addEventListener('click', (e) => switchTab(e, 'listContent'));
+    if (guidelinesTabBtn) guidelinesTabBtn.addEventListener('click', (e) => switchTab(e, 'guidelinesContent'));
+    
+    console.log('Tabs initialized');
+}
+
+function loadInitialExample() {
+    if (domElements.functionSelect) domElements.functionSelect.value = allFunctions[0] || '';
+    if (domElements.variableSelect) domElements.variableSelect.value = allVariables[0] || '';
+    updateComponentOptions();
+    if (domElements.componentSelect) domElements.componentSelect.value = allComponents[0] || '';
+    updateModeOptions();
+    if (domElements.modeSelect && modes[allComponents[0]]) {
+        domElements.modeSelect.value = modes[allComponents[0]][0] || '';
+    }
+    if (domElements.conditionInput) domElements.conditionInput.value = '';
+    if (domElements.behaviorInput) domElements.behaviorInput.value = 'SET LED = Verde, fijo';
+    if (domElements.latencyInput) domElements.latencyInput.value = '100 ms';
+    if (domElements.justificationInput) domElements.justificationInput.value = 'Señalizar que el módulo está funcionando correctamente y participando activamente en la red.';
+    updatePreview();
+}
+
+// --- Main Initialize Function ---
+function initialize() {
+    try {
+        console.log('Starting application initialization...');
+        
+        // Initialize DOM elements first
+        initializeDOMElements();
+        console.log('DOM elements initialized');
+        
+        // Initialize tabs
+        initializeTabs();
+        
+        // Load configuration and data
+        loadConfig();
+        console.log('Configuration loaded');
+        
+        // Populate selects with initial data
+        updateSelects();
+        console.log('Selects updated');
+        
+        // Render configuration lists
+        renderConfigLists();
+        console.log('Config lists rendered');
+        
+        // Load saved requirements
+        loadFromLocalStorage();
+        console.log('Requirements loaded from localStorage');
+        
+        // Load initial example
+        loadInitialExample();
+        console.log('Initial example loaded');
+        
+        // Update preview
+        updatePreview();
+        console.log('Preview updated');
+        
+        // Add event listeners for all buttons and inputs
+        if (domElements.addReqBtn) {
+            domElements.addReqBtn.addEventListener('click', addRequirement);
+            console.log('Add requirement button listener attached');
+        }
+        
+        if (domElements.clearAllBtn) {
+            domElements.clearAllBtn.addEventListener('click', clearAllRequirements);
+            console.log('Clear all button listener attached');
+        }
+        
+        if (domElements.exportCsvBtn) {
+            domElements.exportCsvBtn.addEventListener('click', exportToCSV);
+            console.log('Export CSV button listener attached');
+        }
+        
+        if (domElements.exportLatexBtn) {
+            domElements.exportLatexBtn.addEventListener('click', exportToLaTeX);
+            console.log('Export LaTeX button listener attached');
+        }
+        
+        // Configuration event listeners
+        if (domElements.addFunctionBtn) {
+            domElements.addFunctionBtn.addEventListener('click', addFunction);
+            console.log('Add function button listener attached');
+        }
+        
+        if (domElements.addVariableBtn) {
+            domElements.addVariableBtn.addEventListener('click', addVariable);
+            console.log('Add variable button listener attached');
+        }
+        
+        if (domElements.addComponentBtn) {
+            domElements.addComponentBtn.addEventListener('click', addComponent);
+            console.log('Add component button listener attached');
+        }
+        
+        if (domElements.resetConfigBtn) {
+            domElements.resetConfigBtn.addEventListener('click', resetToDefaults);
+            console.log('Reset config button listener attached');
+        }
+        
+        // Input event listeners for real-time preview updates
+        if (domElements.functionSelect) {
+            domElements.functionSelect.addEventListener('change', updatePreview);
+        }
+        if (domElements.variableSelect) {
+            domElements.variableSelect.addEventListener('change', updatePreview);
+        }
+        if (domElements.componentSelect) {
+            domElements.componentSelect.addEventListener('change', updateModeOptions);
+        }
+        if (domElements.modeSelect) {
+            domElements.modeSelect.addEventListener('change', updatePreview);
+        }
+        if (domElements.conditionInput) {
+            domElements.conditionInput.addEventListener('input', updatePreview);
+        }
+        if (domElements.behaviorInput) {
+            domElements.behaviorInput.addEventListener('input', updatePreview);
+        }
+        if (domElements.latencyInput) {
+            domElements.latencyInput.addEventListener('input', updatePreview);
+        }
+        if (domElements.toleranceInput) {
+            domElements.toleranceInput.addEventListener('input', updatePreview);
+        }
+        if (domElements.justificationInput) {
+            domElements.justificationInput.addEventListener('input', updatePreview);
+        }
+        
+        // Enter key handlers for adding functions and variables
+        if (domElements.newFunctionInput) {
+            domElements.newFunctionInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addFunction();
+                }
+            });
+        }
+        if (domElements.newVariableInput) {
+            domElements.newVariableInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addVariable();
+                }
+            });
+        }
+        if (domElements.newComponentInput) {
+            domElements.newComponentInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addComponent();
+                }
+            });
+        }
+        
+        // Add event listeners for project import/export
+        if (domElements.exportProjectBtn) {
+            domElements.exportProjectBtn.addEventListener('click', exportProject);
+            console.log('Export project button listener attached');
+        }
+        if (domElements.importProjectBtn) {
+            domElements.importProjectBtn.addEventListener('click', importProject);
+            console.log('Import project button listener attached');
+        }
+        if (domElements.importFileInput) {
+            domElements.importFileInput.addEventListener('change', handleFileImport);
+            console.log('Import file input listener attached');
+        }
+        
+        console.log('Application initialized successfully');
+        showToast('Aplicación inicializada correctamente', 'success');
+        
+    } catch (error) {
+        console.error('Error during initialization:', error);
+        showToast('Error durante la inicialización: ' + error.message, 'error');
+    }
+}
+
+// --- Initialize when DOM is ready ---
+document.addEventListener('DOMContentLoaded', initialize);
+
+// Make functions globally available for onclick handlers
+window.deleteFunction = deleteFunction;
+window.deleteVariable = deleteVariable;
+window.deleteComponent = deleteComponent;
+window.addModeToComponent = addModeToComponent;
+window.deleteModeFromComponent = deleteModeFromComponent;
+window.moveRequirementUp = moveRequirementUp;
+window.moveRequirementDown = moveRequirementDown;
+window.moveRequirementToTop = moveRequirementToTop;
+window.moveRequirementToBottom = moveRequirementToBottom;
+window.deleteRequirement = deleteRequirement;
