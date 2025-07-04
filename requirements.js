@@ -29,12 +29,13 @@ function addRequirement() {
     // Generate new ID based on level
     let newId;
     if (level === 1) {
-        newId = `R1-${reqCounter.level1}`;
+        newId = `R${reqCounter.level1}`;
         reqCounter.level1++;
     } else {
         // For level 2, find how many children the parent already has
         const childrenCount = allRequirements.filter(req => req.parentId === parentId).length;
-        newId = `R2-${childrenCount}`;
+        const parentNumber = parentId.replace('R', ''); // Extract parent number
+        newId = `R${parentNumber}-${childrenCount}`;
     }
     
     const newReq = {
@@ -93,8 +94,11 @@ function renderRequirementsList() {
     infoDiv.className = 'info-box';
     infoDiv.innerHTML = `
         <p>
-            <strong>💡 Jerarquía:</strong> Los requisitos de nivel 2 (R2-X) aparecen indentados bajo su requisito padre (R1-X). 
-            Los botones de movimiento respetan la jerarquía.
+            <strong>💡 Jerarquía:</strong> Los requisitos de nivel 1 tienen ID R0, R1, R2, etc. 
+            Los de nivel 2 tienen formato RN-M donde N es el índice del padre y M el índice del hijo (ej: R0-0, R0-1, R1-0). 
+            Los botones de movimiento respetan la jerarquía y actualizan automáticamente los IDs.<br>
+            <strong>🔄 Conversión:</strong> Usa el botón naranja (↴/↱) para convertir entre niveles. 
+            Los requisitos de nivel 2 usan como padre el requisito de nivel 1 más cercano arriba.
         </p>
     `;
     domElements.requirementsList.appendChild(infoDiv);
@@ -134,6 +138,10 @@ function renderRequirementsList() {
         const indentation = req.level === 2 ? '<span class="text-blue-600 mr-2">└─</span>' : '';
         const idDisplay = req.level === 2 ? `<span class="text-blue-600">${req.id}</span>` : req.id;
         
+        // Determine conversion button text and behavior
+        const conversionText = req.level === 1 ? '↴' : '↱';
+        const conversionTitle = req.level === 1 ? 'Convertir a nivel 2' : 'Convertir a nivel 1';
+        
         row.innerHTML = `
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                 ${indentation}${idDisplay}
@@ -167,6 +175,11 @@ function renderRequirementsList() {
                             class="move-btn move-btn-green ${index === allRequirements.length - 1 ? 'opacity-50 cursor-not-allowed' : ''}" 
                             title="Mover al final">
                         ⇊
+                    </button>
+                    <button onclick="convertRequirementLevel(${index})" 
+                            class="move-btn move-btn-orange" 
+                            title="${conversionTitle}">
+                        ${conversionText}
                     </button>
                     <button onclick="deleteRequirement(${index})" 
                             class="move-btn move-btn-red" 
@@ -248,26 +261,44 @@ function clearAllRequirements() {
 
 function recalculateIds() {
     let level1Counter = 0;
-    const level2Counters = {};
+    const level2Counters = {}; // Para cada padre, contar sus hijos
     
-    allRequirements.forEach((req) => {
+    // Primero, asignar IDs a los requisitos de nivel 1 y preparar contadores
+    allRequirements.forEach((req, index) => {
         if (req.level === 1) {
-            req.id = `R1-${level1Counter}`;
+            const newId = `R${level1Counter}`;
+            
+            // Si el ID cambió, actualizar las referencias de los hijos
+            if (req.id !== newId) {
+                const oldId = req.id;
+                req.id = newId;
+                
+                // Actualizar parentId de todos los hijos que referencian el ID antiguo
+                allRequirements.forEach(childReq => {
+                    if (childReq.parentId === oldId) {
+                        childReq.parentId = newId;
+                    }
+                });
+            }
+            
             level2Counters[req.id] = 0;
             level1Counter++;
-        } else if (req.level === 2 && req.parentId) {
-            // Find the updated parent ID
-            const parentIndex = allRequirements.findIndex(r => r.level === 1 && r === allRequirements.find(parent => parent.id === req.parentId || (parent.originalId && parent.originalId === req.parentId)));
-            if (parentIndex >= 0) {
-                const newParentId = `R1-${parentIndex}`;
-                req.parentId = newParentId;
-                req.id = `R2-${level2Counters[newParentId] || 0}`;
-                level2Counters[newParentId] = (level2Counters[newParentId] || 0) + 1;
+        }
+    });
+    
+    // Luego, asignar IDs a los requisitos de nivel 2
+    allRequirements.forEach((req, index) => {
+        if (req.level === 2 && req.parentId) {
+            if (level2Counters[req.parentId] !== undefined) {
+                // Formato RN-M donde N es el índice del padre y M es el índice del hijo
+                const parentNumber = req.parentId.replace('R', ''); // Extraer número del padre
+                req.id = `R${parentNumber}-${level2Counters[req.parentId]}`;
+                level2Counters[req.parentId]++;
             }
         }
     });
     
-    // Update global counters
+    // Actualizar contadores globales
     reqCounter.level1 = level1Counter;
     reqCounter.level2 = Math.max(...Object.values(level2Counters), 0);
 }
@@ -319,12 +350,101 @@ function moveRequirementToBottom(index) {
     }
 }
 
+// --- Level Conversion Functions ---
+function convertRequirementLevel(index) {
+    const req = allRequirements[index];
+    
+    if (req.level === 1) {
+        // Convertir de nivel 1 a nivel 2
+        convertToLevel2(index);
+    } else if (req.level === 2) {
+        // Convertir de nivel 2 a nivel 1
+        convertToLevel1(index);
+    }
+}
+
+function convertToLevel2(index) {
+    const req = allRequirements[index];
+    
+    // Check if it's already level 2
+    if (req.level === 2) {
+        showToast('Este requisito ya es de nivel 2.', 'warning');
+        return;
+    }
+    
+    // Buscar el requisito de nivel 1 más cercano hacia arriba
+    let parentIndex = -1;
+    for (let i = index - 1; i >= 0; i--) {
+        if (allRequirements[i].level === 1) {
+            parentIndex = i;
+            break;
+        }
+    }
+    
+    if (parentIndex === -1) {
+        showToast('No hay requisitos de nivel 1 arriba para usar como padre.', 'warning');
+        return;
+    }
+    
+    const parentReq = allRequirements[parentIndex];
+    
+    // Verificar si hay hijos del requisito que se va a convertir
+    const children = allRequirements.filter(r => r.parentId === req.id);
+    if (children.length > 0) {
+        if (!confirm(`Este requisito tiene ${children.length} sub-requisito(s). Si lo conviertes a nivel 2, sus hijos se convertirán en requisitos de nivel 1. ¿Continuar?`)) {
+            return;
+        }
+        
+        // Convertir los hijos a nivel 1
+        children.forEach(child => {
+            child.level = 1;
+            child.parentId = null;
+        });
+    }
+    
+    // Convertir el requisito a nivel 2
+    req.level = 2;
+    req.parentId = parentReq.id;
+    
+    recalculateIds();
+    saveToLocalStorage();
+    renderRequirementsList();
+    updateParentRequirementOptions();
+    showToast(`Requisito convertido a nivel 2 bajo ${parentReq.id}`, 'success');
+}
+
+function convertToLevel1(index) {
+    const req = allRequirements[index];
+    
+    // Check if it's already level 1
+    if (req.level === 1) {
+        showToast('Este requisito ya es de nivel 1.', 'warning');
+        return;
+    }
+    
+    if (!confirm('¿Estás seguro de que quieres convertir este requisito a nivel 1?')) {
+        return;
+    }
+    
+    // Convertir el requisito a nivel 1
+    req.level = 1;
+    req.parentId = null;
+    
+    recalculateIds();
+    saveToLocalStorage();
+    renderRequirementsList();
+    updateParentRequirementOptions();
+    showToast('Requisito convertido a nivel 1', 'success');
+}
+
 // --- Local Storage Functions ---
 function saveToLocalStorage() {
-    localStorage.setItem('requirementsData', JSON.stringify({
+    const dataToSave = {
         requirements: allRequirements,
-        counter: reqCounter
-    }));
+        counter: reqCounter,
+        version: '3.0' // Add version to track data format - new RN-M format
+    };
+    localStorage.setItem('requirementsData', JSON.stringify(dataToSave));
 }
 
 function loadFromLocalStorage() {
@@ -334,21 +454,48 @@ function loadFromLocalStorage() {
             const data = JSON.parse(savedData);
             allRequirements = data.requirements || [];
             
+            // Check if this is legacy data (no version field or old version)
+            const isLegacyData = !data.version || data.version !== '3.0';
+            
             // Handle legacy data format
-            if (typeof data.counter === 'number') {
-                reqCounter = { level1: data.counter, level2: 0 };
-                // Update legacy requirements to new format
+            if (typeof data.counter === 'number' || isLegacyData) {
+                console.log('Migrating data to new RN-M ID format...');
+                reqCounter = { level1: 0, level2: 0 };
+                
+                // Update ALL requirements to new format
                 allRequirements.forEach((req, index) => {
-                    if (!req.level) {
-                        req.level = 1;
-                        req.parentId = null;
-                        req.id = `R1-${index}`;
-                    }
+                    req.level = 1; // All legacy requirements become level 1
+                    req.parentId = null;
                 });
-                reqCounter.level1 = allRequirements.filter(r => r.level === 1).length;
+                
+                // Force save with new format
+                recalculateIds();
+                saveToLocalStorage();
+                showToast('Datos migrados al nuevo formato RN-M de IDs', 'info');
             } else {
                 reqCounter = data.counter || { level1: 0, level2: 0 };
             }
+            
+            // Ensure ALL requirements have proper level and structure
+            allRequirements.forEach((req, index) => {
+                // If level is missing, assume it's level 1
+                if (!req.level) {
+                    req.level = 1;
+                    req.parentId = null;
+                }
+                
+                // Ensure parentId is properly set
+                if (req.level === 1) {
+                    req.parentId = null;
+                } else if (req.level === 2 && !req.parentId) {
+                    // If it's level 2 but has no parent, convert to level 1
+                    req.level = 1;
+                    req.parentId = null;
+                }
+            });
+            
+            // Recalculate IDs to ensure consistency
+            recalculateIds();
             
             renderRequirementsList();
             updateParentRequirementOptions();
@@ -405,3 +552,7 @@ window.moveRequirementToTop = moveRequirementToTop;
 window.moveRequirementToBottom = moveRequirementToBottom;
 window.recalculateIds = recalculateIds;
 window.updateParentRequirementOptions = updateParentRequirementOptions;
+window.convertRequirementLevel = convertRequirementLevel;
+window.convertRequirementLevel = convertRequirementLevel;
+window.convertToLevel2 = convertToLevel2;
+window.convertToLevel1 = convertToLevel1;

@@ -258,6 +258,16 @@ select:focus, input:focus, textarea:focus {
     border-color: #b91c1c;
 }
 
+.move-btn-orange {
+    color: #ea580c;
+    border-color: #f97316;
+}
+
+.move-btn-orange:hover:not(:disabled) {
+    background-color: #fed7aa;
+    border-color: #c2410c;
+}
+
 /* Info boxes */
 .info-box {
     background-color: #dbeafe;

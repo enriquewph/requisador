@@ -394,10 +394,11 @@ function updatePreview() {
     if (parentId) {
         // Level 2 requirement
         const childrenCount = allRequirements.filter(req => req.parentId === parentId).length;
-        previewId = `R2-${childrenCount}`;
+        const parentNumber = parentId.replace('R', ''); // Extract parent number
+        previewId = `R${parentNumber}-${childrenCount}`;
     } else {
         // Level 1 requirement
-        previewId = `R1-${reqCounter.level1}`;
+        previewId = `R${reqCounter.level1}`;
     }
     
     domElements.outputId.textContent = previewId;
