@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Requisador de Requisitos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: all 0.3s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .btn {
+            border-radius: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .btn-primary {
+            background-color: #2563eb;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+        }
+        .btn-secondary {
+            background-color: #10b981;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #059669;
+        }
+        select, input, textarea {
+            border-radius: 0.5rem;
+            border: 1px solid #d1d5db;
+        }
+        .step-number {
+            background-color: #2563eb;
+            color: white;
+            border-radius: 9999px;
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.125rem;
+            flex-shrink: 0;
+        }
+        .requirement-output {
+            background-color: #1e293b;
+            color: #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+        .tab-nav {
+            border-bottom: 2px solid #e5e7eb;
+        }
+        .tab-button {
+            padding: 1rem 2rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #6b7280;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+        .tab-button:hover {
+            color: #2563eb;
+            background-color: #f8fafc;
+        }
+        .tab-button.active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .tab-button {
+            padding: 1rem 2rem;
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .tab-button.active {
+            border-bottom-color: #2563eb;
+            color: #2563eb;
+            background-color: #eff6ff;
+        }
+        .tab-button:hover {
+            background-color: #f8fafc;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="text-gray-900">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <h1 class="text-2xl font-bold text-gray-800">Requisador de Requisitos</h1>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button id="importProjectBtn" class="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                    </svg>
+                    <span>Importar Proyecto</span>
+                </button>
+                <button id="exportProjectBtn" class="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                    </svg>
+                    <span>Exportar Proyecto</span>
+                </button>
+                <input type="file" id="importFileInput" accept=".json" style="display: none;">
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-12">
+
+        <!-- Introduction -->
+        <section class="text-center mb-16">
+            <h2 class="text-4xl md:text-5xl font-extrabold mb-4">Define el Comportamiento de tu Sistema</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                Esta guía interactiva te ayudará a crear requisitos de comportamiento y rendimiento claros, completos y consistentes, siguiendo la metodología del handbook.
+            </p>
+        </section>
+
+        <!-- Tab Navigation -->
+        <div class="bg-white rounded-t-lg shadow-sm">
+            <div class="flex border-b">
+                <button id="configTab" class="tab-button active">Configuración del Sistema</button>
+                <button id="createTab" class="tab-button">Crear Requisito</button>
+                <button id="listTab" class="tab-button">Lista de Requisitos</button>
+                <button id="guidelinesTab" class="tab-button">Lineamientos para Requisitos</button>
+            </div>
+        </div>
+
+        <!-- Tab Contents -->
+        <div class="bg-white rounded-b-lg shadow-md">
+            
+            <!-- Configuration Tab Content -->
+            <div id="configContent" class="tab-content active p-6 md:p-8">
+                <h3 class="text-2xl font-bold mb-6">Configuración del Sistema</h3>
+                    <!-- Functions Configuration -->
+                    <div>
+                        <h4 class="text-xl font-semibold mb-4">Funciones Disponibles</h4>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div>
+                                <div class="flex gap-2 mb-3">
+                                    <input type="text" id="newFunctionInput" placeholder="Nueva función..." class="flex-1 p-2">
+                                    <button id="addFunctionBtn" class="btn btn-primary">Añadir</button>
+                                </div>
+                                <div id="functionsList" class="space-y-2 max-h-60 overflow-y-auto"></div>
+                            </div>
+                            <div>
+                                <h5 class="font-medium text-gray-700 mb-2">Funciones actuales:</h5>
+                                <div class="bg-gray-50 p-3 rounded text-sm">
+                                    <div id="functionsPreview" class="text-gray-600"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Variables Configuration -->
+                    <div>
+                        <h4 class="text-xl font-semibold mb-4">Variables Controladas Disponibles</h4>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div>
+                                <div class="flex gap-2 mb-3">
+                                    <input type="text" id="newVariableInput" placeholder="Nueva variable..." class="flex-1 p-2">
+                                    <button id="addVariableBtn" class="btn btn-primary">Añadir</button>
+                                </div>
+                                <div id="variablesList" class="space-y-2 max-h-60 overflow-y-auto"></div>
+                            </div>
+                            <div>
+                                <h5 class="font-medium text-gray-700 mb-2">Variables actuales:</h5>
+                                <div class="bg-gray-50 p-3 rounded text-sm">
+                                    <div id="variablesPreview" class="text-gray-600"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reset to Defaults -->
+                    <div class="pt-4 border-t">
+                        <button id="resetConfigBtn" class="btn bg-orange-600 hover:bg-orange-700 text-white">Restaurar Valores por Defecto</button>
+                    </div>
+
+                    <!-- Components and Modes Configuration -->
+                    <div>
+                        <h4 class="text-xl font-semibold mb-4">Componentes del Sistema y sus Modos</h4>
+                        <div class="space-y-6">
+                            <!-- Add New Component -->
+                            <div class="border rounded-lg p-4 bg-gray-50">
+                                <h5 class="font-medium text-gray-700 mb-3">Añadir Nuevo Componente</h5>
+                                <div class="flex gap-2 mb-3">
+                                    <input type="text" id="newComponentInput" placeholder="Nombre del componente..." class="flex-1 p-2">
+                                    <button id="addComponentBtn" class="btn btn-primary">Añadir Componente</button>
+                                </div>
+                            </div>
+
+                            <!-- Existing Components and Their Modes -->
+                            <div id="componentsList" class="space-y-4"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Requirement Tab Content -->
+            <div id="createContent" class="tab-content p-6 md:p-8">
+                <h3 class="text-2xl font-bold mb-6 border-b pb-4">Paso a Paso: Creando un Requisito</h3>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Left Column: Inputs -->
+                    <div class="space-y-8">
+                        <!-- Step 1: Function & Variable -->
+                        <div class="flex items-start space-x-4">
+                            <div class="step-number">1</div>
+                            <div>
+                                <h4 class="text-xl font-semibold mb-2">Función y Variable</h4>
+                                <p class="text-gray-500 mb-4">Comienza seleccionando la función y la variable que controla.</p>
+                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="functionSelect" class="block text-sm font-medium text-gray-700">Función Asociada</label>
+                                        <select id="functionSelect" class="mt-1 block w-full p-2"></select>
+                                    </div>
+                                    <div>
+                                        <label for="variableSelect" class="block text-sm font-medium text-gray-700">Variable Controlada</label>
+                                        <select id="variableSelect" class="mt-1 block w-full p-2"></select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Component & Mode -->
+                        <div class="flex items-start space-x-4">
+                            <div class="step-number">2</div>
+                            <div>
+                                <h4 class="text-xl font-semibold mb-2">Componente y Modo</h4>
+                                <p class="text-gray-500 mb-4">Elige el componente que implementa el requisito y el modo en que aplica.</p>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="componentSelect" class="block text-sm font-medium text-gray-700">Componente</label>
+                                        <select id="componentSelect" class="mt-1 block w-full p-2"></select>
+                                    </div>
+                                    <div>
+                                        <label for="modeSelect" class="block text-sm font-medium text-gray-700">Modo del Sistema</label>
+                                        <select id="modeSelect" class="mt-1 block w-full p-2"></select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Behavior -->
+                        <div class="flex items-start space-x-4">
+                            <div class="step-number">3</div>
+                            <div>
+                                <h4 class="text-xl font-semibold mb-2">Comportamiento Detallado</h4>
+                                <p class="text-gray-500 mb-4">Define la lógica: "SI se cumple esta condición, ENTONCES asignar este valor".</p>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label for="conditionInput" class="block text-sm font-medium text-gray-700">Condición (Opcional)</label>
+                                        <input type="text" id="conditionInput" placeholder="Ej: Recibe comando RPDO para activar" class="mt-1 block w-full p-2">
+                                    </div>
+                                    <div>
+                                        <label for="behaviorInput" class="block text-sm font-medium text-gray-700">Comportamiento Requerido</label>
+                                        <input type="text" id="behaviorInput" placeholder="Ej: SET LED = Verde, fijo" class="mt-1 block w-full p-2">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                         <!-- Step 4: Performance & Justification -->
+                        <div class="flex items-start space-x-4">
+                            <div class="step-number">4</div>
+                            <div>
+                                <h4 class="text-xl font-semibold mb-2">Rendimiento y Justificación</h4>
+                                 <p class="text-gray-500 mb-4">Especifica los tiempos de respuesta y la razón de ser del requisito.</p>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label for="latencyInput" class="block text-sm font-medium text-gray-700">Latencia Máx.</label>
+                                        <input type="text" id="latencyInput" placeholder="Ej: 100 ms" class="mt-1 block w-full p-2">
+                                    </div>
+                                    <div>
+                                        <label for="toleranceInput" class="block text-sm font-medium text-gray-700">Tolerancia</label>
+                                        <input type="text" id="toleranceInput" value="N/A" class="mt-1 block w-full p-2">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label for="justificationInput" class="block text-sm font-medium text-gray-700">Justificación</label>
+                                    <textarea id="justificationInput" rows="3" placeholder="Explica el 'porqué' de este requisito." class="mt-1 block w-full p-2"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Output -->
+                    <div class="sticky top-24 h-full">
+                        <h4 class="text-xl font-semibold mb-2">Requisito Generado</h4>
+                        <p class="text-gray-500 mb-4">Así se verá tu requisito en la tabla final.</p>
+                        <div class="requirement-output">
+                            <div id="outputId" class="text-lg font-bold text-cyan-400 mb-2">R0</div>
+                            <div class="mb-2">
+                                <span class="font-bold text-gray-400">Función: </span>
+                                <span id="outputFunction" class="tag bg-indigo-900 text-indigo-300"></span>
+                            </div>
+                            <div class="mb-2">
+                                <span class="font-bold text-gray-400">Variable: </span>
+                                <span id="outputVariable" class="tag bg-purple-900 text-purple-300"></span>
+                            </div>
+                            <div class="mb-4">
+                                <span class="font-bold text-gray-400">Componente: </span>
+                                <span id="outputComponent" class="tag bg-blue-900 text-blue-300"></span>
+                            </div>
+                            
+                            <div id="outputLogic" class="text-lime-300"></div>
+                            
+                            <div class="mt-4 border-t border-gray-600 pt-4">
+                                <div class="mb-2"><span class="font-bold text-gray-400">Latencia: </span><span id="outputLatency"></span></div>
+                                <div><span class="font-bold text-gray-400">Justificación: </span><span id="outputJustification" class="text-gray-400 italic"></span></div>
+                            </div>
+                        </div>
+                        <button id="addReqBtn" class="btn btn-primary w-full mt-4">Añadir a la Lista de Requisitos</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- List Requirements Tab Content -->
+            <div id="listContent" class="tab-content p-6 md:p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-3xl font-bold">Lista de Requisitos Detallados</h3>
+                    <div class="space-x-2">
+                        <button id="clearAllBtn" class="btn bg-red-600 hover:bg-red-700 text-white">Limpiar Todo</button>
+                        <button id="exportCsvBtn" class="btn btn-secondary">Exportar a CSV</button>
+                        <button id="exportLatexBtn" class="btn bg-purple-600 hover:bg-purple-700 text-white">Exportar a LaTeX</button>
+                    </div>
+                </div>
+                <div id="requirementsList" class="space-y-4">
+                    <div class="text-center text-gray-500 p-8 border-2 border-dashed rounded-lg">
+                        Aún no has añadido ningún requisito. ¡Usa el constructor de arriba para empezar!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Guidelines Tab Content -->
+            <div id="guidelinesContent" class="tab-content p-6 md:p-8">
+                <h3 class="text-2xl font-bold mb-6">Lineamientos para Escribir Requisitos Detallados</h3>
+                
+                <div class="prose max-w-none">
+                    <p class="text-lg text-gray-600 mb-8">
+                        Los requisitos de comportamiento y rendimiento definen cómo el sistema debe cambiar las variables controladas en respuesta a los cambios en las variables monitoreadas. 
+                        Esta guía está basada en la práctica 2.8 del handbook de ingeniería de sistemas.
+                    </p>
+
+                    <div class="space-y-8">
+                        <!-- Guideline 1 -->
+                        <div class="bg-blue-50 rounded-lg p-6 border border-blue-200">
+                            <h4 class="text-xl font-semibold text-blue-800 mb-3">1. Utilice nombres específicos de variables y modos</h4>
+                            <p class="text-gray-700 mb-4">
+                                Use los nombres exactos de las variables monitoreadas y controladas, los modos del sistema y las variables internas al escribir los requisitos detallados.
+                            </p>
+                            <div class="bg-white p-4 rounded border-l-4 border-blue-400">
+                                <p class="font-semibold text-gray-800">✅ Correcto:</p>
+                                <p class="text-gray-600 italic">"En modo Operational, SET LED_Estado = Verde, fijo"</p>
+                                <p class="font-semibold text-gray-800 mt-2">❌ Incorrecto:</p>
+                                <p class="text-gray-600 italic">"El LED debe estar verde cuando funciona"</p>
+                            </div>
+                        </div>
+
+                        <!-- Guideline 2 -->
+                        <div class="bg-green-50 rounded-lg p-6 border border-green-200">
+                            <h4 class="text-xl font-semibold text-green-800 mb-3">2. Especifique modos y condiciones claramente</h4>
+                            <p class="text-gray-700 mb-4">
+                                Para cada requisito, especifique los modos del sistema y las condiciones bajo las cuales se aplicará el requisito, seguido del cambio en la variable afectada.
+                            </p>
+                            <div class="bg-white p-4 rounded border-l-4 border-green-400">
+                                <p class="font-semibold text-gray-800">Estructura recomendada:</p>
+                                <p class="text-gray-600 italic">"SI [modo del sistema] Y [condición específica] ENTONCES [acción sobre variable]"</p>
+                                <p class="font-semibold text-gray-800 mt-2">Ejemplo:</p>
+                                <p class="text-gray-600 italic">"SI modo es Operational Mode Y se recibe comando RPDO_Start ENTONCES SET Motor_Speed = 1500 RPM"</p>
+                            </div>
+                        </div>
+
+                        <!-- Guideline 3 -->
+                        <div class="bg-yellow-50 rounded-lg p-6 border border-yellow-200">
+                            <h4 class="text-xl font-semibold text-yellow-800 mb-3">3. Asegure completitud de requisitos</h4>
+                            <p class="text-gray-700 mb-4">
+                                Los requisitos detallados deben estar completos: se debe asignar un valor ideal a cada variable controlada para cada estado del sistema.
+                            </p>
+                            <div class="bg-white p-4 rounded border-l-4 border-yellow-400">
+                                <p class="font-semibold text-gray-800">Regla importante:</p>
+                                <p class="text-gray-600">Utilice "NO ESPECIFICADO" cuando no exista una asignación significativa para un estado del sistema.</p>
+                                <p class="font-semibold text-gray-800 mt-2">Ejemplo:</p>
+                                <p class="text-gray-600 italic">"En modo Fault Mode, SET Display_Message = NO ESPECIFICADO"</p>
+                            </div>
+                        </div>
+
+                        <!-- Guideline 4 -->
+                        <div class="bg-purple-50 rounded-lg p-6 border border-purple-200">
+                            <h4 class="text-xl font-semibold text-purple-800 mb-3">4. Mantenga consistencia</h4>
+                            <p class="text-gray-700 mb-4">
+                                Los requisitos detallados deben ser consistentes: solo se debe asignar un valor ideal a cada variable controlada para cada estado posible del sistema.
+                            </p>
+                            <div class="bg-white p-4 rounded border-l-4 border-purple-400">
+                                <p class="font-semibold text-gray-800">⚠️ Evite conflictos como:</p>
+                                <p class="text-red-600 italic">R1: "En modo Operational, SET LED = Verde"</p>
+                                <p class="text-red-600 italic">R2: "En modo Operational, SET LED = Azul"</p>
+                            </div>
+                        </div>
+
+                        <!-- Guideline 5 -->
+                        <div class="bg-red-50 rounded-lg p-6 border border-red-200">
+                            <h4 class="text-xl font-semibold text-red-800 mb-3">5. Evite duplicaciones</h4>
+                            <p class="text-gray-700 mb-4">
+                                Asegúrese de que no haya dos requisitos detallados que se dupliquen entre sí, especificando el mismo resultado para modos y condiciones superpuestos.
+                            </p>
+                        </div>
+
+                        <!-- Guideline 6 -->
+                        <div class="bg-indigo-50 rounded-lg p-6 border border-indigo-200">
+                            <h4 class="text-xl font-semibold text-indigo-800 mb-3">6. Organice por función</h4>
+                            <p class="text-gray-700 mb-4">
+                                Presente los requisitos detallados del sistema en la función que produce la variable que se especifica. Esto permite rastrear cada variable directamente hasta su función principal.
+                            </p>
+                        </div>
+
+                        <!-- Guideline 7 & 8 -->
+                        <div class="bg-teal-50 rounded-lg p-6 border border-teal-200">
+                            <h4 class="text-xl font-semibold text-teal-800 mb-3">7. Defina latencia y tolerancia</h4>
+                            <p class="text-gray-700 mb-4">
+                                Para cada variable controlada, defina:
+                            </p>
+                            <ul class="list-disc list-inside text-gray-700 space-y-2 mb-4">
+                                <li><strong>Latencia aceptable</strong> junto con la justificación de su valor</li>
+                                <li><strong>Tolerancia aceptable</strong> numéricamente</li>
+                            </ul>
+                            <div class="bg-white p-4 rounded border-l-4 border-teal-400">
+                                <p class="font-semibold text-gray-800">Ejemplo:</p>
+                                <p class="text-gray-600 italic">Latencia: ≤ 100ms (para cumplir con tiempo de respuesta del operador)</p>
+                                <p class="text-gray-600 italic">Tolerancia: ± 5% (precisión requerida por el proceso)</p>
+                            </div>
+                        </div>
+
+                        <!-- Guideline 9 -->
+                        <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                            <h4 class="text-xl font-semibold text-gray-800 mb-3">8. Variables internas</h4>
+                            <p class="text-gray-700">
+                                <strong>No defina latencia y tolerancia para variables internas</strong> - estos parámetros solo aplican para variables controladas que interactúan con el entorno.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Summary -->
+                    <div class="mt-10 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-lg">
+                        <h4 class="text-xl font-semibold mb-3">💡 Resumen: Estructura de un Requisito Bien Formado</h4>
+                        <div class="bg-white bg-opacity-20 p-4 rounded">
+                            <p class="font-mono text-sm">
+                                <span class="text-yellow-300">ID:</span> R[número]<br>
+                                <span class="text-yellow-300">Función:</span> [Nombre específico de la función]<br>
+                                <span class="text-yellow-300">Variable:</span> [Nombre específico de la variable controlada]<br>
+                                <span class="text-yellow-300">Componente:</span> [HMI/ECI/Ambos]<br>
+                                <span class="text-yellow-300">Condición:</span> SI [modo del sistema] Y [condición específica]<br>
+                                <span class="text-yellow-300">Comportamiento:</span> ENTONCES [acción específica sobre la variable]<br>
+                                <span class="text-yellow-300">Latencia:</span> [valor numérico con unidades]<br>
+                                <span class="text-yellow-300">Justificación:</span> [explicación del porqué del requisito]
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-16">
+        <div class="container mx-auto px-6 text-center">
+            <div class="flex flex-col items-center space-y-4">
+                <div class="flex items-center space-x-2">
+                    <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                    </svg>
+                    <span class="text-lg">Vibecodeado por</span>
+                    <a href="https://github.com/enriquewph" target="_blank" rel="noopener noreferrer" 
+                       class="text-blue-400 hover:text-blue-300 font-semibold transition-colors duration-200">
+                        enriquewph
+                    </a>
+                </div>
+                <div class="text-gray-300">
+                    <span class="font-semibold text-blue-300">UTN FRC 2025</span> - para los <span class="text-yellow-400 font-bold">Gladiadores Electrónicos</span>
+                </div>
+                <div class="text-xs text-gray-400 mt-2">
+                    Requisador de Requisitos siguiendo metodología del Systems Engineering Handbook
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- Data Definitions ---
+        let modes = {
+            HMI: ['Initialization Mode', 'Pre-operational Mode', 'Operational Mode', 'Fault Mode', 'Stopped Mode'],
+            ECI: ['Initialization Mode', 'Pre-operational Mode', 'Operational (gw inactive)', 'Operational (gw active)', 'Fault mode'],
+            Ambos: ['Initialization Mode', 'Pre-operational Mode', 'Operational Mode', 'Fault Mode']
+        };
+
+        const allFunctions = ['Runtime Manager', 'Config Manager', 'CAN NMT Slave', 'CAN NMT Master', 'CAN-GPIO Translator', 'CAN-ETH Translator', 'CAN Driver', 'GPIO Driver', 'ETH Driver'];
+        const allVariables = ['Indicador de estado', 'Comandos a Red CAN', 'Estado de salidas fisicas', 'Reportes a Proc. Robot', 'Comandos de gestión de red', 'Mensajes de sincronización', 'Respuestas a Terminal de Ingeniería'];
+        let allComponents = ['HMI', 'ECI', 'Ambos'];
+
+        // Default values for reset functionality
+        const defaultFunctions = ['Runtime Manager', 'Config Manager', 'CAN NMT Slave', 'CAN NMT Master', 'CAN-GPIO Translator', 'CAN-ETH Translator', 'CAN Driver', 'GPIO Driver', 'ETH Driver'];
+        const defaultVariables = ['Indicador de estado', 'Comandos a Red CAN', 'Estado de salidas fisicas', 'Reportes a Proc. Robot', 'Comandos de gestión de red', 'Mensajes de sincronización', 'Respuestas a Terminal de Ingeniería'];
+        const defaultModes = {
+            HMI: ['Initialization Mode', 'Pre-operational Mode', 'Operational Mode', 'Fault Mode', 'Stopped Mode'],
+            ECI: ['Initialization Mode', 'Pre-operational Mode', 'Operational (gw inactive)', 'Operational (gw active)', 'Fault mode'],
+            Ambos: ['Initialization Mode', 'Pre-operational Mode', 'Operational Mode', 'Fault Mode']
+        };
+        const defaultComponents = ['HMI', 'ECI', 'Ambos'];
+
+        // --- DOM Elements ---
+        const componentSelect = document.getElementById('componentSelect');
+        const functionSelect = document.getElementById('functionSelect');
+        const variableSelect = document.getElementById('variableSelect');
+        const modeSelect = document.getElementById('modeSelect');
+        const conditionInput = document.getElementById('conditionInput');
+        const behaviorInput = document.getElementById('behaviorInput');
+        const latencyInput = document.getElementById('latencyInput');
+        const toleranceInput = document.getElementById('toleranceInput');
+        const justificationInput = document.getElementById('justificationInput');
+        const addReqBtn = document.getElementById('addReqBtn');
+        const clearAllBtn = document.getElementById('clearAllBtn');
+        const exportCsvBtn = document.getElementById('exportCsvBtn');
+        const exportLatexBtn = document.getElementById('exportLatexBtn');
+        const requirementsList = document.getElementById('requirementsList');
+
+        // Project Import/Export DOM Elements
+        const importProjectBtn = document.getElementById('importProjectBtn');
+        const exportProjectBtn = document.getElementById('exportProjectBtn');
+        const importFileInput = document.getElementById('importFileInput');
+
+        // Configuration DOM Elements
+        const toggleConfigBtn = document.getElementById('toggleConfigBtn');
+        const configSection = document.getElementById('configSection');
+        const newFunctionInput = document.getElementById('newFunctionInput');
+        const addFunctionBtn = document.getElementById('addFunctionBtn');
+        const functionsList = document.getElementById('functionsList');
+        const functionsPreview = document.getElementById('functionsPreview');
+        const newVariableInput = document.getElementById('newVariableInput');
+        const addVariableBtn = document.getElementById('addVariableBtn');
+        const variablesList = document.getElementById('variablesList');
+        const variablesPreview = document.getElementById('variablesPreview');
+        const resetConfigBtn = document.getElementById('resetConfigBtn');
+        const newComponentInput = document.getElementById('newComponentInput');
+        const addComponentBtn = document.getElementById('addComponentBtn');
+        const componentsList = document.getElementById('componentsList');
+
+        // Tab DOM Elements
+        const configTab = document.getElementById('configTab');
+        const createTab = document.getElementById('createTab');
+        const listTab = document.getElementById('listTab');
+        const guidelinesTab = document.getElementById('guidelinesTab');
+        const configContent = document.getElementById('configContent');
+        const createContent = document.getElementById('createContent');
+        const listContent = document.getElementById('listContent');
+        const guidelinesContent = document.getElementById('guidelinesContent');
+
+        // --- Output Elements ---
+        const outputId = document.getElementById('outputId');
+        const outputComponent = document.getElementById('outputComponent');
+        const outputFunction = document.getElementById('outputFunction');
+        const outputVariable = document.getElementById('outputVariable');
+        const outputLogic = document.getElementById('outputLogic');
+        const outputLatency = document.getElementById('outputLatency');
+        const outputJustification = document.getElementById('outputJustification');
+        
+        let reqCounter = 0;
+        let allRequirements = [];
+
+        // --- Configuration Functions ---
+        function loadConfig() {
+            const savedConfig = localStorage.getItem('systemConfig');
+            if (savedConfig) {
+                try {
+                    const config = JSON.parse(savedConfig);
+                    allFunctions.length = 0;
+                    allVariables.length = 0;
+                    allComponents.length = 0;
+                    allFunctions.push(...(config.functions || defaultFunctions));
+                    allVariables.push(...(config.variables || defaultVariables));
+                    allComponents.push(...(config.components || defaultComponents));
+                    modes = config.modes || JSON.parse(JSON.stringify(defaultModes));
+                } catch (error) {
+                    console.error('Error loading config:', error);
+                    resetToDefaults();
+                }
+            } else {
+                resetToDefaults();
+            }
+        }
+
+        function saveConfig() {
+            const config = {
+                functions: [...allFunctions],
+                variables: [...allVariables],
+                components: [...allComponents],
+                modes: JSON.parse(JSON.stringify(modes))
+            };
+            localStorage.setItem('systemConfig', JSON.stringify(config));
+        }
+
+        function resetToDefaults() {
+            allFunctions.length = 0;
+            allVariables.length = 0;
+            allComponents.length = 0;
+            allFunctions.push(...defaultFunctions);
+            allVariables.push(...defaultVariables);
+            allComponents.push(...defaultComponents);
+            modes = JSON.parse(JSON.stringify(defaultModes));
+            saveConfig();
+            renderConfigLists();
+            updateSelects();
+        }
+
+        function addFunction() {
+            const newFunction = newFunctionInput.value.trim();
+            if (newFunction && !allFunctions.includes(newFunction)) {
+                allFunctions.push(newFunction);
+                newFunctionInput.value = '';
+                saveConfig();
+                renderConfigLists();
+                updateSelects();
+            }
+        }
+
+        function deleteFunction(index) {
+            if (confirm('¿Estás seguro de que quieres eliminar esta función?')) {
+                allFunctions.splice(index, 1);
+                saveConfig();
+                renderConfigLists();
+                updateSelects();
+            }
+        }
+
+        function addVariable() {
+            const newVariable = newVariableInput.value.trim();
+            if (newVariable && !allVariables.includes(newVariable)) {
+                allVariables.push(newVariable);
+                newVariableInput.value = '';
+                saveConfig();
+                renderConfigLists();
+                updateSelects();
+            }
+        }
+
+        function deleteVariable(index) {
+            if (confirm('¿Estás seguro de que quieres eliminar esta variable?')) {
+                allVariables.splice(index, 1);
+                saveConfig();
+                renderConfigLists();
+                updateSelects();
+            }
+        }
+
+        function addComponent() {
+            const newComponent = newComponentInput.value.trim();
+            if (newComponent && !allComponents.includes(newComponent)) {
+                allComponents.push(newComponent);
+                modes[newComponent] = ['Default Mode']; // Initialize with a default mode
+                newComponentInput.value = '';
+                saveConfig();
+                renderConfigLists();
+                updateSelects();
+            }
+        }
+
+        function deleteComponent(componentName) {
+            if (confirm(`¿Estás seguro de que quieres eliminar el componente "${componentName}" y todos sus modos?`)) {
+                const index = allComponents.indexOf(componentName);
+                if (index > -1) {
+                    allComponents.splice(index, 1);
+                    delete modes[componentName];
+                    saveConfig();
+                    renderConfigLists();
+                    updateSelects();
+                }
+            }
+        }
+
+        function addModeToComponent(componentName) {
+            const input = document.getElementById(`newMode_${componentName.replace(/\s+/g, '_')}`);
+            const newMode = input.value.trim();
+            if (newMode && !modes[componentName].includes(newMode)) {
+                modes[componentName].push(newMode);
+                input.value = '';
+                saveConfig();
+                renderConfigLists();
+                updateModeOptions(); // Update mode select if this component is currently selected
+            }
+        }
+
+        function deleteModeFromComponent(componentName, modeIndex) {
+            if (confirm('¿Estás seguro de que quieres eliminar este modo?')) {
+                modes[componentName].splice(modeIndex, 1);
+                saveConfig();
+                renderConfigLists();
+                updateModeOptions(); // Update mode select if this component is currently selected
+            }
+        }
+
+        function renderConfigLists() {
+            // Render functions list
+            functionsList.innerHTML = '';
+            allFunctions.forEach((func, index) => {
+                const item = document.createElement('div');
+                item.className = 'flex justify-between items-center p-2 bg-gray-50 rounded border';
+                item.innerHTML = `
+                    <span class="text-sm">${func}</span>
+                    <button onclick="deleteFunction(${index})" class="text-red-600 hover:text-red-800 text-sm px-2 py-1 rounded hover:bg-red-50">
+                        Eliminar
+                    </button>
+                `;
+                functionsList.appendChild(item);
+            });
+
+            // Render variables list
+            variablesList.innerHTML = '';
+            allVariables.forEach((variable, index) => {
+                const item = document.createElement('div');
+                item.className = 'flex justify-between items-center p-2 bg-gray-50 rounded border';
+                item.innerHTML = `
+                    <span class="text-sm">${variable}</span>
+                    <button onclick="deleteVariable(${index})" class="text-red-600 hover:text-red-800 text-sm px-2 py-1 rounded hover:bg-red-50">
+                        Eliminar
+                    </button>
+                `;
+                variablesList.appendChild(item);
+            });
+
+            // Render components and their modes
+            componentsList.innerHTML = '';
+            allComponents.forEach((component) => {
+                const componentDiv = document.createElement('div');
+                componentDiv.className = 'border rounded-lg p-4 bg-white';
+                
+                const componentModes = modes[component] || [];
+                const safeComponentId = component.replace(/\s+/g, '_');
+                
+                componentDiv.innerHTML = `
+                    <div class="flex justify-between items-center mb-3">
+                        <h6 class="font-semibold text-lg text-gray-800">${component}</h6>
+                        <button onclick="deleteComponent('${component}')" class="text-red-600 hover:text-red-800 text-sm px-3 py-1 rounded border border-red-300 hover:border-red-500 hover:bg-red-50">
+                            Eliminar Componente
+                        </button>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="flex gap-2 mb-2">
+                            <input type="text" id="newMode_${safeComponentId}" placeholder="Nuevo modo..." class="flex-1 p-2 text-sm border rounded">
+                            <button onclick="addModeToComponent('${component}')" class="btn btn-primary text-sm px-3 py-1">Añadir Modo</button>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <h7 class="text-sm font-medium text-gray-600">Modos disponibles:</h7>
+                        <div id="modes_${safeComponentId}" class="space-y-1 max-h-32 overflow-y-auto">
+                            ${componentModes.map((mode, index) => `
+                                <div class="flex justify-between items-center p-2 bg-gray-50 rounded text-sm">
+                                    <span>${mode}</span>
+                                    <button onclick="deleteModeFromComponent('${component}', ${index})" class="text-red-600 hover:text-red-800 text-xs px-2 py-1 rounded hover:bg-red-100">
+                                        Eliminar
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                componentsList.appendChild(componentDiv);
+            });
+
+            // Update previews
+            functionsPreview.textContent = allFunctions.join(', ');
+            variablesPreview.textContent = allVariables.join(', ');
+        }
+
+        function toggleConfigSection() {
+            configSection.classList.toggle('hidden');
+        }
+
+        function updateSelects() {
+            // Store current selections
+            const currentFunction = functionSelect.value;
+            const currentVariable = variableSelect.value;
+            const currentComponent = componentSelect.value;
+            
+            // Update function select
+            populateSelect(functionSelect, allFunctions);
+            if (allFunctions.includes(currentFunction)) {
+                functionSelect.value = currentFunction;
+            }
+            
+            // Update variable select
+            populateSelect(variableSelect, allVariables);
+            if (allVariables.includes(currentVariable)) {
+                variableSelect.value = currentVariable;
+            }
+            
+            // Update component select
+            populateSelect(componentSelect, allComponents);
+            if (allComponents.includes(currentComponent)) {
+                componentSelect.value = currentComponent;
+            }
+            
+            updateModeOptions(); // This will update modes based on current component
+            updatePreview();
+        }
+
+        // --- Functions ---
+        function populateSelect(selectElement, options) {
+            selectElement.innerHTML = '';
+            options.forEach(option => {
+                const opt = document.createElement('option');
+                opt.value = option;
+                opt.textContent = option;
+                selectElement.appendChild(opt);
+            });
+        }
+
+        function updateComponentOptions() {
+            // Always allow all components without validation
+            populateSelect(componentSelect, allComponents);
+            updateModeOptions();
+        }
+
+        function updateModeOptions() {
+            const selectedComponent = componentSelect.value;
+            const componentModes = modes[selectedComponent];
+            if (componentModes) {
+                populateSelect(modeSelect, componentModes);
+            } else {
+                modeSelect.innerHTML = '<option>Seleccione...</option>';
+            }
+            updatePreview();
+        }
+
+        function updatePreview() {
+            outputId.textContent = `R${reqCounter}`;
+            const displayComponent = componentSelect.value === 'Ambos' ? 'HMI, ECI' : componentSelect.value || 'N/A';
+            outputComponent.textContent = displayComponent;
+            outputFunction.textContent = functionSelect.value || 'N/A';
+            outputVariable.textContent = variableSelect.value || 'N/A';
+            
+            const mode = modeSelect.value || '[MODO]';
+            const condition = conditionInput.value || '-';
+            const behavior = behaviorInput.value || '[COMPORTAMIENTO]';
+            
+            outputLogic.innerHTML = `
+                <span class="text-yellow-400">SI</span> modo es <span class="text-pink-400 font-semibold">${mode}</span><br>
+                <span class="text-yellow-400">Y</span> condición es <span class="text-pink-400 font-semibold">${condition}</span><br>
+                <span class="text-yellow-400">ENTONCES</span> <span class="text-cyan-400">${behavior}</span>
+            `;
+
+            outputLatency.textContent = latencyInput.value || '[LATENCIA]';
+            outputJustification.textContent = justificationInput.value || '[JUSTIFICACIÓN]';
+        }
+
+        function addRequirement() {
+            if (!behaviorInput.value || !justificationInput.value || !latencyInput.value) {
+                alert('Por favor, completa todos los campos para añadir el requisito.');
+                return;
+            }
+            
+            const newReq = {
+                id: `R${reqCounter}`,
+                component: componentSelect.value,
+                func: functionSelect.value,
+                variable: variableSelect.value,
+                mode: modeSelect.value,
+                condition: conditionInput.value || '-',
+                behavior: behaviorInput.value,
+                latency: latencyInput.value,
+                tolerance: toleranceInput.value,
+                justification: justificationInput.value
+            };
+            allRequirements.push(newReq);
+            reqCounter++;
+            saveToLocalStorage();
+            renderRequirementsList();
+            clearForm();
+            updatePreview();
+        }
+        
+        function renderRequirementsList() {
+            if (allRequirements.length === 0) {
+                 requirementsList.innerHTML = `<div class="text-center text-gray-500 p-8 border-2 border-dashed rounded-lg">Aún no has añadido ningún requisito. ¡Usa el constructor de arriba para empezar!</div>`;
+                 return;
+            }
+            
+            requirementsList.innerHTML = '';
+            const table = document.createElement('div');
+            table.className = 'bg-white shadow-md rounded-lg overflow-x-auto';
+            table.innerHTML = `
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Variable Controlada</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Condición</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Comportamiento</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Latencia</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                    </tbody>
+                </table>
+            `;
+            const tbody = table.querySelector('tbody');
+            allRequirements.forEach((req, index) => {
+                const component = req.component === 'Ambos' ? 'HMI, ECI' : req.component;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">R${index}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${req.variable}</td>
+                    <td class="px-6 py-4 text-sm text-gray-500"><b>En modo ${req.mode}:</b> ${req.condition}</td>
+                    <td class="px-6 py-4 text-sm text-blue-600 font-semibold">${req.behavior}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${req.latency}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="deleteRequirement(${index})" 
+                                class="text-red-600 hover:text-red-900 transition-colors duration-200 px-3 py-1 rounded border border-red-300 hover:border-red-500 hover:bg-red-50">
+                            Eliminar
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            requirementsList.appendChild(table);
+        }
+        
+        function clearForm() {
+            conditionInput.value = '';
+            behaviorInput.value = '';
+            latencyInput.value = '';
+            toleranceInput.value = 'N/A';
+            justificationInput.value = '';
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('requirementsData', JSON.stringify({
+                requirements: allRequirements,
+                counter: reqCounter
+            }));
+        }
+
+        function loadFromLocalStorage() {
+            const savedData = localStorage.getItem('requirementsData');
+            if (savedData) {
+                try {
+                    const data = JSON.parse(savedData);
+                    allRequirements = data.requirements || [];
+                    reqCounter = data.counter || 0;
+                    renderRequirementsList();
+                    updatePreview();
+                } catch (error) {
+                    console.error('Error loading saved data:', error);
+                    // Reset to defaults if data is corrupted
+                    allRequirements = [];
+                    reqCounter = 0;
+                }
+            }
+        }
+
+        function clearAllRequirements() {
+            if (allRequirements.length === 0) {
+                alert('No hay requisitos para limpiar.');
+                return;
+            }
+            
+            if (confirm('¿Estás seguro de que quieres eliminar todos los requisitos? Esta acción no se puede deshacer.')) {
+                allRequirements = [];
+                reqCounter = 0;
+                saveToLocalStorage();
+                renderRequirementsList();
+                updatePreview();
+            }
+        }
+
+        function deleteRequirement(index) {
+            if (confirm('¿Estás seguro de que quieres eliminar este requisito?')) {
+                allRequirements.splice(index, 1);
+                recalculateIds();
+                saveToLocalStorage();
+                renderRequirementsList();
+                updatePreview();
+            }
+        }
+
+        function recalculateIds() {
+            allRequirements.forEach((req, index) => {
+                req.id = `R${index}`;
+            });
+            reqCounter = allRequirements.length;
+        }
+
+        function exportToCSV() {
+            if (allRequirements.length === 0) {
+                alert("No hay requisitos para exportar.");
+                return;
+            }
+
+            const headers = ['ID', 'Componente', 'Función Asociada', 'Variable Controlada', 'Modo del Sistema', 'Condición', 'Comportamiento Requerido', 'Latencia Máx.', 'Tolerancia', 'Justificación'];
+            
+            const escapeCsvCell = (cell) => {
+                if (cell.includes(',') || cell.includes('"') || cell.includes('\n')) {
+                    return `"${cell.replace(/"/g, '""')}"`;
+                }
+                return cell;
+            };
+
+            const csvRows = [headers.join(',')];
+            allRequirements.forEach((req, index) => {
+                const component = req.component === 'Ambos' ? 'HMI, ECI' : req.component;
+                const row = [
+                    `R${index}`,
+                    component,
+                    req.func,
+                    req.variable,
+                    req.mode,
+                    req.condition,
+                    req.behavior,
+                    req.latency,
+                    req.tolerance,
+                    req.justification
+                ].map(escapeCsvCell);
+                csvRows.push(row.join(','));
+            });
+
+            const csvString = csvRows.join('\n');
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'requisitos_detallados.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function exportToLaTeX() {
+            if (allRequirements.length === 0) {
+                alert("No hay requisitos para exportar.");
+                return;
+            }
+
+            const escapeLatexCell = (cell) => {
+                return cell
+                    .replace(/\\/g, '\\textbackslash{}')
+                    .replace(/&/g, '\\&')
+                    .replace(/%/g, '\\%')
+                    .replace(/\$/g, '\\$')
+                    .replace(/#/g, '\\#')
+                    .replace(/\^/g, '\\textasciicircum{}')
+                    .replace(/_/g, '\\_')
+                    .replace(/{/g, '\\{')
+                    .replace(/}/g, '\\}')
+                    .replace(/~/g, '\\textasciitilde{}');
+            };
+
+            let latexContent = `\\begin{landscape}
+\\begin{longtable}{p{0.06\\textwidth}p{0.20\\textwidth}p{0.16\\textwidth}p{0.20\\textwidth}p{0.14\\textwidth}p{0.18\\textwidth}p{0.30\\textwidth}}
+\\toprule
+\\textbf{ID} & \\textbf{Componente} & \\textbf{Función} & \\textbf{Variable} & \\textbf{Modo} & \\textbf{Condición} & \\textbf{Comportamiento} \\\\
+\\midrule
+\\endfirsthead
+\\toprule
+\\textbf{ID} & \\textbf{Componente} & \\textbf{Función} & \\textbf{Variable} & \\textbf{Modo} & \\textbf{Condición} & \\textbf{Comportamiento} \\\\
+\\midrule
+\\endhead
+\\midrule
+\\multicolumn{7}{r}{\\textit{Continúa en la siguiente página...}} \\\\
+\\endfoot
+\\bottomrule
+\\end{landscape}`;
+
+            allRequirements.forEach((req, index) => {
+                const condition = req.condition === '-' ? 'N/A' : req.condition;
+                const component = req.component === 'Ambos' ? 'HMI, ECI' : req.component;
+                latexContent += `R${index} & ${escapeLatexCell(component)} & ${escapeLatexCell(req.func)} & ${escapeLatexCell(req.variable)} & ${escapeLatexCell(req.mode)} & ${escapeLatexCell(condition)} & ${escapeLatexCell(req.behavior)} \\\\\n`;
+            });
+
+            latexContent += `\\end{longtable}
+\\captionof{table}{Lista de Requisitos Detallados del Sistema}
+\\label{tab:requisitos-detallados}
+\\end{landscape}`;
+
+            const blob = new Blob([latexContent], { type: 'text/plain;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'requisitos_detallados.tex');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function loadInitialExample() {
+            functionSelect.value = 'Runtime Manager';
+            variableSelect.value = 'Indicador de estado';
+            updateComponentOptions();
+            componentSelect.value = 'Ambos';
+            updateModeOptions();
+            modeSelect.value = 'Operational Mode';
+            conditionInput.value = '';
+            behaviorInput.value = 'SET LED = Verde, fijo';
+            latencyInput.value = '100 ms';
+            justificationInput.value = 'Señalizar que el módulo está funcionando correctamente y participando activamente en la red.';
+            updatePreview();
+        }
+
+        // --- Tab switching function
+        function switchTab(event, tabId) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tab buttons
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Show the selected tab content
+            document.getElementById(tabId).classList.add('active');
+            
+            // Add active class to the clicked button
+            event.target.classList.add('active');
+        }
+
+        // Add event listeners for tab buttons
+        function initializeTabs() {
+            document.getElementById('configTab').addEventListener('click', (e) => switchTab(e, 'configContent'));
+            document.getElementById('createTab').addEventListener('click', (e) => switchTab(e, 'createContent'));
+            document.getElementById('listTab').addEventListener('click', (e) => switchTab(e, 'listContent'));
+            document.getElementById('guidelinesTab').addEventListener('click', (e) => switchTab(e, 'guidelinesContent'));
+        }
+
+        // --- Project Import/Export Functions ---
+        function exportProject() {
+            const projectData = {
+                version: "1.0",
+                timestamp: new Date().toISOString(),
+                config: {
+                    functions: [...allFunctions],
+                    variables: [...allVariables],
+                    components: [...allComponents],
+                    modes: JSON.parse(JSON.stringify(modes))
+                },
+                requirements: {
+                    list: [...allRequirements],
+                    counter: reqCounter
+                },
+                metadata: {
+                    totalRequirements: allRequirements.length,
+                    exportedBy: "Requisador de Requisitos",
+                    description: "Proyecto completo con configuración y requisitos del sistema"
+                }
+            };
+
+            const jsonString = JSON.stringify(projectData, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            // Generate filename with current date
+            const now = new Date();
+            const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD format
+            const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-'); // HH-MM-SS format
+            const filename = `requisitos_proyecto_${dateStr}_${timeStr}.json`;
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Show success message
+            alert(`Proyecto exportado exitosamente como: ${filename}\n\nEste archivo contiene toda tu configuración y requisitos.`);
+        }
+
+        function importProject() {
+            importFileInput.click();
+        }
+
+        function handleFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.type !== 'application/json') {
+                alert('Por favor selecciona un archivo JSON válido.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const projectData = JSON.parse(e.target.result);
+                    
+                    // Validate project data structure
+                    if (!projectData.config || !projectData.requirements) {
+                        throw new Error('Formato de archivo inválido');
+                    }
+
+                    // Confirm import with user
+                    const confirmMsg = `¿Estás seguro de que quieres importar este proyecto?\n\n` +
+                                     `Versión: ${projectData.version || 'No especificada'}\n` +
+                                     `Fecha: ${projectData.timestamp ? new Date(projectData.timestamp).toLocaleString() : 'No especificada'}\n` +
+                                     `Requisitos: ${projectData.metadata?.totalRequirements || projectData.requirements.list?.length || 0}\n` +
+                                     `Funciones: ${projectData.config.functions?.length || 0}\n` +
+                                     `Variables: ${projectData.config.variables?.length || 0}\n` +
+                                     `Componentes: ${projectData.config.components?.length || 0}\n\n` +
+                                     `ADVERTENCIA: Esto reemplazará toda tu configuración y requisitos actuales.`;
+
+                    if (!confirm(confirmMsg)) {
+                        return;
+                    }
+
+                    // Import configuration
+                    allFunctions.length = 0;
+                    allVariables.length = 0;
+                    allComponents.length = 0;
+                    allFunctions.push(...(projectData.config.functions || defaultFunctions));
+                    allVariables.push(...(projectData.config.variables || defaultVariables));
+                    allComponents.push(...(projectData.config.components || defaultComponents));
+                    modes = projectData.config.modes || JSON.parse(JSON.stringify(defaultModes));
+
+                    // Import requirements
+                    allRequirements = projectData.requirements.list || [];
+                    reqCounter = projectData.requirements.counter || allRequirements.length;
+
+                    // Save to localStorage
+                    saveConfig();
+                    saveToLocalStorage();
+
+                    // Update UI
+                    renderConfigLists();
+                    updateSelects();
+                    renderRequirementsList();
+                    updatePreview();
+
+                    // Success message
+                    alert('¡Proyecto importado exitosamente!\n\nToda la configuración y requisitos han sido cargados.');
+
+                } catch (error) {
+                    console.error('Error importing project:', error);
+                    alert('Error al importar el proyecto. Verifica que el archivo sea un proyecto válido exportado desde esta aplicación.');
+                }
+            };
+
+            reader.onerror = function() {
+                alert('Error al leer el archivo. Por favor intenta nuevamente.');
+            };
+
+            reader.readAsText(file);
+            
+            // Clear the input so the same file can be selected again
+            event.target.value = '';
+        }
+
+        // --- Initialize Application ---
+        function initialize() {
+            initializeTabs();
+            loadConfig();
+            populateSelect(functionSelect, allFunctions);
+            populateSelect(variableSelect, allVariables);
+            updateComponentOptions();
+            renderConfigLists();
+            loadFromLocalStorage();
+            loadInitialExample();
+            updatePreview();
+            
+            // Add event listeners for project import/export
+            exportProjectBtn.addEventListener('click', exportProject);
+            importProjectBtn.addEventListener('click', importProject);
+            importFileInput.addEventListener('change', handleFileImport);
+        }
+
+        // --- Initial Load ---
+        // Initialize the application when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initialize);
+    </script>
+</body>
+</html>
