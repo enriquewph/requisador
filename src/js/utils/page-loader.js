@@ -11,15 +11,30 @@ class PageLoader {
      * @returns {Promise<void>}
      */
     static async loadHTML(url, targetElementId) {
+        console.log(`🌐 PageLoader.loadHTML: Starting to fetch ${url} for element ${targetElementId}`);
         try {
+            console.log(`🌐 Making fetch request to: ${url}`);
             const response = await fetch(url);
+            console.log(`🌐 Fetch response:`, response);
+            console.log(`🌐 Response status: ${response.status} ${response.statusText}`);
+            console.log(`🌐 Response ok: ${response.ok}`);
+            
             if (!response.ok) {
                 throw new Error(`Failed to load ${url}: ${response.status} ${response.statusText}`);
             }
+            
+            console.log(`🌐 Getting response text...`);
             const html = await response.text();
+            console.log(`🌐 Response text length: ${html.length} characters`);
+            console.log(`🌐 Response text preview:`, html.substring(0, 200));
+            
             const targetElement = document.getElementById(targetElementId);
+            console.log(`🌐 Target element:`, targetElement);
+            
             if (targetElement) {
+                console.log(`🌐 Setting innerHTML of element ${targetElementId}`);
                 targetElement.innerHTML = html;
+                console.log(`🌐 Successfully updated innerHTML of ${targetElementId}`);
             } else {
                 console.error(`Target element with ID '${targetElementId}' not found`);
             }

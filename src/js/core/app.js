@@ -32,6 +32,61 @@ let reqCounter = {
 };
 let allRequirements = [];
 
+// --- About Modal Functions (defined early to ensure availability) ---
+function showAboutModal() {
+    const aboutModal = document.getElementById('aboutModal');
+    if (aboutModal) {
+        aboutModal.classList.remove('hidden');
+    } else {
+        console.error('About modal element not found');
+        // Try to ensure modal is loaded
+        ensureModalIsLoaded();
+    }
+}
+
+function hideAboutModal() {
+    const aboutModal = document.getElementById('aboutModal');
+    if (aboutModal) {
+        aboutModal.classList.add('hidden');
+    } else {
+        console.error('About modal element not found when trying to hide');
+    }
+}
+
+// Helper function to ensure modal is loaded and event listeners are attached
+function ensureModalIsLoaded() {
+    console.log('Ensuring modal is loaded...');
+    
+    // Check if modal exists now
+    const aboutModal = document.getElementById('aboutModal');
+    if (aboutModal) {
+        console.log('Modal found, attaching any missing event listeners');
+        
+        // Ensure close button has event listener
+        const closeBtn = document.getElementById('closeAboutModal');
+        if (closeBtn && !closeBtn.hasAttribute('data-listener-attached')) {
+            closeBtn.addEventListener('click', hideAboutModal);
+            closeBtn.setAttribute('data-listener-attached', 'true');
+        }
+        
+        // Ensure modal background click listener
+        if (!aboutModal.hasAttribute('data-listener-attached')) {
+            aboutModal.addEventListener('click', (e) => {
+                if (e.target === aboutModal) hideAboutModal();
+            });
+            aboutModal.setAttribute('data-listener-attached', 'true');
+        }
+        
+        return true;
+    }
+    
+    return false;
+}
+
+// Immediately assign modal functions to window to prevent reference errors
+window.showAboutModal = showAboutModal;
+window.hideAboutModal = hideAboutModal;
+
 // --- DOM Elements Cache ---
 let domElements = {};
 
@@ -472,47 +527,17 @@ function showToast(message, type = 'info') {
 }
 
 // --- Tab Navigation Functions ---
+// Note: Tab navigation is now handled by setupTabNavigation() in index.html
+// This function is kept for compatibility but is no longer used
 function switchTab(event, tabId) {
-    // Hide all tab contents
-    const tabContents = document.querySelectorAll('.tab-content');
-    tabContents.forEach(content => {
-        content.classList.remove('active');
-    });
-    
-    // Remove active class from all tab buttons
-    const tabButtons = document.querySelectorAll('.tab-button');
-    tabButtons.forEach(button => {
-        button.classList.remove('active');
-    });
-    
-    // Show the selected tab content
-    document.getElementById(tabId).classList.add('active');
-    
-    // Add active class to the clicked button
-    event.target.classList.add('active');
-    
-    // If switching to tree view, render the tree
-    if (tabId === 'treeContent') {
-        renderTreeView();
-    }
+    console.log('switchTab called but tab navigation is handled by index.html');
+    // This function is deprecated - tab navigation is now handled in index.html
 }
 
 function initializeTabs() {
-    console.log('Initializing tabs...');
-    
-    const configTabBtn = document.getElementById('configTab');
-    const createTabBtn = document.getElementById('createTab');
-    const listTabBtn = document.getElementById('listTab');
-    const treeTabBtn = document.getElementById('treeTab');
-    const guidelinesTabBtn = document.getElementById('guidelinesTab');
-    
-    if (configTabBtn) configTabBtn.addEventListener('click', (e) => switchTab(e, 'configContent'));
-    if (createTabBtn) createTabBtn.addEventListener('click', (e) => switchTab(e, 'createContent'));
-    if (listTabBtn) listTabBtn.addEventListener('click', (e) => switchTab(e, 'listContent'));
-    if (treeTabBtn) treeTabBtn.addEventListener('click', (e) => switchTab(e, 'treeContent'));
-    if (guidelinesTabBtn) guidelinesTabBtn.addEventListener('click', (e) => switchTab(e, 'guidelinesContent'));
-    
-    console.log('Tabs initialized');
+    console.log('Tab navigation handled by index.html - skipping app.js tab initialization');
+    // Note: Tab navigation is now handled by setupTabNavigation() in index.html
+    // This function is kept for compatibility but does nothing
 }
 
 function loadInitialExample() {
@@ -609,12 +634,20 @@ function initialize() {
     try {
         console.log('Starting application initialization...');
         
+        // Debug: Check if modal functions are available
+        console.log('Modal functions check:', {
+            showAboutModal: typeof showAboutModal,
+            hideAboutModal: typeof hideAboutModal,
+            windowShowAboutModal: typeof window.showAboutModal,
+            windowHideAboutModal: typeof window.hideAboutModal
+        });
+        
         // Initialize DOM elements first
         initializeDOMElements();
         console.log('DOM elements initialized');
         
-        // Initialize tabs
-        initializeTabs();
+        // Note: Tab navigation is now handled by setupTabNavigation() in index.html
+        // initializeTabs() call removed to avoid conflicts
         
         // Load configuration and data
         loadConfig();
@@ -760,20 +793,32 @@ function initialize() {
         
         // Add event listeners for About modal
         if (domElements.aboutBtn) {
-            domElements.aboutBtn.addEventListener('click', showAboutModal);
-            console.log('About button listener attached');
+            if (typeof window.showAboutModal === 'function') {
+                domElements.aboutBtn.addEventListener('click', window.showAboutModal);
+                console.log('About button listener attached');
+            } else {
+                console.error('showAboutModal function not available on window object');
+            }
         }
         if (domElements.closeAboutModal) {
-            domElements.closeAboutModal.addEventListener('click', hideAboutModal);
-            console.log('Close About modal button listener attached');
+            if (typeof window.hideAboutModal === 'function') {
+                domElements.closeAboutModal.addEventListener('click', window.hideAboutModal);
+                console.log('Close About modal button listener attached');
+            } else {
+                console.error('hideAboutModal function not available on window object');
+            }
         }
         if (domElements.aboutModal) {
-            domElements.aboutModal.addEventListener('click', (e) => {
-                if (e.target === domElements.aboutModal) {
-                    hideAboutModal();
-                }
-            });
-            console.log('About modal background click listener attached');
+            if (typeof window.hideAboutModal === 'function') {
+                domElements.aboutModal.addEventListener('click', (e) => {
+                    if (e.target === domElements.aboutModal) {
+                        window.hideAboutModal();
+                    }
+                });
+                console.log('About modal background click listener attached');
+            } else {
+                console.error('hideAboutModal function not available for modal background click');
+            }
         }
         
         console.log('Application initialized successfully');
@@ -1032,12 +1077,20 @@ function bindEventListenersForCurrentTab() {
         // Header buttons (should be available across all tabs)
         const aboutBtn = document.getElementById('aboutBtn');
         if (aboutBtn) {
-            aboutBtn.addEventListener('click', showAboutModal);
+            if (typeof window.showAboutModal === 'function') {
+                aboutBtn.addEventListener('click', window.showAboutModal);
+            } else {
+                console.error('showAboutModal function not available in bindEventListeners');
+            }
         }
         
         const closeAboutModal = document.getElementById('closeAboutModal');
         if (closeAboutModal) {
-            closeAboutModal.addEventListener('click', hideAboutModal);
+            if (typeof window.hideAboutModal === 'function') {
+                closeAboutModal.addEventListener('click', window.hideAboutModal);
+            } else {
+                console.error('hideAboutModal function not available in bindEventListeners');
+            }
         }
         
         const exportProjectBtn = document.getElementById('exportProjectBtn');
@@ -1052,9 +1105,13 @@ function bindEventListenersForCurrentTab() {
         
         const aboutModal = document.getElementById('aboutModal');
         if (aboutModal) {
-            aboutModal.addEventListener('click', (e) => {
-                if (e.target === aboutModal) hideAboutModal();
-            });
+            if (typeof window.hideAboutModal === 'function') {
+                aboutModal.addEventListener('click', (e) => {
+                    if (e.target === aboutModal) window.hideAboutModal();
+                });
+            } else {
+                console.error('hideAboutModal function not available for aboutModal background click');
+            }
         }
         
         console.log('✅ Event listeners bound for current tab');
@@ -1101,5 +1158,4 @@ window.deleteComponent = deleteComponent;
 window.addModeToComponent = addModeToComponent;
 window.deleteModeFromComponent = deleteModeFromComponent;
 // Movement and deletion functions are exposed by requirements.js module
-window.showAboutModal = showAboutModal;
-window.hideAboutModal = hideAboutModal;
+// Modal functions - already assigned immediately after definition

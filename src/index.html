@@ -16,7 +16,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="./css/styles.css?v=6">
 </head>
 <body class="text-gray-900">
 
@@ -69,21 +69,37 @@
     <script src="./js/core/config.js"></script>
     
     <!-- Utilities -->
-    <script src="./js/utils/page-loader.js"></script>
+    <script src="./js/utils/page-loader.js?v=6"></script>
     <script src="./js/utils/init.js"></script>
     
     <!-- Core Application -->
-    <script src="./js/core/app.js"></script>
+    <script src="./js/core/app.js?v=6"></script>
     
     <!-- Modules -->
-    <script src="./js/modules/requirements.js"></script>
-    <script src="./js/modules/export.js"></script>
+    <script src="./js/modules/requirements.js?v=6"></script>
+    <script src="./js/modules/export.js?v=6"></script>
 
     <!-- Application Initialization -->
     <script>
         // Initialize the application when DOM is ready
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('🚀 Starting Requisador de Requisitos v0.1');
+            
+            // Check if all required objects are available
+            console.log('🔍 Checking dependencies:');
+            console.log('- AppConfig:', typeof AppConfig !== 'undefined' ? 'Available' : 'Missing');
+            console.log('- PageLoader:', typeof PageLoader !== 'undefined' ? 'Available' : 'Missing');
+            console.log('- window.initialize:', typeof window.initialize);
+            
+            if (typeof AppConfig === 'undefined') {
+                console.error('❌ AppConfig is not available. Check if config.js is loaded correctly.');
+                return;
+            }
+            
+            if (typeof PageLoader === 'undefined') {
+                console.error('❌ PageLoader is not available. Check if page-loader.js is loaded correctly.');
+                return;
+            }
             
             try {
                 // Load all components first
@@ -129,47 +145,98 @@
 
         // Setup tab navigation functionality
         function setupTabNavigation() {
-            const tabs = AppConfig.tabs;
+            console.log('🔄 Setting up tab navigation...');
             
+            // Check if AppConfig is available
+            if (typeof AppConfig === 'undefined') {
+                console.error('❌ AppConfig is not defined! Config script may not have loaded.');
+                return;
+            }
+            
+            if (!AppConfig.tabs) {
+                console.error('❌ AppConfig.tabs is not defined!');
+                return;
+            }
+            
+            const tabs = AppConfig.tabs;
+            console.log('📑 Available tabs:', tabs);
+            
+            // Verify all tab buttons exist
+            const existingButtons = [];
             tabs.forEach(tab => {
                 const button = document.getElementById(tab.buttonId);
+                console.log(`🔍 Looking for button: ${tab.buttonId}`, button);
                 if (button) {
-                    button.addEventListener('click', async () => {
-                        // Remove active class from all tab buttons
-                        tabs.forEach(t => {
-                            const btn = document.getElementById(t.buttonId);
-                            if (btn) btn.classList.remove('active');
-                        });
-                        
-                        // Add active class to clicked button
-                        button.classList.add('active');
-                        
-                        // Load corresponding page content
-                        try {
-                            await PageLoader.loadHTML(tab.pagePath, 'tab-content-container');
-                            
-                            // Re-initialize DOM elements and event listeners for the new content
-                            if (typeof window.reinitializeDOMElements === 'function') {
-                                window.reinitializeDOMElements();
-                            }
-                            if (typeof window.bindEventListeners === 'function') {
-                                window.bindEventListeners();
-                            }
-                            if (typeof window.updateUI === 'function') {
-                                window.updateUI();
-                            }
-                            
-                        } catch (error) {
-                            console.error(`Error loading tab content for ${tab.id}:`, error);
-                            document.getElementById('tab-content-container').innerHTML = `
-                                <div class="p-6 md:p-8 text-center">
-                                    <p class="text-red-600">Error al cargar el contenido de la pestaña.</p>
-                                </div>
-                            `;
-                        }
-                    });
+                    existingButtons.push({tab, button});
+                } else {
+                    console.warn(`⚠️ Button not found: ${tab.buttonId}`);
                 }
             });
+            
+            console.log(`📊 Found ${existingButtons.length} out of ${tabs.length} tab buttons`);
+            
+            // Attach event listeners
+            existingButtons.forEach(({tab, button}) => {
+                button.addEventListener('click', async (event) => {
+                    console.log(`🖱️ Tab clicked: ${tab.id} (${tab.title})`);
+                    console.log(`📄 Will load page: ${tab.pagePath}`);
+                    
+                    // Prevent default action
+                    event.preventDefault();
+                    
+                    // Remove active class from all tab buttons
+                    tabs.forEach(t => {
+                        const btn = document.getElementById(t.buttonId);
+                        if (btn) {
+                            btn.classList.remove('active');
+                            console.log(`📤 Removed active from: ${t.buttonId}`);
+                        }
+                    });
+                    
+                    // Add active class to clicked button
+                    button.classList.add('active');
+                    console.log(`📥 Added active to: ${tab.buttonId}`);
+                    
+                    // Load corresponding page content
+                    try {
+                        console.log(`📄 Starting to load page: ${tab.pagePath}`);
+                        
+                        // Check if PageLoader is available
+                        if (typeof PageLoader === 'undefined') {
+                            throw new Error('PageLoader is not defined');
+                        }
+                        
+                        await PageLoader.loadHTML(tab.pagePath, 'tab-content-container');
+                        console.log(`✅ Page loaded successfully: ${tab.id}`);
+                        
+                        // Re-initialize DOM elements and event listeners for the new content
+                        if (typeof window.reinitializeDOMElements === 'function') {
+                            console.log('🔄 Reinitializing DOM elements...');
+                            window.reinitializeDOMElements();
+                        }
+                        if (typeof window.bindEventListeners === 'function') {
+                            console.log('🔗 Binding event listeners...');
+                            window.bindEventListeners();
+                        }
+                        if (typeof window.updateUI === 'function') {
+                            console.log('🎨 Updating UI...');
+                            window.updateUI();
+                        }
+                        
+                    } catch (error) {
+                        console.error(`❌ Error loading tab content for ${tab.id}:`, error);
+                        document.getElementById('tab-content-container').innerHTML = `
+                            <div class="p-6 md:p-8 text-center">
+                                <p class="text-red-600">Error al cargar el contenido de la pestaña.</p>
+                                <p class="text-sm text-gray-500 mt-2">Error: ${error.message}</p>
+                            </div>
+                        `;
+                    }
+                });
+                console.log(`✅ Event listener attached to: ${tab.buttonId}`);
+            });
+            
+            console.log('✅ Tab navigation setup complete');
         }
     </script>
 
