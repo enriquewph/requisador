@@ -1,140 +1,181 @@
 <!-- Create Requirement Tab Content -->
 <div id="createContent" class="tab-content p-6 md:p-8">
-    <h3 class="text-2xl font-bold mb-6 border-b pb-4">Paso a Paso: Creando un Requisito</h3>
+  <h3 class="text-2xl font-bold mb-6 border-b pb-4">Paso a Paso: Creando un Requisito</h3>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Left Column: Inputs -->
-        <div class="space-y-8">
-            <!-- Step 1: Function & Variable -->
-            <div class="flex items-start space-x-4">
-                <div class="step-number">1</div>
-                <div>
-                    <h4 class="text-xl font-semibold mb-2">Función y Variable</h4>
-                    <p class="text-gray-500 mb-4">Comienza seleccionando la función y la variable que controla.</p>
-                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label for="functionSelect" class="block text-sm font-medium text-gray-700">Función Asociada</label>
-                            <select id="functionSelect" class="mt-1 block w-full p-2"></select>
-                        </div>
-                        <div>
-                            <label for="variableSelect" class="block text-sm font-medium text-gray-700">Variable Controlada</label>
-                            <select id="variableSelect" class="mt-1 block w-full p-2"></select>
-                        </div>
-                    </div>
-                </div>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Left Column: Inputs -->
+    <div class="space-y-8">
+      <!-- Step 1: Function & Variable -->
+      <div class="flex items-start space-x-4">
+        <div class="step-number">1</div>
+        <div>
+          <h4 class="text-xl font-semibold mb-2">Función y Variable</h4>
+          <p class="text-gray-500 mb-4">Comienza seleccionando la función y la variable que controla.</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="functionSelect" class="block text-sm font-medium text-gray-700">Función Asociada</label>
+              <select id="functionSelect" class="mt-1 block w-full p-2"></select>
             </div>
-
-            <!-- Step 2: Parent Requirement (Optional) -->
-            <div class="flex items-start space-x-4">
-                <div class="step-number bg-purple-600">2</div>
-                <div>
-                    <h4 class="text-xl font-semibold mb-2">Requisito Padre (Opcional)</h4>
-                    <p class="text-gray-500 mb-4">Si este es un sub-requisito, selecciona el requisito padre.</p>
-                    <div>
-                        <label for="parentRequirementSelect" class="block text-sm font-medium text-gray-700">Requisito Padre</label>
-                        <select id="parentRequirementSelect" class="mt-1 block w-full p-2">
-                            <option value="">Sin requisito padre (Nivel 1)</option>
-                        </select>
-                    </div>
-                </div>
+            <div>
+              <label for="variableSelect" class="block text-sm font-medium text-gray-700">Variable Controlada</label>
+              <select id="variableSelect" class="mt-1 block w-full p-2"></select>
             </div>
-
-            <!-- Step 3: Component & Mode -->
-            <div class="flex items-start space-x-4">
-                <div class="step-number">3</div>
-                <div>
-                    <h4 class="text-xl font-semibold mb-2">Componente y Modo</h4>
-                    <p class="text-gray-500 mb-4">Elige el componente que implementa el requisito y el modo en que aplica.</p>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label for="componentSelect" class="block text-sm font-medium text-gray-700">Componente</label>
-                            <select id="componentSelect" class="mt-1 block w-full p-2"></select>
-                        </div>
-                        <div>
-                            <label for="modeSelect" class="block text-sm font-medium text-gray-700">Modo del Sistema</label>
-                            <select id="modeSelect" class="mt-1 block w-full p-2"></select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Step 4: Behavior -->
-            <div class="flex items-start space-x-4">
-                <div class="step-number">4</div>
-                <div>
-                    <h4 class="text-xl font-semibold mb-2">Comportamiento Detallado</h4>
-                    <p class="text-gray-500 mb-4">Define la lógica: "SI se cumple esta condición, ENTONCES asignar este valor".</p>
-                    <div class="space-y-4">
-                        <div>
-                            <label for="conditionInput" class="block text-sm font-medium text-gray-700">Condición (Opcional)</label>
-                            <input type="text" id="conditionInput" placeholder="Ej: Recibe comando RPDO para activar" class="mt-1 block w-full p-2">
-                        </div>
-                        <div>
-                            <label for="behaviorInput" class="block text-sm font-medium text-gray-700">Comportamiento Requerido</label>
-                            <input type="text" id="behaviorInput" placeholder="Ej: SET LED = Verde, fijo" class="mt-1 block w-full p-2">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-             <!-- Step 5: Performance & Justification -->
-            <div class="flex items-start space-x-4">
-                <div class="step-number">5</div>
-                <div>
-                    <h4 class="text-xl font-semibold mb-2">Rendimiento y Justificación</h4>
-                     <p class="text-gray-500 mb-4">Especifica los tiempos de respuesta y la razón de ser del requisito.</p>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label for="latencyInput" class="block text-sm font-medium text-gray-700">Latencia Máx.</label>
-                            <input type="text" id="latencyInput" placeholder="Ej: 100 ms" class="mt-1 block w-full p-2">
-                        </div>
-                        <div>
-                            <label for="toleranceInput" class="block text-sm font-medium text-gray-700">Tolerancia</label>
-                            <input type="text" id="toleranceInput" value="N/A" class="mt-1 block w-full p-2">
-                        </div>
-                    </div>
-                    <div>
-                        <label for="justificationInput" class="block text-sm font-medium text-gray-700">Justificación</label>
-                        <div class="flex gap-2">
-                            <textarea id="justificationInput" rows="3" placeholder="Explica el 'porqué' de este requisito." class="mt-1 block w-full p-2 flex-1"></textarea>
-                            <button id="generatePromptBtn" type="button" class="mt-1 w-8 h-8 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors duration-200 flex items-center justify-center" title="Copiar Prompt al portapapeles">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+          </div>
         </div>
+      </div>
 
-        <!-- Right Column: Output -->
-        <div class="sticky top-24 h-full">
-            <h4 class="text-xl font-semibold mb-2">Requisito Generado</h4>
-            <p class="text-gray-500 mb-4">Así se verá tu requisito en la tabla final.</p>
-            <div class="requirement-output">
-                <div id="outputId" class="text-lg font-bold text-cyan-400 mb-2">R0</div>
-                <div class="mb-2">
-                    <span class="font-bold text-gray-400">Función: </span>
-                    <span id="outputFunction" class="tag bg-indigo-900 text-indigo-300"></span>
-                </div>
-                <div class="mb-2">
-                    <span class="font-bold text-gray-400">Variable: </span>
-                    <span id="outputVariable" class="tag bg-purple-900 text-purple-300"></span>
-                </div>
-                <div class="mb-4">
-                    <span class="font-bold text-gray-400">Componente: </span>
-                    <span id="outputComponent" class="tag bg-blue-900 text-blue-300"></span>
-                </div>
-                
-                <div id="outputLogic" class="text-lime-300"></div>
-                
-                <div class="mt-4 border-t border-gray-600 pt-4">
-                    <div class="mb-2"><span class="font-bold text-gray-400">Latencia: </span><span id="outputLatency"></span></div>
-                    <div><span class="font-bold text-gray-400">Justificación: </span><span id="outputJustification" class="text-gray-400 italic"></span></div>
-                </div>
-            </div>
-            <button id="addReqBtn" class="btn btn-primary w-full mt-4">Añadir a la Lista de Requisitos</button>
+      <!-- Step 2: Parent Requirement (Optional) -->
+      <div class="flex items-start space-x-4">
+        <div class="step-number bg-purple-600">2</div>
+        <div>
+          <h4 class="text-xl font-semibold mb-2">Requisito Padre (Opcional)</h4>
+          <p class="text-gray-500 mb-4">Si este es un sub-requisito, selecciona el requisito padre.</p>
+          <div>
+            <label for="parentRequirementSelect" class="block text-sm font-medium text-gray-700">Requisito Padre</label>
+            <select id="parentRequirementSelect" class="mt-1 block w-full p-2">
+              <option value="">Sin requisito padre (Nivel 1)</option>
+            </select>
+          </div>
         </div>
+      </div>
+
+      <!-- Step 3: Component & Mode -->
+      <div class="flex items-start space-x-4">
+        <div class="step-number">3</div>
+        <div>
+          <h4 class="text-xl font-semibold mb-2">Componente y Modo</h4>
+          <p class="text-gray-500 mb-4">Elige el componente que implementa el requisito y el modo en que aplica.</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="componentSelect" class="block text-sm font-medium text-gray-700">Componente</label>
+              <select id="componentSelect" class="mt-1 block w-full p-2"></select>
+            </div>
+            <div>
+              <label for="modeSelect" class="block text-sm font-medium text-gray-700">Modo del Sistema</label>
+              <select id="modeSelect" class="mt-1 block w-full p-2"></select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Behavior -->
+      <div class="flex items-start space-x-4">
+        <div class="step-number">4</div>
+        <div>
+          <h4 class="text-xl font-semibold mb-2">Comportamiento Detallado</h4>
+          <p class="text-gray-500 mb-4">
+            Define la lógica: "SI se cumple esta condición, ENTONCES asignar este valor".
+          </p>
+          <div class="space-y-4">
+            <div>
+              <label for="conditionInput" class="block text-sm font-medium text-gray-700">Condición (Opcional)</label>
+              <input
+                type="text"
+                id="conditionInput"
+                placeholder="Ej: Recibe comando RPDO para activar"
+                class="mt-1 block w-full p-2"
+              />
+            </div>
+            <div>
+              <label for="behaviorInput" class="block text-sm font-medium text-gray-700">
+                Comportamiento Requerido
+              </label>
+              <input
+                type="text"
+                id="behaviorInput"
+                placeholder="Ej: SET LED = Verde, fijo"
+                class="mt-1 block w-full p-2"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5: Performance & Justification -->
+      <div class="flex items-start space-x-4">
+        <div class="step-number">5</div>
+        <div>
+          <h4 class="text-xl font-semibold mb-2">Rendimiento y Justificación</h4>
+          <p class="text-gray-500 mb-4">Especifica los tiempos de respuesta y la razón de ser del requisito.</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label for="latencyInput" class="block text-sm font-medium text-gray-700">Latencia Máx.</label>
+              <input type="text" id="latencyInput" placeholder="Ej: 100 ms" class="mt-1 block w-full p-2" />
+            </div>
+            <div>
+              <label for="toleranceInput" class="block text-sm font-medium text-gray-700">Tolerancia</label>
+              <input type="text" id="toleranceInput" value="N/A" class="mt-1 block w-full p-2" />
+            </div>
+          </div>
+          <div>
+            <label for="justificationInput" class="block text-sm font-medium text-gray-700">Justificación</label>
+            <div class="flex gap-2">
+              <textarea
+                id="justificationInput"
+                rows="3"
+                placeholder="Explica el 'porqué' de este requisito."
+                class="mt-1 block w-full p-2 flex-1"
+              ></textarea>
+              <button
+                id="generatePromptBtn"
+                type="button"
+                class="mt-1 w-8 h-8 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors duration-200 flex items-center justify-center"
+                title="Copiar Prompt al portapapeles"
+              >
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                  ></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <!-- Right Column: Output -->
+    <div class="sticky top-24 h-full">
+      <h4 class="text-xl font-semibold mb-2">Requisito Generado</h4>
+      <p class="text-gray-500 mb-4">Así se verá tu requisito en la tabla final.</p>
+      <div class="requirement-output">
+        <div id="outputId" class="text-lg font-bold text-cyan-400 mb-2">R0</div>
+        <div class="mb-2">
+          <span class="font-bold text-gray-400">Función:</span>
+          <span id="outputFunction" class="tag bg-indigo-900 text-indigo-300"></span>
+        </div>
+        <div class="mb-2">
+          <span class="font-bold text-gray-400">Variable:</span>
+          <span id="outputVariable" class="tag bg-purple-900 text-purple-300"></span>
+        </div>
+        <div class="mb-4">
+          <span class="font-bold text-gray-400">Componente:</span>
+          <span id="outputComponent" class="tag bg-blue-900 text-blue-300"></span>
+        </div>
+
+        <div id="outputLogic" class="text-lime-300"></div>
+
+        <div class="mt-4 border-t border-gray-600 pt-4">
+          <div class="mb-2">
+            <span class="font-bold text-gray-400">Latencia:</span>
+            <span id="outputLatency"></span>
+          </div>
+          <div>
+            <span class="font-bold text-gray-400">Justificación:</span>
+            <span id="outputJustification" class="text-gray-400 italic"></span>
+          </div>
+        </div>
+      </div>
+      <button id="addReqBtn" class="btn btn-primary w-full mt-4">Añadir a la Lista de Requisitos</button>
+    </div>
+  </div>
 </div>

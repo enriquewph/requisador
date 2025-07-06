@@ -1,126 +1,159 @@
 <!-- Guidelines Tab Content -->
 <div id="guidelinesContent" class="tab-content p-6 md:p-8">
-    <h3 class="text-2xl font-bold mb-6">Lineamientos para Escribir Requisitos Detallados</h3>
-    
-    <div class="prose max-w-none">
-        <p class="text-lg text-gray-600 mb-8">
-            Los requisitos de comportamiento y rendimiento definen cómo el sistema debe cambiar las variables controladas en respuesta a los cambios en las variables monitoreadas. 
-            Esta guía está basada en la práctica 2.8 del handbook de ingeniería de sistemas.
+  <h3 class="text-2xl font-bold mb-6">Lineamientos para Escribir Requisitos Detallados</h3>
+
+  <div class="prose max-w-none">
+    <p class="text-lg text-gray-600 mb-8">
+      Los requisitos de comportamiento y rendimiento definen cómo el sistema debe cambiar las variables controladas en
+      respuesta a los cambios en las variables monitoreadas. Esta guía está basada en la práctica 2.8 del handbook de
+      ingeniería de sistemas.
+    </p>
+
+    <div class="space-y-8">
+      <!-- Guideline 1 -->
+      <div class="bg-blue-50 rounded-lg p-6 border border-blue-200">
+        <h4 class="text-xl font-semibold text-blue-800 mb-3">1. Utilice nombres específicos de variables y modos</h4>
+        <p class="text-gray-700 mb-4">
+          Use los nombres exactos de las variables monitoreadas y controladas, los modos del sistema y las variables
+          internas al escribir los requisitos detallados.
         </p>
-
-        <div class="space-y-8">
-            <!-- Guideline 1 -->
-            <div class="bg-blue-50 rounded-lg p-6 border border-blue-200">
-                <h4 class="text-xl font-semibold text-blue-800 mb-3">1. Utilice nombres específicos de variables y modos</h4>
-                <p class="text-gray-700 mb-4">
-                    Use los nombres exactos de las variables monitoreadas y controladas, los modos del sistema y las variables internas al escribir los requisitos detallados.
-                </p>
-                <div class="bg-white p-4 rounded border-l-4 border-blue-400">
-                    <p class="font-semibold text-gray-800">✅ Correcto:</p>
-                    <p class="text-gray-600 italic">"En modo Operational, SET LED_Estado = Verde, fijo"</p>
-                    <p class="font-semibold text-gray-800 mt-2">❌ Incorrecto:</p>
-                    <p class="text-gray-600 italic">"El LED debe estar verde cuando funciona"</p>
-                </div>
-            </div>
-
-            <!-- Guideline 2 -->
-            <div class="bg-green-50 rounded-lg p-6 border border-green-200">
-                <h4 class="text-xl font-semibold text-green-800 mb-3">2. Especifique modos y condiciones claramente</h4>
-                <p class="text-gray-700 mb-4">
-                    Para cada requisito, especifique los modos del sistema y las condiciones bajo las cuales se aplicará el requisito, seguido del cambio en la variable afectada.
-                </p>
-                <div class="bg-white p-4 rounded border-l-4 border-green-400">
-                    <p class="font-semibold text-gray-800">Estructura recomendada:</p>
-                    <p class="text-gray-600 italic">"SI [modo del sistema] Y [condición específica] ENTONCES [acción sobre variable]"</p>
-                    <p class="font-semibold text-gray-800 mt-2">Ejemplo:</p>
-                    <p class="text-gray-600 italic">"SI modo es Operational Mode Y se recibe comando RPDO_Start ENTONCES SET Motor_Speed = 1500 RPM"</p>
-                </div>
-            </div>
-
-            <!-- Guideline 3 -->
-            <div class="bg-yellow-50 rounded-lg p-6 border border-yellow-200">
-                <h4 class="text-xl font-semibold text-yellow-800 mb-3">3. Asegure completitud de requisitos</h4>
-                <p class="text-gray-700 mb-4">
-                    Los requisitos detallados deben estar completos: se debe asignar un valor ideal a cada variable controlada para cada estado del sistema.
-                </p>
-                <div class="bg-white p-4 rounded border-l-4 border-yellow-400">
-                    <p class="font-semibold text-gray-800">Regla importante:</p>
-                    <p class="text-gray-600">Utilice "NO ESPECIFICADO" cuando no exista una asignación significativa para un estado del sistema.</p>
-                    <p class="font-semibold text-gray-800 mt-2">Ejemplo:</p>
-                    <p class="text-gray-600 italic">"En modo Fault Mode, SET Display_Message = NO ESPECIFICADO"</p>
-                </div>
-            </div>
-
-            <!-- Guideline 4 -->
-            <div class="bg-purple-50 rounded-lg p-6 border border-purple-200">
-                <h4 class="text-xl font-semibold text-purple-800 mb-3">4. Mantenga consistencia</h4>
-                <p class="text-gray-700 mb-4">
-                    Los requisitos detallados deben ser consistentes: solo se debe asignar un valor ideal a cada variable controlada para cada estado posible del sistema.
-                </p>
-                <div class="bg-white p-4 rounded border-l-4 border-purple-400">
-                    <p class="font-semibold text-gray-800">⚠️ Evite conflictos como:</p>
-                    <p class="text-red-600 italic">R1: "En modo Operational, SET LED = Verde"</p>
-                    <p class="text-red-600 italic">R2: "En modo Operational, SET LED = Azul"</p>
-                </div>
-            </div>
-
-            <!-- Guideline 5 -->
-            <div class="bg-red-50 rounded-lg p-6 border border-red-200">
-                <h4 class="text-xl font-semibold text-red-800 mb-3">5. Evite duplicaciones</h4>
-                <p class="text-gray-700 mb-4">
-                    Asegúrese de que no haya dos requisitos detallados que se dupliquen entre sí, especificando el mismo resultado para modos y condiciones superpuestos.
-                </p>
-            </div>
-
-            <!-- Guideline 6 -->
-            <div class="bg-indigo-50 rounded-lg p-6 border border-indigo-200">
-                <h4 class="text-xl font-semibold text-indigo-800 mb-3">6. Organice por función</h4>
-                <p class="text-gray-700 mb-4">
-                    Presente los requisitos detallados del sistema en la función que produce la variable que se especifica. Esto permite rastrear cada variable directamente hasta su función principal.
-                </p>
-            </div>
-
-            <!-- Guideline 7 & 8 -->
-            <div class="bg-teal-50 rounded-lg p-6 border border-teal-200">
-                <h4 class="text-xl font-semibold text-teal-800 mb-3">7. Defina latencia y tolerancia</h4>
-                <p class="text-gray-700 mb-4">
-                    Para cada variable controlada, defina:
-                </p>
-                <ul class="list-disc list-inside text-gray-700 space-y-2 mb-4">
-                    <li><strong>Latencia aceptable</strong> junto con la justificación de su valor</li>
-                    <li><strong>Tolerancia aceptable</strong> numéricamente</li>
-                </ul>
-                <div class="bg-white p-4 rounded border-l-4 border-teal-400">
-                    <p class="font-semibold text-gray-800">Ejemplo:</p>
-                    <p class="text-gray-600 italic">Latencia: ≤ 100ms (para cumplir con tiempo de respuesta del operador)</p>
-                    <p class="text-gray-600 italic">Tolerancia: ± 5% (precisión requerida por el proceso)</p>
-                </div>
-            </div>
-
-            <!-- Guideline 9 -->
-            <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                <h4 class="text-xl font-semibold text-gray-800 mb-3">8. Variables internas</h4>
-                <p class="text-gray-700">
-                    <strong>No defina latencia y tolerancia para variables internas</strong> - estos parámetros solo aplican para variables controladas que interactúan con el entorno.
-                </p>
-            </div>
+        <div class="bg-white p-4 rounded border-l-4 border-blue-400">
+          <p class="font-semibold text-gray-800">✅ Correcto:</p>
+          <p class="text-gray-600 italic">"En modo Operational, SET LED_Estado = Verde, fijo"</p>
+          <p class="font-semibold text-gray-800 mt-2">❌ Incorrecto:</p>
+          <p class="text-gray-600 italic">"El LED debe estar verde cuando funciona"</p>
         </div>
+      </div>
 
-        <!-- Summary -->
-        <div class="mt-10 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-lg">
-            <h4 class="text-xl font-semibold mb-3">💡 Resumen: Estructura de un Requisito Bien Formado</h4>
-            <div class="bg-white bg-opacity-20 p-4 rounded">
-                <p class="font-mono text-sm">
-                    <span class="text-yellow-300">ID:</span> R[número]<br>
-                    <span class="text-yellow-300">Función:</span> [Nombre específico de la función]<br>
-                    <span class="text-yellow-300">Variable:</span> [Nombre específico de la variable controlada]<br>
-                    <span class="text-yellow-300">Componente:</span> [HMI/ECI/Ambos]<br>
-                    <span class="text-yellow-300">Condición:</span> SI [modo del sistema] Y [condición específica]<br>
-                    <span class="text-yellow-300">Comportamiento:</span> ENTONCES [acción específica sobre la variable]<br>
-                    <span class="text-yellow-300">Latencia:</span> [valor numérico con unidades]<br>
-                    <span class="text-yellow-300">Justificación:</span> [explicación del porqué del requisito]
-                </p>
-            </div>
+      <!-- Guideline 2 -->
+      <div class="bg-green-50 rounded-lg p-6 border border-green-200">
+        <h4 class="text-xl font-semibold text-green-800 mb-3">2. Especifique modos y condiciones claramente</h4>
+        <p class="text-gray-700 mb-4">
+          Para cada requisito, especifique los modos del sistema y las condiciones bajo las cuales se aplicará el
+          requisito, seguido del cambio en la variable afectada.
+        </p>
+        <div class="bg-white p-4 rounded border-l-4 border-green-400">
+          <p class="font-semibold text-gray-800">Estructura recomendada:</p>
+          <p class="text-gray-600 italic">
+            "SI [modo del sistema] Y [condición específica] ENTONCES [acción sobre variable]"
+          </p>
+          <p class="font-semibold text-gray-800 mt-2">Ejemplo:</p>
+          <p class="text-gray-600 italic">
+            "SI modo es Operational Mode Y se recibe comando RPDO_Start ENTONCES SET Motor_Speed = 1500 RPM"
+          </p>
         </div>
+      </div>
+
+      <!-- Guideline 3 -->
+      <div class="bg-yellow-50 rounded-lg p-6 border border-yellow-200">
+        <h4 class="text-xl font-semibold text-yellow-800 mb-3">3. Asegure completitud de requisitos</h4>
+        <p class="text-gray-700 mb-4">
+          Los requisitos detallados deben estar completos: se debe asignar un valor ideal a cada variable controlada
+          para cada estado del sistema.
+        </p>
+        <div class="bg-white p-4 rounded border-l-4 border-yellow-400">
+          <p class="font-semibold text-gray-800">Regla importante:</p>
+          <p class="text-gray-600">
+            Utilice "NO ESPECIFICADO" cuando no exista una asignación significativa para un estado del sistema.
+          </p>
+          <p class="font-semibold text-gray-800 mt-2">Ejemplo:</p>
+          <p class="text-gray-600 italic">"En modo Fault Mode, SET Display_Message = NO ESPECIFICADO"</p>
+        </div>
+      </div>
+
+      <!-- Guideline 4 -->
+      <div class="bg-purple-50 rounded-lg p-6 border border-purple-200">
+        <h4 class="text-xl font-semibold text-purple-800 mb-3">4. Mantenga consistencia</h4>
+        <p class="text-gray-700 mb-4">
+          Los requisitos detallados deben ser consistentes: solo se debe asignar un valor ideal a cada variable
+          controlada para cada estado posible del sistema.
+        </p>
+        <div class="bg-white p-4 rounded border-l-4 border-purple-400">
+          <p class="font-semibold text-gray-800">⚠️ Evite conflictos como:</p>
+          <p class="text-red-600 italic">R1: "En modo Operational, SET LED = Verde"</p>
+          <p class="text-red-600 italic">R2: "En modo Operational, SET LED = Azul"</p>
+        </div>
+      </div>
+
+      <!-- Guideline 5 -->
+      <div class="bg-red-50 rounded-lg p-6 border border-red-200">
+        <h4 class="text-xl font-semibold text-red-800 mb-3">5. Evite duplicaciones</h4>
+        <p class="text-gray-700 mb-4">
+          Asegúrese de que no haya dos requisitos detallados que se dupliquen entre sí, especificando el mismo resultado
+          para modos y condiciones superpuestos.
+        </p>
+      </div>
+
+      <!-- Guideline 6 -->
+      <div class="bg-indigo-50 rounded-lg p-6 border border-indigo-200">
+        <h4 class="text-xl font-semibold text-indigo-800 mb-3">6. Organice por función</h4>
+        <p class="text-gray-700 mb-4">
+          Presente los requisitos detallados del sistema en la función que produce la variable que se especifica. Esto
+          permite rastrear cada variable directamente hasta su función principal.
+        </p>
+      </div>
+
+      <!-- Guideline 7 & 8 -->
+      <div class="bg-teal-50 rounded-lg p-6 border border-teal-200">
+        <h4 class="text-xl font-semibold text-teal-800 mb-3">7. Defina latencia y tolerancia</h4>
+        <p class="text-gray-700 mb-4">Para cada variable controlada, defina:</p>
+        <ul class="list-disc list-inside text-gray-700 space-y-2 mb-4">
+          <li>
+            <strong>Latencia aceptable</strong>
+            junto con la justificación de su valor
+          </li>
+          <li>
+            <strong>Tolerancia aceptable</strong>
+            numéricamente
+          </li>
+        </ul>
+        <div class="bg-white p-4 rounded border-l-4 border-teal-400">
+          <p class="font-semibold text-gray-800">Ejemplo:</p>
+          <p class="text-gray-600 italic">Latencia: ≤ 100ms (para cumplir con tiempo de respuesta del operador)</p>
+          <p class="text-gray-600 italic">Tolerancia: ± 5% (precisión requerida por el proceso)</p>
+        </div>
+      </div>
+
+      <!-- Guideline 9 -->
+      <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
+        <h4 class="text-xl font-semibold text-gray-800 mb-3">8. Variables internas</h4>
+        <p class="text-gray-700">
+          <strong>No defina latencia y tolerancia para variables internas</strong>
+          - estos parámetros solo aplican para variables controladas que interactúan con el entorno.
+        </p>
+      </div>
     </div>
+
+    <!-- Summary -->
+    <div class="mt-10 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-lg">
+      <h4 class="text-xl font-semibold mb-3">💡 Resumen: Estructura de un Requisito Bien Formado</h4>
+      <div class="bg-white bg-opacity-20 p-4 rounded">
+        <p class="font-mono text-sm">
+          <span class="text-yellow-300">ID:</span>
+          R[número]
+          <br />
+          <span class="text-yellow-300">Función:</span>
+          [Nombre específico de la función]
+          <br />
+          <span class="text-yellow-300">Variable:</span>
+          [Nombre específico de la variable controlada]
+          <br />
+          <span class="text-yellow-300">Componente:</span>
+          [HMI/ECI/Ambos]
+          <br />
+          <span class="text-yellow-300">Condición:</span>
+          SI [modo del sistema] Y [condición específica]
+          <br />
+          <span class="text-yellow-300">Comportamiento:</span>
+          ENTONCES [acción específica sobre la variable]
+          <br />
+          <span class="text-yellow-300">Latencia:</span>
+          [valor numérico con unidades]
+          <br />
+          <span class="text-yellow-300">Justificación:</span>
+          [explicación del porqué del requisito]
+        </p>
+      </div>
+    </div>
+  </div>
 </div>

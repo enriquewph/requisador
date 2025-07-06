@@ -31,6 +31,7 @@ if "%COMMAND%"=="clean" goto :clean
 if "%COMMAND%"=="shell" goto :shell
 if "%COMMAND%"=="logs" goto :logs
 if "%COMMAND%"=="lint" goto :lint
+if "%COMMAND%"=="lint-fix" goto :lint_fix
 if "%COMMAND%"=="format" goto :format
 if "%COMMAND%"=="format-check" goto :format_check
 if "%COMMAND%"=="validate" goto :validate
@@ -96,6 +97,11 @@ echo 🔍 Running ESLint...
 docker-compose run --rm requisador-dev npm run lint
 goto :end
 
+:lint_fix
+echo 🔧 Running ESLint with auto-fix...
+docker-compose run --rm requisador-dev npm run lint:fix
+goto :end
+
 :format
 echo ✨ Formatting code with Prettier...
 docker-compose run --rm requisador-dev npm run format
@@ -127,6 +133,7 @@ echo   clean     - Stop and remove all containers/volumes
 echo   shell     - Open shell in container
 echo   logs      - Show container logs
 echo   lint      - Run ESLint code analysis
+echo   lint-fix  - Run ESLint and auto-fix issues
 echo   format    - Format code with Prettier
 echo   format-check - Check code format without changing
 echo   validate  - Validate HTML files

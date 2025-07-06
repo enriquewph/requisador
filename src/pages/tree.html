@@ -1,30 +1,30 @@
 <!-- Tree View Tab Content -->
 <div id="treeContent" class="tab-content p-6 md:p-8">
-    <div class="flex justify-between items-center mb-6">
-        <div>
-            <h3 class="text-3xl font-bold">Vista de Árbol Jerárquico</h3>
-            <p class="text-sm text-gray-600 mt-1">Visualización jerárquica de requisitos con información detallada</p>
-        </div>
-        <div class="space-x-2">
-            <button id="expandAllBtn" class="btn btn-secondary">Expandir Todo</button>
-            <button id="collapseAllBtn" class="btn btn-secondary">Colapsar Todo</button>
-        </div>
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h3 class="text-3xl font-bold">Vista de Árbol Jerárquico</h3>
+      <p class="text-sm text-gray-600 mt-1">Visualización jerárquica de requisitos con información detallada</p>
     </div>
-    
-    <!-- Tree View Container -->
-    <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
-        <div id="treeView" class="min-h-64">
-            <div class="text-center text-gray-500 p-8 border-2 border-dashed rounded-lg m-4">
-                No hay requisitos para mostrar. ¡Crea algunos requisitos primero!
-            </div>
-        </div>
+    <div class="space-x-2">
+      <button id="expandAllBtn" class="btn btn-secondary">Expandir Todo</button>
+      <button id="collapseAllBtn" class="btn btn-secondary">Colapsar Todo</button>
     </div>
+  </div>
 
-    <!-- Tooltip for detailed info -->
-    <div id="requirementTooltip" class="absolute z-50 bg-gray-900 text-white p-4 rounded-lg shadow-lg max-w-md hidden">
-        <div class="tooltip-content"></div>
-        <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1">
-            <div class="border-4 border-transparent border-b-gray-900"></div>
-        </div>
+  <!-- Tree View Container -->
+  <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+    <div id="treeView" class="min-h-64">
+      <div class="text-center text-gray-500 p-8 border-2 border-dashed rounded-lg m-4">
+        No hay requisitos para mostrar. ¡Crea algunos requisitos primero!
+      </div>
     </div>
+  </div>
+
+  <!-- Tooltip for detailed info -->
+  <div id="requirementTooltip" class="absolute z-50 bg-gray-900 text-white p-4 rounded-lg shadow-lg max-w-md hidden">
+    <div class="tooltip-content"></div>
+    <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1">
+      <div class="border-4 border-transparent border-b-gray-900"></div>
+    </div>
+  </div>
 </div>

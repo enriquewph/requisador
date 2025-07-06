@@ -1,56 +1,57 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Requisador de Requisitos</title>
-    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
     <!-- Local TailwindCSS build -->
-    <link rel="stylesheet" href="./css/tailwind.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./css/styles.css?v=6">
-</head>
-<body class="text-gray-900">
-
+    <link rel="stylesheet" href="./css/tailwind.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/styles.css?v=6" />
+  </head>
+  <body class="text-gray-900">
     <!-- Header will be loaded here -->
     <div id="header-container"></div>
 
     <!-- Main Content -->
     <main class="container mx-auto px-6 py-12">
+      <!-- Introduction -->
+      <section class="text-center mb-16">
+        <h2 class="text-4xl md:text-5xl font-extrabold mb-4">Define el Comportamiento de tu Sistema</h2>
+        <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+          Esta guía interactiva te ayudará a crear requisitos de comportamiento y rendimiento claros, completos y
+          consistentes, siguiendo la metodología del handbook.
+        </p>
+      </section>
 
-        <!-- Introduction -->
-        <section class="text-center mb-16">
-            <h2 class="text-4xl md:text-5xl font-extrabold mb-4">Define el Comportamiento de tu Sistema</h2>
-            <p class="text-lg text-gray-600 max-w-3xl mx-auto">
-                Esta guía interactiva te ayudará a crear requisitos de comportamiento y rendimiento claros, completos y consistentes, siguiendo la metodología del handbook.
-            </p>
-        </section>
-
-        <!-- Tab Navigation -->
-        <div class="bg-white rounded-t-lg shadow-sm">
-            <div class="flex border-b overflow-x-auto">
-                <button id="configTab" class="tab-button active">Configuración del Sistema</button>
-                <button id="createTab" class="tab-button">Crear Requisito</button>
-                <button id="listTab" class="tab-button">Lista de Requisitos</button>
-                <button id="treeTab" class="tab-button">Vista de Árbol</button>
-                <button id="guidelinesTab" class="tab-button">Lineamientos para Requisitos</button>
-            </div>
+      <!-- Tab Navigation -->
+      <div class="bg-white rounded-t-lg shadow-sm">
+        <div class="flex border-b overflow-x-auto">
+          <button id="configTab" class="tab-button active">Configuración del Sistema</button>
+          <button id="createTab" class="tab-button">Crear Requisito</button>
+          <button id="listTab" class="tab-button">Lista de Requisitos</button>
+          <button id="treeTab" class="tab-button">Vista de Árbol</button>
+          <button id="guidelinesTab" class="tab-button">Lineamientos para Requisitos</button>
         </div>
+      </div>
 
-        <!-- Tab Contents Container -->
-        <div class="bg-white rounded-b-lg shadow-md">
-            <!-- Tab contents will be loaded dynamically here -->
-            <div id="tab-content-container">
-                <!-- Default loading message -->
-                <div class="p-6 md:p-8 text-center">
-                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <p class="text-gray-600">Cargando aplicación...</p>
-                </div>
-            </div>
+      <!-- Tab Contents Container -->
+      <div class="bg-white rounded-b-lg shadow-md">
+        <!-- Tab contents will be loaded dynamically here -->
+        <div id="tab-content-container">
+          <!-- Default loading message -->
+          <div class="p-6 md:p-8 text-center">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p class="text-gray-600">Cargando aplicación...</p>
+          </div>
         </div>
-
+      </div>
     </main>
 
     <!-- About Modal will be loaded here -->
@@ -61,68 +62,67 @@
 
     <!-- Core Configuration -->
     <script src="./js/core/config.js"></script>
-    
+
     <!-- Utilities -->
     <script src="./js/utils/page-loader.js?v=6"></script>
     <script src="./js/utils/init.js"></script>
-    
+
     <!-- Core Application -->
     <script src="./js/core/app.js?v=6"></script>
-    
+
     <!-- Modules -->
     <script src="./js/modules/requirements.js?v=6"></script>
     <script src="./js/modules/export.js?v=6"></script>
 
     <!-- Application Initialization -->
     <script>
-        // Initialize the application when DOM is ready
-        document.addEventListener('DOMContentLoaded', async function() {
-            console.log('🚀 Starting Requisador de Requisitos v0.1');
-            
-            // Check if all required objects are available
-            console.log('🔍 Checking dependencies:');
-            console.log('- AppConfig:', typeof AppConfig !== 'undefined' ? 'Available' : 'Missing');
-            console.log('- PageLoader:', typeof PageLoader !== 'undefined' ? 'Available' : 'Missing');
-            console.log('- window.initialize:', typeof window.initialize);
-            
-            if (typeof AppConfig === 'undefined') {
-                console.error('❌ AppConfig is not available. Check if config.js is loaded correctly.');
-                return;
-            }
-            
-            if (typeof PageLoader === 'undefined') {
-                console.error('❌ PageLoader is not available. Check if page-loader.js is loaded correctly.');
-                return;
-            }
-            
-            try {
-                // Load all components first
-                await PageLoader.loadComponents([
-                    { url: AppConfig.paths.components.header, targetId: 'header-container' },
-                    { url: AppConfig.paths.components.aboutModal, targetId: 'modal-container' },
-                    { url: AppConfig.paths.components.footer, targetId: 'footer-container' }
-                ]);
-                
-                // Load the initial tab content (config by default)
-                await PageLoader.loadHTML(AppConfig.paths.pages.config, 'tab-content-container');
-                
-                // Initialize the application
-                if (typeof window.initialize === 'function') {
-                    console.log('🔧 Initializing application...');
-                    window.initialize();
-                    console.log('✅ Application initialized successfully!');
-                } else {
-                    console.error('❌ Initialize function not found');
-                }
-                
-                // Setup tab navigation
-                setupTabNavigation();
-                
-                console.log('🎉 Application loaded and ready!');
-                
-            } catch (error) {
-                console.error('❌ Error during application initialization:', error);
-                document.getElementById('tab-content-container').innerHTML = `
+      // Initialize the application when DOM is ready
+      document.addEventListener('DOMContentLoaded', async function () {
+        console.log('🚀 Starting Requisador de Requisitos v0.1');
+
+        // Check if all required objects are available
+        console.log('🔍 Checking dependencies:');
+        console.log('- AppConfig:', typeof AppConfig !== 'undefined' ? 'Available' : 'Missing');
+        console.log('- PageLoader:', typeof PageLoader !== 'undefined' ? 'Available' : 'Missing');
+        console.log('- window.initialize:', typeof window.initialize);
+
+        if (typeof AppConfig === 'undefined') {
+          console.error('❌ AppConfig is not available. Check if config.js is loaded correctly.');
+          return;
+        }
+
+        if (typeof PageLoader === 'undefined') {
+          console.error('❌ PageLoader is not available. Check if page-loader.js is loaded correctly.');
+          return;
+        }
+
+        try {
+          // Load all components first
+          await PageLoader.loadComponents([
+            { url: AppConfig.paths.components.header, targetId: 'header-container' },
+            { url: AppConfig.paths.components.aboutModal, targetId: 'modal-container' },
+            { url: AppConfig.paths.components.footer, targetId: 'footer-container' },
+          ]);
+
+          // Load the initial tab content (config by default)
+          await PageLoader.loadHTML(AppConfig.paths.pages.config, 'tab-content-container');
+
+          // Initialize the application
+          if (typeof window.initialize === 'function') {
+            console.log('🔧 Initializing application...');
+            window.initialize();
+            console.log('✅ Application initialized successfully!');
+          } else {
+            console.error('❌ Initialize function not found');
+          }
+
+          // Setup tab navigation
+          setupTabNavigation();
+
+          console.log('🎉 Application loaded and ready!');
+        } catch (error) {
+          console.error('❌ Error during application initialization:', error);
+          document.getElementById('tab-content-container').innerHTML = `
                     <div class="p-6 md:p-8 text-center">
                         <div class="text-red-600 mb-4">
                             <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -134,105 +134,103 @@
                         <button onclick="location.reload()" class="btn btn-primary">Reintentar</button>
                     </div>
                 `;
-            }
+        }
+      });
+
+      // Setup tab navigation functionality
+      function setupTabNavigation() {
+        console.log('🔄 Setting up tab navigation...');
+
+        // Check if AppConfig is available
+        if (typeof AppConfig === 'undefined') {
+          console.error('❌ AppConfig is not defined! Config script may not have loaded.');
+          return;
+        }
+
+        if (!AppConfig.tabs) {
+          console.error('❌ AppConfig.tabs is not defined!');
+          return;
+        }
+
+        const tabs = AppConfig.tabs;
+        console.log('📑 Available tabs:', tabs);
+
+        // Verify all tab buttons exist
+        const existingButtons = [];
+        tabs.forEach(tab => {
+          const button = document.getElementById(tab.buttonId);
+          console.log(`🔍 Looking for button: ${tab.buttonId}`, button);
+          if (button) {
+            existingButtons.push({ tab, button });
+          } else {
+            console.warn(`⚠️ Button not found: ${tab.buttonId}`);
+          }
         });
 
-        // Setup tab navigation functionality
-        function setupTabNavigation() {
-            console.log('🔄 Setting up tab navigation...');
-            
-            // Check if AppConfig is available
-            if (typeof AppConfig === 'undefined') {
-                console.error('❌ AppConfig is not defined! Config script may not have loaded.');
-                return;
-            }
-            
-            if (!AppConfig.tabs) {
-                console.error('❌ AppConfig.tabs is not defined!');
-                return;
-            }
-            
-            const tabs = AppConfig.tabs;
-            console.log('📑 Available tabs:', tabs);
-            
-            // Verify all tab buttons exist
-            const existingButtons = [];
-            tabs.forEach(tab => {
-                const button = document.getElementById(tab.buttonId);
-                console.log(`🔍 Looking for button: ${tab.buttonId}`, button);
-                if (button) {
-                    existingButtons.push({tab, button});
-                } else {
-                    console.warn(`⚠️ Button not found: ${tab.buttonId}`);
-                }
+        console.log(`📊 Found ${existingButtons.length} out of ${tabs.length} tab buttons`);
+
+        // Attach event listeners
+        existingButtons.forEach(({ tab, button }) => {
+          button.addEventListener('click', async event => {
+            console.log(`🖱️ Tab clicked: ${tab.id} (${tab.title})`);
+            console.log(`📄 Will load page: ${tab.pagePath}`);
+
+            // Prevent default action
+            event.preventDefault();
+
+            // Remove active class from all tab buttons
+            tabs.forEach(t => {
+              const btn = document.getElementById(t.buttonId);
+              if (btn) {
+                btn.classList.remove('active');
+                console.log(`📤 Removed active from: ${t.buttonId}`);
+              }
             });
-            
-            console.log(`📊 Found ${existingButtons.length} out of ${tabs.length} tab buttons`);
-            
-            // Attach event listeners
-            existingButtons.forEach(({tab, button}) => {
-                button.addEventListener('click', async (event) => {
-                    console.log(`🖱️ Tab clicked: ${tab.id} (${tab.title})`);
-                    console.log(`📄 Will load page: ${tab.pagePath}`);
-                    
-                    // Prevent default action
-                    event.preventDefault();
-                    
-                    // Remove active class from all tab buttons
-                    tabs.forEach(t => {
-                        const btn = document.getElementById(t.buttonId);
-                        if (btn) {
-                            btn.classList.remove('active');
-                            console.log(`📤 Removed active from: ${t.buttonId}`);
-                        }
-                    });
-                    
-                    // Add active class to clicked button
-                    button.classList.add('active');
-                    console.log(`📥 Added active to: ${tab.buttonId}`);
-                    
-                    // Load corresponding page content
-                    try {
-                        console.log(`📄 Starting to load page: ${tab.pagePath}`);
-                        
-                        // Check if PageLoader is available
-                        if (typeof PageLoader === 'undefined') {
-                            throw new Error('PageLoader is not defined');
-                        }
-                        
-                        await PageLoader.loadHTML(tab.pagePath, 'tab-content-container');
-                        console.log(`✅ Page loaded successfully: ${tab.id}`);
-                        
-                        // Re-initialize DOM elements and event listeners for the new content
-                        if (typeof window.reinitializeDOMElements === 'function') {
-                            console.log('🔄 Reinitializing DOM elements...');
-                            window.reinitializeDOMElements();
-                        }
-                        if (typeof window.bindEventListeners === 'function') {
-                            console.log('🔗 Binding event listeners...');
-                            window.bindEventListeners();
-                        }
-                        if (typeof window.updateUI === 'function') {
-                            console.log('🎨 Updating UI...');
-                            window.updateUI();
-                        }
-                        
-                    } catch (error) {
-                        console.error(`❌ Error loading tab content for ${tab.id}:`, error);
-                        document.getElementById('tab-content-container').innerHTML = `
+
+            // Add active class to clicked button
+            button.classList.add('active');
+            console.log(`📥 Added active to: ${tab.buttonId}`);
+
+            // Load corresponding page content
+            try {
+              console.log(`📄 Starting to load page: ${tab.pagePath}`);
+
+              // Check if PageLoader is available
+              if (typeof PageLoader === 'undefined') {
+                throw new Error('PageLoader is not defined');
+              }
+
+              await PageLoader.loadHTML(tab.pagePath, 'tab-content-container');
+              console.log(`✅ Page loaded successfully: ${tab.id}`);
+
+              // Re-initialize DOM elements and event listeners for the new content
+              if (typeof window.reinitializeDOMElements === 'function') {
+                console.log('🔄 Reinitializing DOM elements...');
+                window.reinitializeDOMElements();
+              }
+              if (typeof window.bindEventListeners === 'function') {
+                console.log('🔗 Binding event listeners...');
+                window.bindEventListeners();
+              }
+              if (typeof window.updateUI === 'function') {
+                console.log('🎨 Updating UI...');
+                window.updateUI();
+              }
+            } catch (error) {
+              console.error(`❌ Error loading tab content for ${tab.id}:`, error);
+              document.getElementById('tab-content-container').innerHTML = `
                             <div class="p-6 md:p-8 text-center">
                                 <p class="text-red-600">Error al cargar el contenido de la pestaña.</p>
                                 <p class="text-sm text-gray-500 mt-2">Error: ${error.message}</p>
                             </div>
                         `;
-                    }
-                });
-                console.log(`✅ Event listener attached to: ${tab.buttonId}`);
-            });
-            
-            console.log('✅ Tab navigation setup complete');
-        }
-    </script>
+            }
+          });
+          console.log(`✅ Event listener attached to: ${tab.buttonId}`);
+        });
 
-</body>
+        console.log('✅ Tab navigation setup complete');
+      }
+    </script>
+  </body>
 </html>
