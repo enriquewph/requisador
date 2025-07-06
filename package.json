@@ -22,6 +22,8 @@
     "validate:html": "npm run validate",
     "validate:css": "echo 'CSS validation: Modern CSS features used, may show warnings in older validators'",
     "validate:all": "npm run validate && npm run validate:css",
+    "generate-lock": "npm install --package-lock-only",
+    "setup": "npm run generate-lock",
     "test": "echo \"No tests specified yet\" && exit 0",
     "clean": "rimraf dist",
     "prepare": "husky install || true"

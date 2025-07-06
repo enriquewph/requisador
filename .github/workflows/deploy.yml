@@ -123,11 +123,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          # Enable cache if package-lock.json exists
+          cache: ${{ hashFiles('package-lock.json') != '' && 'npm' || '' }}
 
       - name: 📦 Install dependencies
         run: |
-          npm init -y
+          # Use existing package.json if it exists, otherwise create a new one
+          if [ ! -f package.json ]; then
+            npm init -y
+          fi
           npm install --save-dev eslint prettier html-minifier-terser clean-css-cli terser
 
       - name: 🎨 Check code formatting
@@ -165,11 +169,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          # Enable cache if package-lock.json exists
+          cache: ${{ hashFiles('package-lock.json') != '' && 'npm' || '' }}
 
       - name: 📦 Install build dependencies
         run: |
-          npm init -y
+          # Use existing package.json if it exists, otherwise create a new one
+          if [ ! -f package.json ]; then
+            npm init -y
+          fi
           npm install --save-dev html-minifier-terser clean-css-cli terser
 
       - name: 🏗️ Build optimized version

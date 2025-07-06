@@ -1,0 +1,67 @@
+name: 🔒 Generate Package Lock
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'package.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-lock:
+    name: 🔒 Generate package-lock.json
+    runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.head_commit.message, '[skip-lock]') }}
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 🔍 Check for package-lock.json
+        id: check-lock
+        run: |
+          if [ -f package-lock.json ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "✅ package-lock.json already exists"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "⚠️ package-lock.json not found"
+          fi
+
+      - name: 📦 Generate package-lock.json
+        if: steps.check-lock.outputs.exists == 'false'
+        run: |
+          echo "📦 Generating package-lock.json..."
+          npm install --package-lock-only
+          
+          if [ -f package-lock.json ]; then
+            echo "✅ package-lock.json generated successfully"
+            ls -la package-lock.json
+          else
+            echo "❌ Failed to generate package-lock.json"
+            exit 1
+          fi
+
+      - name: 📝 Commit package-lock.json
+        if: steps.check-lock.outputs.exists == 'false'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add package-lock.json
+          git commit -m "🔒 Auto-generate package-lock.json [skip-lock]" || exit 0
+          git push
+
+      - name: 🎉 Success notification
+        if: steps.check-lock.outputs.exists == 'false'
+        run: |
+          echo "🎉 package-lock.json has been generated and committed!"
+          echo "🔄 This will enable npm caching in future workflows"
