@@ -1,0 +1,169 @@
+name: 🏷️ Auto Release
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/**/*'
+      - 'package.json'
+      - 'README.md'
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: 🏷️ Create Release
+    runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, '[release]') || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 📊 Get current version
+        id: version
+        run: |
+          if [ -f package.json ]; then
+            CURRENT_VERSION=$(node -p "require('./package.json').version")
+            echo "current=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "current=1.0.0" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 🔢 Calculate new version
+        id: new_version
+        run: |
+          CURRENT="${{ steps.version.outputs.current }}"
+          RELEASE_TYPE="${{ github.event.inputs.release_type || 'patch' }}"
+          
+          IFS='.' read -ra VERSION_PARTS <<< "$CURRENT"
+          MAJOR=${VERSION_PARTS[0]}
+          MINOR=${VERSION_PARTS[1]}
+          PATCH=${VERSION_PARTS[2]}
+          
+          case $RELEASE_TYPE in
+            major)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              ;;
+            minor)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+            patch)
+              PATCH=$((PATCH + 1))
+              ;;
+          esac
+          
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "📈 New version will be: $NEW_VERSION"
+
+      - name: 📝 Generate changelog
+        id: changelog
+        run: |
+          echo "🔍 Generating changelog..."
+          
+          # Get commits since last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"- %s (%h)" --since="1 week ago")
+          else
+            COMMITS=$(git log --pretty=format:"- %s (%h)" ${LAST_TAG}..HEAD)
+          fi
+          
+          # Create changelog
+          cat > RELEASE_NOTES.md << EOF
+          ## 🚀 Version ${{ steps.new_version.outputs.version }}
+          
+          ### 📋 Changes in this release:
+          
+          $COMMITS
+          
+          ### 🌐 Live Demo
+          
+          Visit the live application: [https://enriquewph.com.ar/requisador/](https://enriquewph.com.ar/requisador/)
+          
+          ### 📥 Installation
+          
+          1. Clone the repository:
+             \`\`\`bash
+             git clone https://github.com/enriquewph/requisador.git
+             \`\`\`
+          
+          2. Open \`src/index.html\` in your browser or serve with:
+             \`\`\`bash
+             cd requisador
+             npm start
+             \`\`\`
+          
+          ### 🔧 What's Included
+          
+          - Complete requirements management system
+          - Modern responsive UI with Tailwind CSS
+          - Dynamic tab navigation
+          - Export functionality
+          - Project configuration tools
+          - Comprehensive documentation
+          
+          ---
+          
+          **Full Changelog**: [View all changes](https://github.com/enriquewph/requisador/compare/${LAST_TAG}...v${{ steps.new_version.outputs.version }})
+          EOF
+          
+          cat RELEASE_NOTES.md
+
+      - name: 🏗️ Create distribution package
+        run: |
+          echo "🏗️ Creating distribution package..."
+          
+          # Create dist directory
+          mkdir -p dist-release
+          
+          # Copy source files
+          cp -r src/* dist-release/
+          
+          # Create a ZIP file for the release
+          zip -r "requisador-v${{ steps.new_version.outputs.version }}.zip" dist-release/
+          
+          # Create tarball as well
+          tar -czf "requisador-v${{ steps.new_version.outputs.version }}.tar.gz" dist-release/
+          
+          echo "📦 Distribution packages created"
+
+      - name: 🏷️ Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: "v${{ steps.new_version.outputs.version }}"
+          name: "Release v${{ steps.new_version.outputs.version }}"
+          body_path: RELEASE_NOTES.md
+          files: |
+            requisador-v${{ steps.new_version.outputs.version }}.zip
+            requisador-v${{ steps.new_version.outputs.version }}.tar.gz
+          draft: false
+          prerelease: false
+
+      - name: 🎉 Success notification
+        run: |
+          echo "🎉 Release v${{ steps.new_version.outputs.version }} created successfully!"
+          echo "🌐 Live site: https://enriquewph.com.ar/requisador/"
+          echo "📦 Release page: https://github.com/enriquewph/requisador/releases/tag/v${{ steps.new_version.outputs.version }}"
