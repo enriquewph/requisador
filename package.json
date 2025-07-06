@@ -1,0 +1,70 @@
+{
+  "name": "requisador-de-requisitos",
+  "version": "1.0.0",
+  "description": "Herramienta moderna para la gestión de requisitos en ingeniería de sistemas",
+  "main": "src/index.html",
+  "scripts": {
+    "start": "python -m http.server 8000 --directory src",
+    "start:win": "start-server.bat",
+    "start:unix": "./start-server.sh",
+    "dev": "python -m http.server 8000 --directory src",
+    "build": "npm run build:html && npm run build:css && npm run build:js",
+    "build:html": "html-minifier-terser --collapse-whitespace --remove-comments --remove-optional-tags --remove-redundant-attributes --minify-css true --minify-js true src/**/*.html --output-dir dist/",
+    "build:css": "clean-css-cli src/css/*.css -o dist/css/",
+    "build:js": "terser src/js/**/*.js --compress --mangle --output-dir dist/js/",
+    "lint": "eslint src/js/**/*.js",
+    "lint:fix": "eslint src/js/**/*.js --fix",
+    "format": "prettier --write \"src/**/*.{html,css,js}\"",
+    "format:check": "prettier --check \"src/**/*.{html,css,js}\"",
+    "validate": "html5validator src/",
+    "test": "echo \"No tests specified yet\" && exit 0",
+    "clean": "rimraf dist",
+    "prepare": "husky install || true"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/enriquewph/requisador.git"
+  },
+  "keywords": [
+    "requirements",
+    "engineering",
+    "systems",
+    "management",
+    "web-app",
+    "javascript",
+    "html",
+    "css",
+    "UTN",
+    "project"
+  ],
+  "author": {
+    "name": "Enrique Walter Philippeaux",
+    "email": "enriquewph@gmail.com",
+    "url": "https://github.com/enriquewph"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/enriquewph/requisador/issues"
+  },
+  "homepage": "https://enriquewph.com.ar/requisador/",
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
+    "html-minifier-terser": "^7.2.0",
+    "clean-css-cli": "^5.6.3",
+    "terser": "^5.27.0",
+    "html5validator": "^1.1.0",
+    "rimraf": "^5.0.5",
+    "husky": "^9.0.10"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
