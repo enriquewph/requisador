@@ -202,7 +202,22 @@ jobs:
           if [ ! -f package.json ]; then
             npm init -y
           fi
-          npm install --save-dev html-minifier-terser clean-css-cli terser
+          npm install --save-dev html-minifier-terser clean-css-cli terser tailwindcss
+
+      - name: 🎨 Build TailwindCSS
+        run: |
+          echo "🎨 Building TailwindCSS..."
+          
+          # Ensure tailwind.config.js exists
+          if [ ! -f tailwind.config.js ]; then
+            echo "⚠️ tailwind.config.js not found, creating default config..."
+            npx tailwindcss init
+          fi
+          
+          # Build TailwindCSS from input.css to tailwind.css
+          npx tailwindcss -i ./src/css/input.css -o ./src/css/tailwind.css --minify
+          
+          echo "✅ TailwindCSS built successfully!"
 
       - name: 🏗️ Build optimized version
         run: |
