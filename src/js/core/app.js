@@ -92,7 +92,7 @@ const reqCounter = {
   level1: 0,
   level2: 0,
 };
-let allRequirements = [];
+const allRequirements = [];
 
 // --- About Modal Functions (defined early to ensure availability) ---
 function showAboutModal() {
@@ -379,11 +379,20 @@ function renderConfigLists() {
     item.className = 'flex justify-between items-center p-2 bg-gray-50 rounded border';
     item.innerHTML = `
             <span class="text-sm">${func}</span>
-            <button onclick="deleteFunction(${index})" class="text-red-600 hover:text-red-800 text-sm px-2 py-1 rounded hover:bg-red-50">
+            <button data-delete-function="${index}" class="text-red-600 hover:text-red-800 text-sm px-2 py-1 rounded hover:bg-red-50">
                 Eliminar
             </button>
         `;
     domElements.functionsList.appendChild(item);
+  });
+
+  // Add event listeners for function delete buttons
+  const functionDeleteBtns = domElements.functionsList.querySelectorAll('[data-delete-function]');
+  functionDeleteBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const index = parseInt(e.target.getAttribute('data-delete-function'));
+      deleteFunction(index);
+    });
   });
 
   // Render variables list
@@ -394,11 +403,20 @@ function renderConfigLists() {
       item.className = 'flex justify-between items-center p-2 bg-gray-50 rounded border';
       item.innerHTML = `
                 <span class="text-sm">${variable}</span>
-                <button onclick="deleteVariable(${index})" class="text-red-600 hover:text-red-800 text-sm px-2 py-1 rounded hover:bg-red-50">
+                <button data-delete-variable="${index}" class="text-red-600 hover:text-red-800 text-sm px-2 py-1 rounded hover:bg-red-50">
                     Eliminar
                 </button>
             `;
       domElements.variablesList.appendChild(item);
+    });
+
+    // Add event listeners for variable delete buttons
+    const variableDeleteBtns = domElements.variablesList.querySelectorAll('[data-delete-variable]');
+    variableDeleteBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const index = parseInt(e.target.getAttribute('data-delete-variable'));
+        deleteVariable(index);
+      });
     });
   }
 
@@ -415,7 +433,7 @@ function renderConfigLists() {
       componentDiv.innerHTML = `
                 <div class="flex justify-between items-center mb-3">
                     <h6 class="font-semibold text-lg text-gray-800">${component}</h6>
-                    <button onclick="deleteComponent('${component}')" class="text-red-600 hover:text-red-800 text-sm px-3 py-1 rounded border border-red-300 hover:border-red-500 hover:bg-red-50">
+                    <button data-delete-component="${component}" class="text-red-600 hover:text-red-800 text-sm px-3 py-1 rounded border border-red-300 hover:border-red-500 hover:bg-red-50">
                         Eliminar Componente
                     </button>
                 </div>
@@ -423,7 +441,7 @@ function renderConfigLists() {
                 <div class="mb-3">
                     <div class="flex gap-2 mb-2">
                         <input type="text" id="newMode_${safeComponentId}" placeholder="Nuevo modo..." class="flex-1 p-2 text-sm border rounded">
-                        <button onclick="addModeToComponent('${component}')" class="btn btn-primary text-sm px-3 py-1">Añadir Modo</button>
+                        <button data-add-mode="${component}" class="btn btn-primary text-sm px-3 py-1">Añadir Modo</button>
                     </div>
                 </div>
                 
@@ -435,7 +453,7 @@ function renderConfigLists() {
       (mode, index) => `
                             <div class="flex justify-between items-center p-2 bg-gray-50 rounded text-sm">
                                 <span>${mode}</span>
-                                <button onclick="deleteModeFromComponent('${component}', ${index})" class="text-red-600 hover:text-red-800 text-xs px-2 py-1 rounded hover:bg-red-100">
+                                <button data-delete-mode="${component}" data-mode-index="${index}" class="text-red-600 hover:text-red-800 text-xs px-2 py-1 rounded hover:bg-red-100">
                                     Eliminar
                                 </button>
                             </div>
@@ -446,6 +464,32 @@ function renderConfigLists() {
                 </div>
             `;
       domElements.componentsList.appendChild(componentDiv);
+    });
+
+    // Add event listeners for component actions
+    const componentDeleteBtns = domElements.componentsList.querySelectorAll('[data-delete-component]');
+    componentDeleteBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const componentName = e.target.getAttribute('data-delete-component');
+        deleteComponent(componentName);
+      });
+    });
+
+    const addModeBtns = domElements.componentsList.querySelectorAll('[data-add-mode]');
+    addModeBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const componentName = e.target.getAttribute('data-add-mode');
+        addModeToComponent(componentName);
+      });
+    });
+
+    const modeDeleteBtns = domElements.componentsList.querySelectorAll('[data-delete-mode]');
+    modeDeleteBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const componentName = e.target.getAttribute('data-delete-mode');
+        const modeIndex = parseInt(e.target.getAttribute('data-mode-index'));
+        deleteModeFromComponent(componentName, modeIndex);
+      });
     });
   }
 
@@ -713,7 +757,7 @@ La justificación debe ser específica, técnica y alineada con los estándares 
 function initialize() {
   try {
     console.log('Starting application initialization...');
-    
+
     // Use performance timing for debugging
     const startTime = performance.now();
 
@@ -873,7 +917,7 @@ function initialize() {
       domElements.importProjectBtn.addEventListener('click', importProject);
       console.log('Import project button listener attached');
     }
-    
+
     // Add event listener for file input
     if (domElements.importFileInput) {
       domElements.importFileInput.addEventListener('change', handleFileImport);
@@ -911,11 +955,11 @@ function initialize() {
     }
 
     console.log('Application initialized successfully');
-    
+
     // Log performance timing
     const endTime = performance.now();
     console.log(`🚀 Application initialization completed in ${(endTime - startTime).toFixed(2)}ms`);
-    
+
     showToast('Aplicación inicializada correctamente', 'success');
   } catch (error) {
     console.error('Error during initialization:', error);
@@ -1196,7 +1240,7 @@ function bindEventListenersForCurrentTab() {
     if (importProjectBtn) {
       importProjectBtn.addEventListener('click', importProject);
     }
-    
+
     // File input event listener
     const importFileInput = document.getElementById('importFileInput');
     if (importFileInput) {

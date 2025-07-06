@@ -265,7 +265,8 @@ function clearAllRequirements() {
   ) {
     // Clear the array instead of reassigning
     allRequirements.length = 0;
-    reqCounter = { level1: 0, level2: 0 };
+    reqCounter.level1 = 0;
+    reqCounter.level2 = 0;
     saveToLocalStorage();
     renderRequirementsList();
     renderTreeView(); // Update tree view
@@ -547,7 +548,7 @@ function loadFromLocalStorage() {
 
     console.log('Loading requirements from localStorage...');
     const data = JSON.parse(savedData);
-    
+
     // Clear and repopulate the array instead of reassigning
     allRequirements.length = 0;
     if (data.requirements && Array.isArray(data.requirements)) {
@@ -560,7 +561,8 @@ function loadFromLocalStorage() {
     // Handle legacy data format
     if (typeof data.counter === 'number' || isLegacyData) {
       console.log('Migrating data to new RN-M ID format...');
-      reqCounter = { level1: 0, level2: 0 };
+      reqCounter.level1 = 0;
+      reqCounter.level2 = 0;
 
       // Update ALL requirements to new format
       allRequirements.forEach((req, index) => {
@@ -573,7 +575,9 @@ function loadFromLocalStorage() {
       saveToLocalStorage();
       showToast('Datos migrados al nuevo formato RN-M de IDs', 'info');
     } else {
-      reqCounter = data.counter || { level1: 0, level2: 0 };
+      const savedCounter = data.counter || { level1: 0, level2: 0 };
+      reqCounter.level1 = savedCounter.level1 || 0;
+      reqCounter.level2 = savedCounter.level2 || 0;
     }
 
     // Ensure ALL requirements have proper level and structure
@@ -605,7 +609,8 @@ function loadFromLocalStorage() {
     console.error('Error loading saved data:', error);
     // Clear the array instead of reassigning
     allRequirements.length = 0;
-    reqCounter = { level1: 0, level2: 0 };
+    reqCounter.level1 = 0;
+    reqCounter.level2 = 0;
   }
 }
 

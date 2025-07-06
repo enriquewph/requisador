@@ -1,0 +1,68 @@
+{
+  "version": "3.0",
+  "timestamp": "2025-01-07T12:00:00.000Z",
+  "metadata": {
+    "totalRequirements": 2,
+    "level1Requirements": 1,
+    "level2Requirements": 1
+  },
+  "config": {
+    "functions": [
+      "Runtime Manager",
+      "Test Function"
+    ],
+    "variables": [
+      "Test Variable",
+      "Estado del sistema"
+    ],
+    "components": [
+      "HMI",
+      "Test Component"
+    ],
+    "modes": {
+      "HMI": [
+        "Initialization Mode",
+        "Operational Mode"
+      ],
+      "Test Component": [
+        "Default Mode"
+      ]
+    }
+  },
+  "requirements": {
+    "counter": {
+      "level1": 1,
+      "level2": 1
+    },
+    "list": [
+      {
+        "id": "R0",
+        "level": 1,
+        "parentId": null,
+        "component": "HMI",
+        "func": "Runtime Manager",
+        "variable": "Estado del sistema",
+        "mode": "Operational Mode",
+        "condition": "Sistema activo",
+        "behavior": "Mostrar LED verde",
+        "latency": "100ms",
+        "tolerance": "±10ms",
+        "justification": "Requisito de prueba para mostrar estado del sistema"
+      },
+      {
+        "id": "R0-0",
+        "level": 2,
+        "parentId": "R0",
+        "component": "Test Component",
+        "func": "Test Function",
+        "variable": "Test Variable",
+        "mode": "Default Mode",
+        "condition": "Siempre",
+        "behavior": "Enviar señal",
+        "latency": "50ms",
+        "tolerance": "±5ms",
+        "justification": "Sub-requisito de prueba"
+      }
+    ]
+  }
+}

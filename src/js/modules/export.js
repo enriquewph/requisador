@@ -148,10 +148,17 @@ function importProject() {
 }
 
 function handleFileImport(event) {
+  console.log('🔄 File import started');
   const file = event.target.files[0];
-  if (!file) {return;}
+  if (!file) {
+    console.log('❌ No file selected');
+    return;
+  }
+
+  console.log('📁 File selected:', file.name, 'Type:', file.type);
 
   if (file.type !== 'application/json') {
+    console.log('❌ Invalid file type:', file.type);
     showToast('Por favor selecciona un archivo JSON válido.', 'error');
     return;
   }
@@ -159,9 +166,15 @@ function handleFileImport(event) {
   const reader = new FileReader();
   reader.onload = function (e) {
     try {
+      console.log('📖 Reading file content...');
       const projectData = JSON.parse(e.target.result);
+      console.log('✅ JSON parsed successfully:', projectData);
 
       if (!projectData.config || !projectData.requirements) {
+        console.log('❌ Invalid project structure:', {
+          hasConfig: !!projectData.config,
+          hasRequirements: !!projectData.requirements
+        });
         throw new Error('Formato de archivo inválido');
       }
 
@@ -175,9 +188,16 @@ function handleFileImport(event) {
         `Componentes: ${projectData.config.components?.length || 0}\n\n` +
         'ADVERTENCIA: Esto reemplazará toda tu configuración y requisitos actuales.';
 
-      if (!confirm(confirmMsg)) {
+      console.log('💬 Showing confirmation dialog...');
+      const userConfirmed = confirm(confirmMsg);
+      console.log('👤 User confirmation result:', userConfirmed);
+
+      if (!userConfirmed) {
+        console.log('🚫 Import cancelled by user');
         return;
       }
+
+      console.log('✅ Starting import process...');
 
       // Import configuration
       allFunctions.length = 0;
@@ -186,7 +206,11 @@ function handleFileImport(event) {
       allFunctions.push(...(projectData.config.functions || defaultFunctions));
       allVariables.push(...(projectData.config.variables || defaultVariables));
       allComponents.push(...(projectData.config.components || defaultComponents));
-      modes = projectData.config.modes || JSON.parse(JSON.stringify(defaultModes));
+      
+      // Clear and repopulate modes object instead of reassigning
+      Object.keys(modes).forEach(key => delete modes[key]);
+      const importedModes = projectData.config.modes || JSON.parse(JSON.stringify(defaultModes));
+      Object.assign(modes, importedModes);
 
       // Import requirements
       // Import requirements data with array clearing approach
@@ -194,7 +218,11 @@ function handleFileImport(event) {
       if (projectData.requirements.list && Array.isArray(projectData.requirements.list)) {
         allRequirements.push(...projectData.requirements.list);
       }
-      reqCounter = projectData.requirements.counter || allRequirements.length;
+      
+      // Update reqCounter properties instead of reassigning
+      const importedCounter = projectData.requirements.counter || { level1: allRequirements.length, level2: 0 };
+      reqCounter.level1 = importedCounter.level1 || 0;
+      reqCounter.level2 = importedCounter.level2 || 0;
 
       // Save to localStorage
       saveConfig();
@@ -204,19 +232,31 @@ function handleFileImport(event) {
       renderConfigLists();
       updateSelects();
       renderRequirementsList();
+      if (typeof renderTreeView === 'function') {
+        renderTreeView();
+      }
+      if (typeof updateParentRequirementOptions === 'function') {
+        updateParentRequirementOptions();
+      }
       updatePreview();
 
-      showToast('¡Proyecto importado exitosamente!', 'success');
+      console.log('✅ Import completed successfully');
+      showToast(
+        `Proyecto importado exitosamente. ${allRequirements.length} requisitos cargados.`,
+        'success'
+      );
     } catch (error) {
-      console.error('Error importing project:', error);
-      showToast('Error al importar el proyecto. Verifica que el archivo sea válido.', 'error');
+      console.error('❌ Import error:', error);
+      showToast('Error al importar el proyecto: ' + error.message, 'error');
     }
   };
 
   reader.onerror = function () {
-    showToast('Error al leer el archivo. Por favor intenta nuevamente.', 'error');
+    console.error('❌ File reading error');
+    showToast('Error al leer el archivo', 'error');
   };
 
+  console.log('📚 Starting file read...');
   reader.readAsText(file);
   event.target.value = ''; // Clear input
 }
