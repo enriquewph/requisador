@@ -37,23 +37,13 @@ const ExportTab = {
       latexExportBtn.addEventListener('click', () => this.exportToLaTeX());
     }
 
-    // Project Export
-    const projectExportBtn = document.getElementById('exportProjectBtn');
-    if (projectExportBtn) {
-      projectExportBtn.addEventListener('click', () => this.exportProject());
-    }
+    // Note: Project import/export buttons are now handled globally in app.js
 
-    // Project Import
-    const projectImportBtn = document.getElementById('importProjectBtn');
-    if (projectImportBtn) {
-      projectImportBtn.addEventListener('click', () => this.importProject());
-    }
-
-    // File input for import
-    const fileInput = document.getElementById('projectFileInput');
-    if (fileInput) {
-      fileInput.addEventListener('change', (e) => this.handleFileImport(e));
-    }
+    // Log which elements were found
+    console.log('ExportTab elements found:', {
+      csvExportBtn: !!csvExportBtn,
+      latexExportBtn: !!latexExportBtn
+    });
   },
 
   /**
@@ -297,6 +287,16 @@ Este documento presenta los requisitos del sistema generados utilizando la metod
         counters: AppGlobals.state.reqCounter
       };
 
+      // Generate filename with timestamp
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const filename = `requisitos_proyecto_${year}-${month}-${day}_${hours}-${minutes}-${seconds}.json`;
+
       const jsonContent = JSON.stringify(projectData, null, 2);
       const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
       const link = document.createElement('a');
@@ -304,7 +304,7 @@ Este documento presenta los requisitos del sistema generados utilizando la metod
       if (link.download !== undefined) {
         const url = URL.createObjectURL(blob);
         link.setAttribute('href', url);
-        link.setAttribute('download', 'proyecto-requisitos.json');
+        link.setAttribute('download', filename);
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
@@ -326,10 +326,19 @@ Este documento presenta los requisitos del sistema generados utilizando la metod
    * Import project from file
    */
   importProject() {
-    const fileInput = document.getElementById('projectFileInput');
+    console.log('🔧 ExportTab: Import project button clicked');
+
+    // Try to find the file input (check both possible IDs)
+    let fileInput = document.getElementById('projectFileInput');
+    if (!fileInput) {
+      fileInput = document.getElementById('importFileInput');
+    }
+
     if (fileInput) {
+      console.log('✅ ExportTab: File input found, triggering click');
       fileInput.click();
     } else {
+      console.error('❌ ExportTab: No file input element found');
       DOMUtils.showToast('Elemento de selección de archivo no encontrado.', 'error');
     }
   },
@@ -338,23 +347,34 @@ Este documento presenta los requisitos del sistema generados utilizando la metod
    * Handle file import
    */
   handleFileImport(event) {
+    console.log('🔧 ExportTab: handleFileImport called', event);
+
     const file = event.target.files[0];
-    if (!file) return;
+    console.log('📁 ExportTab: Selected file:', file);
+
+    if (!file) {
+      console.log('❌ ExportTab: No file selected');
+      return;
+    }
 
     if (file.type !== 'application/json' && !file.name.endsWith('.json')) {
+      console.log('❌ ExportTab: Invalid file type:', file.type, file.name);
       DOMUtils.showToast('Por favor selecciona un archivo JSON válido.', 'error');
       // Reset the file input
       event.target.value = '';
       return;
     }
 
+    console.log('📖 ExportTab: Reading file...');
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
+        console.log('✅ ExportTab: File read successfully, parsing JSON...');
         const projectData = JSON.parse(e.target.result);
+        console.log('📊 ExportTab: Project data parsed:', projectData);
         this.loadProjectData(projectData);
       } catch (error) {
-        console.error('Error parsing JSON:', error);
+        console.error('❌ ExportTab: Error parsing JSON:', error);
         DOMUtils.showToast('Error al leer el archivo. Asegúrate de que sea un archivo JSON válido.', 'error');
       } finally {
         // Reset the file input so the same file can be selected again
@@ -363,6 +383,7 @@ Este documento presenta los requisitos del sistema generados utilizando la metod
     };
 
     reader.onerror = () => {
+      console.error('❌ ExportTab: Error reading file');
       DOMUtils.showToast('Error al leer el archivo.', 'error');
       // Reset the file input
       event.target.value = '';
@@ -375,11 +396,15 @@ Este documento presenta los requisitos del sistema generados utilizando la metod
    * Load project data into the application
    */
   loadProjectData(projectData) {
+    console.log('🚀 ExportTab: loadProjectData called with:', projectData);
+
     try {
       // Validate project data structure
       if (!projectData.configuration || !projectData.requirements) {
         throw new Error('Estructura de proyecto inválida');
       }
+
+      console.log('✅ ExportTab: Project data structure is valid');
 
       // Confirm import
       const confirmImport = confirm(
@@ -391,7 +416,12 @@ Este documento presenta los requisitos del sistema generados utilizando la metod
         `- ${projectData.configuration.components?.length || 0} componentes`
       );
 
-      if (!confirmImport) {return;}
+      console.log('🤔 ExportTab: User confirmation result:', confirmImport);
+
+      if (!confirmImport) {
+        console.log('❌ ExportTab: User cancelled import');
+        return;
+      }
 
       // Load configuration
       if (projectData.configuration.functions) {

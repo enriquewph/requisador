@@ -82,10 +82,10 @@ function initializeDOMElements() {
  * Populate a select element with options
  */
 function populateSelect(selectElement, options, defaultText = '') {
-  if (!selectElement) return;
+  if (!selectElement) {return;}
 
   selectElement.innerHTML = '';
-  
+
   // Add default option if provided
   if (defaultText) {
     const defaultOption = document.createElement('option');
@@ -93,7 +93,7 @@ function populateSelect(selectElement, options, defaultText = '') {
     defaultOption.textContent = defaultText;
     selectElement.appendChild(defaultOption);
   }
-  
+
   // Handle array of strings or array of objects
   options.forEach(option => {
     const opt = document.createElement('option');
@@ -117,31 +117,31 @@ function updateSelects() {
     document.getElementById('componentSelect'),
     document.getElementById('modeComponentSelect')
   ];
-  
+
   componentSelects.forEach(select => {
     if (select) {
       populateSelect(select, window.AppGlobals?.state?.allComponents || [], 'Selecciona un componente');
     }
   });
-  
+
   // Update function select
   const functionSelect = document.getElementById('functionSelect');
   if (functionSelect) {
     populateSelect(functionSelect, window.AppGlobals?.state?.allFunctions || [], 'Selecciona una función');
   }
-  
+
   // Update variable select
   const variableSelect = document.getElementById('variableSelect');
   if (variableSelect) {
     populateSelect(variableSelect, window.AppGlobals?.state?.allVariables || [], 'Selecciona una variable');
   }
-  
+
   // Update mode select (this is component-dependent, so we just clear it)
   const modeSelect = document.getElementById('modeSelect');
   if (modeSelect) {
     populateSelect(modeSelect, [], 'Selecciona un modo');
   }
-  
+
   // Update parent requirement select
   const parentSelect = document.getElementById('parentRequirementSelect');
   if (parentSelect && window.AppGlobals?.state?.allRequirements) {
@@ -203,13 +203,5 @@ window.DOMUtils = {
   showToast,
   reinitializeDOMElements
 };
-
-// For backward compatibility
-window.domElements = domElements;
-window.showToast = showToast;
-window.initializeDOMElements = initializeDOMElements;
-window.populateSelect = populateSelect;
-window.updateSelects = updateSelects;
-window.reinitializeDOMElements = reinitializeDOMElements;
 
 console.log('✅ DOM utilities module loaded');

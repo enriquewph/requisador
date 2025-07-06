@@ -290,9 +290,10 @@ function downloadFile(content, filename, mimeType) {
   setTimeout(() => URL.revokeObjectURL(url), 100);
 }
 
-// Make functions globally available
+// Make functions globally available (only CSV and LaTeX, project import/export handled by ExportTab)
 window.exportToCSV = exportToCSV;
 window.exportToLaTeX = exportToLaTeX;
-window.exportProject = exportProject;
-window.importProject = importProject;
-window.handleFileImport = handleFileImport;
+// Project functions handled by ExportTab module now
+// window.exportProject = exportProject;
+// window.importProject = importProject;
+// window.handleFileImport = handleFileImport;

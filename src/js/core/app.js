@@ -6,7 +6,7 @@
  * This is the main coordination module that delegates functionality to specialized tab modules.
  */
 
-/* global AppGlobals, DOMUtils, Storage, ConfigTab, CreateTab, ListTab, TreeTab, ExportTab */
+/* global AppGlobals, DOMUtils, ConfigTab, CreateTab, ListTab, TreeTab, ExportTab */
 
 /**
  * Main Application Object
@@ -103,6 +103,9 @@ const RequisadorApp = {
     // Global keyboard shortcuts
     this.bindKeyboardShortcuts();
 
+    // Project import/export buttons
+    this.bindProjectButtons();
+
     console.log('✅ RequisadorApp: Global events bound');
   },
 
@@ -163,6 +166,49 @@ const RequisadorApp = {
   },
 
   /**
+   * Bind project import/export buttons
+   */
+  bindProjectButtons() {
+    console.log('🔗 RequisadorApp: Binding project buttons...');
+
+    // Export project button
+    const exportBtn = document.getElementById('exportProjectBtn');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', () => {
+        console.log('🔧 RequisadorApp: Export button clicked');
+        AppGlobals.exportProject();
+      });
+      console.log('✅ RequisadorApp: Export button bound');
+    } else {
+      console.warn('⚠️ RequisadorApp: Export button not found');
+    }
+
+    // Import project button
+    const importBtn = document.getElementById('importProjectBtn');
+    if (importBtn) {
+      importBtn.addEventListener('click', () => {
+        console.log('🔧 RequisadorApp: Import button clicked');
+        AppGlobals.importProject();
+      });
+      console.log('✅ RequisadorApp: Import button bound');
+    } else {
+      console.warn('⚠️ RequisadorApp: Import button not found');
+    }
+
+    // File input for import
+    const fileInput = document.getElementById('importFileInput');
+    if (fileInput) {
+      fileInput.addEventListener('change', (e) => {
+        console.log('🔧 RequisadorApp: File input changed');
+        AppGlobals.handleFileImport(e);
+      });
+      console.log('✅ RequisadorApp: File input bound');
+    } else {
+      console.warn('⚠️ RequisadorApp: File input not found');
+    }
+  },
+
+  /**
    * Initialize all tab modules
    */
   initializeTabModules() {
@@ -192,11 +238,13 @@ const RequisadorApp = {
     // Tab-specific initialization
     switch (tabName) {
     case 'config':
+      console.log('📋 Initializing config tab...');
       if (ConfigTab && ConfigTab.renderAllLists) {
         ConfigTab.renderAllLists();
       }
       break;
     case 'create':
+      console.log('✏️ Initializing create tab...');
       if (CreateTab && CreateTab.updateParentRequirementOptions) {
         CreateTab.updateParentRequirementOptions();
       }
@@ -205,18 +253,27 @@ const RequisadorApp = {
       }
       break;
     case 'list':
-      if (ListTab && ListTab.renderRequirementsList) {
-        ListTab.renderRequirementsList();
-      }
+      console.log('📋 Initializing list tab...');
+      setTimeout(() => {
+        if (ListTab && ListTab.renderRequirementsList) {
+          ListTab.renderRequirementsList();
+        }
+      }, 100); // Small delay to ensure DOM is ready
       break;
     case 'tree':
-      if (TreeTab && TreeTab.renderTreeView) {
-        TreeTab.renderTreeView();
-      }
+      console.log('🌳 Initializing tree tab...');
+      setTimeout(() => {
+        if (TreeTab && TreeTab.renderTreeView) {
+          TreeTab.renderTreeView();
+        }
+      }, 100); // Small delay to ensure DOM is ready
       break;
     case 'export':
+      console.log('📤 Initializing export tab...');
       // Export tab doesn't need special initialization
       break;
+    default:
+      console.log(`🤷 Unknown tab: ${tabName}`);
     }
   },
 
@@ -265,10 +322,48 @@ const RequisadorApp = {
     // Update selects
     DOMUtils.updateSelects();
 
-    // Update current tab view
-    this.switchTab(this.activeTab);
+    // Detect current tab and refresh its content
+    this.detectAndRefreshCurrentTab();
 
     console.log('✅ RequisadorApp: UI updated');
+  },
+
+  /**
+   * Detect which tab is currently active and refresh its content
+   */
+  detectAndRefreshCurrentTab() {
+    // Try to detect current tab by checking which content is loaded
+    if (document.getElementById('requirementsList')) {
+      console.log('📋 Detected list tab is active, refreshing...');
+      this.activeTab = 'list';
+      if (ListTab && ListTab.init) {
+        ListTab.init(); // Re-initialize to refresh content
+      }
+    } else if (document.getElementById('requirementsTree')) {
+      console.log('🌳 Detected tree tab is active, refreshing...');
+      this.activeTab = 'tree';
+      if (TreeTab && TreeTab.init) {
+        TreeTab.init(); // Re-initialize to refresh content
+      }
+    } else if (document.getElementById('addReqBtn')) {
+      console.log('✏️ Detected create tab is active, refreshing...');
+      this.activeTab = 'create';
+      if (CreateTab && CreateTab.init) {
+        CreateTab.init(); // Re-initialize to refresh content
+      }
+    } else if (document.getElementById('functionsList')) {
+      console.log('⚙️ Detected config tab is active, refreshing...');
+      this.activeTab = 'config';
+      if (ConfigTab && ConfigTab.init) {
+        ConfigTab.init(); // Re-initialize to refresh content
+      }
+    } else {
+      console.log('📤 Assuming export tab is active...');
+      this.activeTab = 'export';
+      if (ExportTab && ExportTab.init) {
+        ExportTab.init(); // Re-initialize to refresh content
+      }
+    }
   },
 
   /**
@@ -303,225 +398,13 @@ const RequisadorApp = {
   }
 };
 
-// Legacy function compatibility layer
-// These functions are called by the existing HTML and tab loading system
-
-function initialize() {
-  console.log('🔧 Legacy initialize function called');
-  RequisadorApp.init();
-}
-
-function updateUI() {
-  console.log('🎨 Legacy updateUI function called');
-  if (RequisadorApp.updateUI) {
-    RequisadorApp.updateUI();
-  }
-}
-
-function reinitializeDOMElements() {
-  console.log('🔄 Legacy reinitializeDOMElements function called');
-  if (RequisadorApp.reinitializeDOMElements) {
-    RequisadorApp.reinitializeDOMElements();
-  }
-}
-
-function bindEventListeners() {
-  console.log('🔗 Legacy bindEventListeners function called');
-  if (RequisadorApp.bindEventListeners) {
-    RequisadorApp.bindEventListeners();
-  }
-}
-
-// Legacy modal functions (called from HTML)
-function showAboutModal() {
-  console.log('📖 Legacy showAboutModal function called');
-  if (RequisadorApp.showAboutModal) {
-    RequisadorApp.showAboutModal();
-  }
-}
-
-function hideAboutModal() {
-  console.log('📖 Legacy hideAboutModal function called');
-  if (RequisadorApp.hideAboutModal) {
-    RequisadorApp.hideAboutModal();
-  }
-}
-
-// Legacy function redirects to new tab modules
-// These maintain compatibility with existing function calls
-
-function renderRequirementsList() {
-  console.log('📋 Legacy renderRequirementsList called, delegating to ListTab');
-  if (ListTab && ListTab.renderRequirementsList) {
-    ListTab.renderRequirementsList();
-  }
-}
-
-function renderTreeView() {
-  console.log('🌳 Legacy renderTreeView called, delegating to TreeTab');
-  if (TreeTab && TreeTab.renderTreeView) {
-    TreeTab.renderTreeView();
-  }
-}
-
-function updateParentRequirementOptions() {
-  console.log('🔄 Legacy updateParentRequirementOptions called, delegating to CreateTab');
-  if (CreateTab && CreateTab.updateParentRequirementOptions) {
-    CreateTab.updateParentRequirementOptions();
-  }
-}
-
-function renderConfigLists() {
-  console.log('⚙️ Legacy renderConfigLists called, delegating to ConfigTab');
-  if (ConfigTab && ConfigTab.renderAllLists) {
-    ConfigTab.renderAllLists();
-  }
-}
-
-function updateSelects() {
-  console.log('🔄 Legacy updateSelects called, delegating to DOMUtils');
-  if (DOMUtils && DOMUtils.updateSelects) {
-    DOMUtils.updateSelects();
-  }
-}
-
-function expandAllTreeNodes() {
-  console.log('📖 Legacy expandAllTreeNodes called, delegating to TreeTab');
-  if (TreeTab && TreeTab.expandAllTreeNodes) {
-    TreeTab.expandAllTreeNodes();
-  }
-}
-
-function collapseAllTreeNodes() {
-  console.log('📕 Legacy collapseAllTreeNodes called, delegating to TreeTab');
-  if (TreeTab && TreeTab.collapseAllTreeNodes) {
-    TreeTab.collapseAllTreeNodes();
-  }
-}
-
-// Export/Import legacy functions
-function exportToCSV() {
-  console.log('📤 Legacy exportToCSV called, delegating to ExportTab');
-  if (ExportTab && ExportTab.exportToCSV) {
-    ExportTab.exportToCSV();
-  }
-}
-
-function exportToLaTeX() {
-  console.log('📤 Legacy exportToLaTeX called, delegating to ExportTab');
-  if (ExportTab && ExportTab.exportToLaTeX) {
-    ExportTab.exportToLaTeX();
-  }
-}
-
-function exportProject() {
-  console.log('📤 Legacy exportProject called, delegating to ExportTab');
-  if (ExportTab && ExportTab.exportProject) {
-    ExportTab.exportProject();
-  }
-}
-
-function importProject() {
-  console.log('📥 Legacy importProject called, delegating to ExportTab');
-  if (ExportTab && ExportTab.importProject) {
-    ExportTab.importProject();
-  }
-}
-
-function handleFileImport(event) {
-  console.log('📥 Legacy handleFileImport called, delegating to ExportTab');
-  if (ExportTab && ExportTab.handleFileImport) {
-    ExportTab.handleFileImport(event);
-  }
-}
-
-// Legacy requirement management functions
-function addRequirement() {
-  console.log('➕ Legacy addRequirement called, delegating to CreateTab');
-  if (CreateTab && CreateTab.addRequirement) {
-    CreateTab.addRequirement();
-  }
-}
-
-function clearAllRequirements() {
-  console.log('🗑️ Legacy clearAllRequirements called, delegating to ListTab');
-  if (ListTab && ListTab.clearAllRequirements) {
-    ListTab.clearAllRequirements();
-  }
-}
-
-function deleteRequirement(index) {
-  console.log('🗑️ Legacy deleteRequirement called, delegating to ListTab');
-  if (ListTab && ListTab.deleteRequirement) {
-    ListTab.deleteRequirement(index);
-  }
-}
-
-function moveRequirementUp(index) {
-  console.log('⬆️ Legacy moveRequirementUp called, delegating to ListTab');
-  if (ListTab && ListTab.moveRequirement) {
-    ListTab.moveRequirement(index, 'up');
-  }
-}
-
-function moveRequirementDown(index) {
-  console.log('⬇️ Legacy moveRequirementDown called, delegating to ListTab');
-  if (ListTab && ListTab.moveRequirement) {
-    ListTab.moveRequirement(index, 'down');
-  }
-}
-
-function convertRequirementLevel(index) {
-  console.log('🔄 Legacy convertRequirementLevel called, delegating to ListTab');
-  if (ListTab && ListTab.convertRequirementLevel) {
-    ListTab.convertRequirementLevel(index);
-  }
-}
-
-function clearForm() {
-  console.log('🧹 Legacy clearForm called, delegating to CreateTab');
-  if (CreateTab && CreateTab.clearForm) {
-    CreateTab.clearForm();
-  }
-}
-
-function updatePreview() {
-  console.log('👁️ Legacy updatePreview called, delegating to CreateTab');
-  if (CreateTab && CreateTab.updatePreview) {
-    CreateTab.updatePreview();
-  }
-}
-
-// Storage legacy functions
-function saveToLocalStorage() {
-  console.log('💾 Legacy saveToLocalStorage called, delegating to Storage');
-  if (Storage && Storage.saveRequirements) {
-    Storage.saveRequirements();
-  }
-}
-
-function loadFromLocalStorage() {
-  console.log('📁 Legacy loadFromLocalStorage called, delegating to Storage');
-  if (Storage && Storage.loadRequirements) {
-    Storage.loadRequirements();
-  }
-}
-
-// Toast notification legacy function
-function showToast(message, type = 'info') {
-  console.log('💬 Legacy showToast called, delegating to DOMUtils');
-  if (DOMUtils && DOMUtils.showToast) {
-    DOMUtils.showToast(message, type);
-  }
-}
-
-// Expose main app to window for debugging
+// Expose main app to window for debugging and initialization
 window.RequisadorApp = RequisadorApp;
 
-// Expose legacy initialize function to window
-window.initialize = initialize;
-window.updateUI = updateUI;
-window.reinitializeDOMElements = reinitializeDOMElements;
-window.bindEventListeners = bindEventListeners;
+// Only expose the core initialization function needed by index.html
+window.initialize = () => RequisadorApp.init();
+window.updateUI = () => RequisadorApp.updateUI();
+window.reinitializeDOMElements = () => RequisadorApp.reinitializeDOMElements();
+window.bindEventListeners = () => RequisadorApp.bindEventListeners();
 
-console.log('✅ Main Application Script (Refactored) loaded successfully');
+console.log('✅ Main Application Script loaded successfully');

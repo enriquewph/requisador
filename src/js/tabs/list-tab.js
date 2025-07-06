@@ -15,7 +15,14 @@ const ListTab = {
   init() {
     console.log('🔧 ListTab: Initializing list tab...');
     this.bindEvents();
+    
+    // Always render when initializing, especially if data was updated
+    if (window.dataUpdated) {
+      console.log('🔄 ListTab: Data was updated, refreshing list...');
+      window.dataUpdated = false; // Reset flag
+    }
     this.renderRequirementsList();
+    
     console.log('✅ ListTab: List tab initialized successfully');
   },
 
@@ -24,7 +31,7 @@ const ListTab = {
    */
   bindEvents() {
     // Clear all requirements button
-    const clearAllBtn = document.getElementById('clearAllRequirementsBtn');
+    const clearAllBtn = document.getElementById('clearAllBtn');
     if (clearAllBtn) {
       clearAllBtn.addEventListener('click', () => this.clearAllRequirements());
     }
@@ -56,7 +63,7 @@ const ListTab = {
 
     const container = document.getElementById('requirementsList');
     if (!container) {
-      console.warn('ListTab: Requirements list container not found');
+      console.log('ℹ️ ListTab: Requirements list container not found (tab not loaded)');
       return;
     }
 
@@ -119,64 +126,93 @@ const ListTab = {
     }).join('');
 
     container.innerHTML = `
-      <div class="space-y-4">
+      <div class="space-y-3">
         ${requirementsHTML}
       </div>
     `;
+
+    // Update requirements count
+    const countElement = document.getElementById('requirementsCount');
+    if (countElement) {
+      const total = AppGlobals.state.allRequirements.length;
+      const showing = filteredRequirements.length;
+      countElement.textContent = total === showing 
+        ? `Total: ${total} requisitos`
+        : `Mostrando: ${showing} de ${total} requisitos`;
+    }
 
     console.log(`ListTab: Rendered ${filteredRequirements.length} requirements`);
   },
 
   /**
-   * Generate HTML for a requirement card
+   * Generate HTML for a requirement card (condensed version)
    */
   generateRequirementCard(req, index) {
     const levelBadge = req.level === 1
-      ? '<span class="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">Nivel 1</span>'
-      : '<span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded">Nivel 2</span>';
+      ? '<span class="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">L1</span>'
+      : '<span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded">L2</span>';
 
-    const parentInfo = req.parentId
-      ? `<div class="text-sm text-gray-600 mb-2">
-           <span class="font-medium">Requisito Padre:</span> ${req.parentId}
-         </div>`
-      : '';
+    const parentInfo = req.parentId ? `<span class="text-xs text-gray-500 ml-2">← ${req.parentId}</span>` : '';
 
-    const component = req.component === 'Ambos' ? 'HMI, ECI' : req.component;
+    const component = req.component === 'Ambos' ? 'HMI+ECI' : req.component;
+
+    // Truncate behavior to keep it condensed
+    const behaviorSummary = req.behavior.length > 60 
+      ? req.behavior.substring(0, 60) + '...'
+      : req.behavior;
+
+    // Create tooltip content with all details
+    const tooltipContent = `
+ID: ${req.id}
+${req.parentId ? `Padre: ${req.parentId}` : ''}
+Componente: ${req.component === 'Ambos' ? 'HMI, ECI' : req.component}
+Función: ${req.func}
+Variable: ${req.variable}
+Modo: ${req.mode}
+${req.condition ? `Condición: ${req.condition}` : ''}
+Comportamiento: ${req.behavior}
+Latencia: ${req.latency}
+Tolerancia: ${req.tolerance}
+Justificación: ${req.justification}
+    `.trim();
 
     return `
-      <div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow duration-200">
-        <div class="flex items-center justify-between mb-4">
-          <div class="flex items-center space-x-3">
+      <div class="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow duration-200 cursor-pointer" 
+           title="${tooltipContent}">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2 min-w-0 flex-1">
             ${levelBadge}
-            <h3 class="text-lg font-bold text-gray-900">${req.id}</h3>
+            <h3 class="text-base font-bold text-gray-900">${req.id}</h3>
+            ${parentInfo}
+            <span class="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded">${component}</span>
           </div>
-          <div class="flex space-x-2">
+          <div class="flex space-x-1 ml-2">
             <button 
               onclick="ListTab.moveRequirement(${index}, 'up')" 
-              class="text-gray-500 hover:text-blue-600 p-1"
+              class="text-gray-400 hover:text-blue-600 p-1 text-sm"
               title="Mover arriba"
-              ${index === 0 ? 'disabled' : ''}
+              ${index === 0 ? 'disabled style="opacity:0.3"' : ''}
             >
               ↑
             </button>
             <button 
               onclick="ListTab.moveRequirement(${index}, 'down')" 
-              class="text-gray-500 hover:text-blue-600 p-1"
+              class="text-gray-400 hover:text-blue-600 p-1 text-sm"
               title="Mover abajo"
-              ${index === AppGlobals.state.allRequirements.length - 1 ? 'disabled' : ''}
+              ${index === AppGlobals.state.allRequirements.length - 1 ? 'disabled style="opacity:0.3"' : ''}
             >
               ↓
             </button>
             <button 
               onclick="ListTab.convertRequirementLevel(${index})" 
-              class="text-gray-500 hover:text-yellow-600 p-1"
+              class="text-gray-400 hover:text-yellow-600 p-1 text-sm"
               title="Convertir nivel"
             >
               ⇄
             </button>
             <button 
               onclick="ListTab.deleteRequirement(${index})" 
-              class="text-gray-500 hover:text-red-600 p-1"
+              class="text-gray-400 hover:text-red-600 p-1 text-sm"
               title="Eliminar requisito"
             >
               🗑️
@@ -184,53 +220,8 @@ const ListTab = {
           </div>
         </div>
 
-        ${parentInfo}
-
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 text-sm">
-          <div>
-            <span class="font-medium text-gray-600">Componente:</span>
-            <div class="text-gray-900">${component}</div>
-          </div>
-          <div>
-            <span class="font-medium text-gray-600">Función:</span>
-            <div class="text-gray-900">${req.func}</div>
-          </div>
-          <div>
-            <span class="font-medium text-gray-600">Variable:</span>
-            <div class="text-gray-900">${req.variable}</div>
-          </div>
-          <div>
-            <span class="font-medium text-gray-600">Modo:</span>
-            <div class="text-gray-900">${req.mode}</div>
-          </div>
-        </div>
-
-        ${req.condition ? `
-          <div class="mb-3">
-            <span class="font-medium text-gray-600 text-sm">Condición:</span>
-            <p class="text-gray-800 mt-1">${req.condition}</p>
-          </div>
-        ` : ''}
-
-        <div class="mb-3">
-          <span class="font-medium text-gray-600 text-sm">Comportamiento Requerido:</span>
-          <p class="text-gray-800 mt-1">${req.behavior}</p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3 text-sm">
-          <div>
-            <span class="font-medium text-gray-600">Latencia Máxima:</span>
-            <div class="text-gray-900">${req.latency}</div>
-          </div>
-          <div>
-            <span class="font-medium text-gray-600">Tolerancia:</span>
-            <div class="text-gray-900">${req.tolerance}</div>
-          </div>
-        </div>
-
-        <div>
-          <span class="font-medium text-gray-600 text-sm">Justificación:</span>
-          <p class="text-gray-800 mt-1">${req.justification}</p>
+        <div class="text-sm text-gray-700 mt-2 truncate">
+          ${behaviorSummary}
         </div>
       </div>
     `;
@@ -239,7 +230,7 @@ const ListTab = {
   /**
    * Filter requirements based on search term
    */
-  filterRequirements(searchTerm) {
+  filterRequirements() {
     // The filtering is handled in renderRequirementsList
     this.renderRequirementsList();
   },

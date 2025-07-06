@@ -10,10 +10,10 @@
  */
 function saveConfig() {
   const config = {
-    functions: [...AppGlobals.allFunctions],
-    variables: [...AppGlobals.allVariables],
-    components: [...AppGlobals.allComponents],
-    modes: JSON.parse(JSON.stringify(AppGlobals.modes)),
+    functions: [...AppGlobals.state.allFunctions],
+    variables: [...AppGlobals.state.allVariables],
+    components: [...AppGlobals.state.allComponents],
+    modes: JSON.parse(JSON.stringify(AppGlobals.state.modes)),
   };
   localStorage.setItem('systemConfig', JSON.stringify(config));
 }
@@ -26,16 +26,16 @@ function loadConfig() {
   if (savedConfig) {
     try {
       const config = JSON.parse(savedConfig);
-      AppGlobals.allFunctions.length = 0;
-      AppGlobals.allVariables.length = 0;
-      AppGlobals.allComponents.length = 0;
-      AppGlobals.allFunctions.push(...(config.functions || AppGlobals.defaults.functions));
-      AppGlobals.allVariables.push(...(config.variables || AppGlobals.defaults.variables));
-      AppGlobals.allComponents.push(...(config.components || AppGlobals.defaults.components));
+      AppGlobals.state.allFunctions.length = 0;
+      AppGlobals.state.allVariables.length = 0;
+      AppGlobals.state.allComponents.length = 0;
+      AppGlobals.state.allFunctions.push(...(config.functions || AppGlobals.defaults.functions));
+      AppGlobals.state.allVariables.push(...(config.variables || AppGlobals.defaults.variables));
+      AppGlobals.state.allComponents.push(...(config.components || AppGlobals.defaults.components));
 
       // Clear and reload modes
-      Object.keys(AppGlobals.modes).forEach(key => delete AppGlobals.modes[key]);
-      Object.assign(AppGlobals.modes, config.modes || JSON.parse(JSON.stringify(AppGlobals.defaults.modes)));
+      Object.keys(AppGlobals.state.modes).forEach(key => delete AppGlobals.state.modes[key]);
+      Object.assign(AppGlobals.state.modes, config.modes || JSON.parse(JSON.stringify(AppGlobals.defaults.modes)));
     } catch (error) {
       console.error('Error loading config:', error);
       resetToDefaults();
@@ -50,8 +50,8 @@ function loadConfig() {
  */
 function saveRequirements() {
   const requirementsData = {
-    requirements: [...AppGlobals.allRequirements],
-    counter: { ...AppGlobals.reqCounter }
+    requirements: [...AppGlobals.state.allRequirements],
+    counter: { ...AppGlobals.state.reqCounter }
   };
   localStorage.setItem('systemRequirements', JSON.stringify(requirementsData));
 }
@@ -64,19 +64,19 @@ function loadRequirements() {
   if (savedRequirements) {
     try {
       const data = JSON.parse(savedRequirements);
-      AppGlobals.allRequirements.length = 0;
-      AppGlobals.allRequirements.push(...(data.requirements || []));
+      AppGlobals.state.allRequirements.length = 0;
+      AppGlobals.state.allRequirements.push(...(data.requirements || []));
 
       // Update counter
       if (data.counter) {
-        AppGlobals.reqCounter.level1 = data.counter.level1 || 0;
-        AppGlobals.reqCounter.level2 = data.counter.level2 || 0;
+        AppGlobals.state.reqCounter.level1 = data.counter.level1 || 0;
+        AppGlobals.state.reqCounter.level2 = data.counter.level2 || 0;
       }
     } catch (error) {
       console.error('Error loading requirements:', error);
-      AppGlobals.allRequirements.length = 0;
-      AppGlobals.reqCounter.level1 = 0;
-      AppGlobals.reqCounter.level2 = 0;
+      AppGlobals.state.allRequirements.length = 0;
+      AppGlobals.state.reqCounter.level1 = 0;
+      AppGlobals.state.reqCounter.level2 = 0;
     }
   }
 }
@@ -85,15 +85,15 @@ function loadRequirements() {
  * Reset configuration to default values
  */
 function resetToDefaults() {
-  AppGlobals.allFunctions.length = 0;
-  AppGlobals.allVariables.length = 0;
-  AppGlobals.allComponents.length = 0;
-  AppGlobals.allFunctions.push(...AppGlobals.defaults.functions);
-  AppGlobals.allVariables.push(...AppGlobals.defaults.variables);
-  AppGlobals.allComponents.push(...AppGlobals.defaults.components);
+  AppGlobals.state.allFunctions.length = 0;
+  AppGlobals.state.allVariables.length = 0;
+  AppGlobals.state.allComponents.length = 0;
+  AppGlobals.state.allFunctions.push(...AppGlobals.defaults.functions);
+  AppGlobals.state.allVariables.push(...AppGlobals.defaults.variables);
+  AppGlobals.state.allComponents.push(...AppGlobals.defaults.components);
 
-  Object.keys(AppGlobals.modes).forEach(key => delete AppGlobals.modes[key]);
-  Object.assign(AppGlobals.modes, JSON.parse(JSON.stringify(AppGlobals.defaults.modes)));
+  Object.keys(AppGlobals.state.modes).forEach(key => delete AppGlobals.state.modes[key]);
+  Object.assign(AppGlobals.state.modes, JSON.parse(JSON.stringify(AppGlobals.defaults.modes)));
 
   saveConfig();
 }
@@ -189,7 +189,7 @@ function loadFromLocalStorage() {
   }
 }
 
-// --- Export functions ---
+// --- Export Storage module ---
 window.Storage = {
   saveConfig,
   loadConfig,
@@ -199,14 +199,5 @@ window.Storage = {
   saveToLocalStorage,
   loadFromLocalStorage
 };
-
-// For backward compatibility
-window.saveConfig = saveConfig;
-window.loadConfig = loadConfig;
-window.saveRequirements = saveRequirements;
-window.loadRequirements = loadRequirements;
-window.resetToDefaults = resetToDefaults;
-window.saveToLocalStorage = saveToLocalStorage;
-window.loadFromLocalStorage = loadFromLocalStorage;
 
 console.log('✅ Storage module loaded');

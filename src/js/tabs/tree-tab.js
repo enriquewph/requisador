@@ -15,7 +15,14 @@ const TreeTab = {
   init() {
     console.log('🔧 TreeTab: Initializing tree tab...');
     this.bindEvents();
+    
+    // Always render when initializing, especially if data was updated
+    if (window.dataUpdated) {
+      console.log('🔄 TreeTab: Data was updated, refreshing tree...');
+      window.dataUpdated = false; // Reset flag
+    }
     this.renderTreeView();
+    
     console.log('✅ TreeTab: Tree tab initialized successfully');
   },
 
@@ -50,7 +57,7 @@ const TreeTab = {
 
     const container = document.getElementById('requirementsTree');
     if (!container) {
-      console.warn('TreeTab: Requirements tree container not found');
+      console.log('ℹ️ TreeTab: Requirements tree container not found (tab not loaded)');
       return;
     }
 
@@ -72,7 +79,7 @@ const TreeTab = {
       return;
     }
 
-    let treeHTML = '<div class="tree-container space-y-4">';
+    let treeHTML = '<div class="tree-container space-y-3 p-4">';
 
     level1Requirements.forEach(level1Req => {
       treeHTML += this.generateTreeNode(level1Req, true);
@@ -92,13 +99,34 @@ const TreeTab = {
     const hasChildren = children.length > 0;
     const nodeId = `tree-node-${req.id}`;
 
-    const component = req.component === 'Ambos' ? 'HMI, ECI' : req.component;
+    const component = req.component === 'Ambos' ? 'HMI+ECI' : req.component;
+
+    // Truncate behavior for compact view
+    const behaviorSummary = req.behavior.length > 80 
+      ? req.behavior.substring(0, 80) + '...'
+      : req.behavior;
+
+    // Create tooltip content with all details
+    const tooltipContent = `
+ID: ${req.id}
+${req.parentId ? `Padre: ${req.parentId}` : ''}
+Componente: ${req.component === 'Ambos' ? 'HMI, ECI' : req.component}
+Función: ${req.func}
+Variable: ${req.variable}
+Modo: ${req.mode}
+${req.condition ? `Condición: ${req.condition}` : ''}
+Comportamiento: ${req.behavior}
+Latencia: ${req.latency}
+Tolerancia: ${req.tolerance}
+Justificación: ${req.justification}
+    `.trim();
 
     let html = `
       <div class="tree-node ${isLevel1 ? 'level-1' : 'level-2'}" data-req-id="${req.id}">
-        <div class="requirement-node bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+        <div class="requirement-node bg-white border rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+             title="${tooltipContent}">
           <div class="flex items-start justify-between">
-            <div class="flex-1">
+            <div class="flex-1 min-w-0">
               <div class="flex items-center mb-2">
                 ${hasChildren ? `
                   <button 
@@ -110,52 +138,22 @@ const TreeTab = {
                   </button>
                 ` : '<div class="w-6 mr-2"></div>'}
                 
-                <div class="flex items-center space-x-2">
-                  <span class="bg-${isLevel1 ? 'blue' : 'green'}-100 text-${isLevel1 ? 'blue' : 'green'}-800 text-xs font-medium px-2 py-1 rounded">
-                    ${isLevel1 ? 'Nivel 1' : 'Nivel 2'}
+                <div class="flex items-center space-x-2 min-w-0">
+                  <span class="bg-${isLevel1 ? 'blue' : 'green'}-100 text-${isLevel1 ? 'blue' : 'green'}-800 text-xs font-medium px-2 py-1 rounded flex-shrink-0">
+                    ${isLevel1 ? 'L1' : 'L2'}
                   </span>
-                  <h3 class="text-lg font-bold text-gray-900">${req.id}</h3>
-                  ${hasChildren ? `<span class="text-xs text-gray-500">(${children.length} derivado${children.length > 1 ? 's' : ''})</span>` : ''}
+                  <h3 class="text-base font-bold text-gray-900 flex-shrink-0">${req.id}</h3>
+                  <span class="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded flex-shrink-0">${component}</span>
+                  ${hasChildren ? `<span class="text-xs text-gray-500 flex-shrink-0">(${children.length})</span>` : ''}
                 </div>
               </div>
 
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3 text-xs">
-                <div class="bg-gray-50 p-2 rounded">
-                  <span class="font-medium text-gray-600">Componente:</span>
-                  <div class="text-gray-900">${component}</div>
-                </div>
-                <div class="bg-gray-50 p-2 rounded">
-                  <span class="font-medium text-gray-600">Función:</span>
-                  <div class="text-gray-900">${req.func}</div>
-                </div>
-                <div class="bg-gray-50 p-2 rounded">
-                  <span class="font-medium text-gray-600">Variable:</span>
-                  <div class="text-gray-900">${req.variable}</div>
-                </div>
-                <div class="bg-gray-50 p-2 rounded">
-                  <span class="font-medium text-gray-600">Modo:</span>
-                  <div class="text-gray-900">${req.mode}</div>
-                </div>
-              </div>
-
-              <div class="mb-2">
-                <span class="font-medium text-gray-600 text-sm">Comportamiento:</span>
-                <p class="text-gray-800 text-sm mt-1">${req.behavior}</p>
-              </div>
-
-              <div class="grid grid-cols-2 gap-2 text-xs">
-                <div>
-                  <span class="font-medium text-gray-600">Latencia:</span>
-                  <span class="text-gray-900">${req.latency}</span>
-                </div>
-                <div>
-                  <span class="font-medium text-gray-600">Tolerancia:</span>
-                  <span class="text-gray-900">${req.tolerance}</span>
-                </div>
+              <div class="text-sm text-gray-700 truncate">
+                ${behaviorSummary}
               </div>
             </div>
 
-            <div class="flex flex-col space-y-1 ml-4">
+            <div class="flex space-x-1 ml-2 flex-shrink-0">
               <button 
                 onclick="TreeTab.editRequirement('${req.id}')" 
                 class="text-blue-600 hover:text-blue-800 text-xs p-1"
@@ -178,7 +176,7 @@ const TreeTab = {
     // Add children if any
     if (hasChildren) {
       html += `
-        <div class="children-container ml-8 mt-3 space-y-3" id="${nodeId}-children">
+        <div class="children-container ml-6 mt-2 space-y-2" id="${nodeId}-children">
       `;
 
       children.forEach(child => {

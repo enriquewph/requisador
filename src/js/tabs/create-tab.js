@@ -3,7 +3,7 @@
  * Handles requirement creation form functionality
  */
 
-/* global AppGlobals, DOMUtils */
+/* global AppGlobals, DOMUtils, ListTab, TreeTab */
 
 /**
  * Create Tab functionality
@@ -23,16 +23,44 @@ const CreateTab = {
    * Bind event listeners for create tab
    */
   bindEvents() {
+    console.log('🔗 CreateTab: Binding events...');
     // Add requirement button
-    const addBtn = document.getElementById('addRequirementBtn');
+    const addBtn = document.getElementById('addReqBtn');
     if (addBtn) {
-      addBtn.addEventListener('click', () => this.addRequirement());
+      // Remove any existing event listeners to prevent duplicates
+      addBtn.replaceWith(addBtn.cloneNode(true));
+      const newAddBtn = document.getElementById('addReqBtn');
+      
+      newAddBtn.addEventListener('click', (e) => {
+        console.log('🖱️ CreateTab: addReqBtn clicked - event fired');
+        e.preventDefault();
+        this.addRequirement();
+      });
+      console.log('✅ CreateTab: addReqBtn event listener attached');
+    } else {
+      console.log('ℹ️ CreateTab: addReqBtn element not found (may not be loaded yet)');
     }
 
-    // Clear form button
+    // Clear form button (not implemented in HTML yet)
     const clearBtn = document.getElementById('clearFormBtn');
     if (clearBtn) {
-      clearBtn.addEventListener('click', () => this.clearForm());
+      clearBtn.replaceWith(clearBtn.cloneNode(true));
+      const newClearBtn = document.getElementById('clearFormBtn');
+      newClearBtn.addEventListener('click', () => this.clearForm());
+      console.log('✅ CreateTab: clearFormBtn event listener attached');
+    } else {
+      console.log('ℹ️ CreateTab: clearFormBtn not found (not implemented in HTML)');
+    }
+
+    // Generate prompt button
+    const generatePromptBtn = document.getElementById('generatePromptBtn');
+    if (generatePromptBtn) {
+      generatePromptBtn.replaceWith(generatePromptBtn.cloneNode(true));
+      const newGeneratePromptBtn = document.getElementById('generatePromptBtn');
+      newGeneratePromptBtn.addEventListener('click', () => this.generatePrompt());
+      console.log('✅ CreateTab: generatePromptBtn event listener attached');
+    } else {
+      console.log('ℹ️ CreateTab: generatePromptBtn not found');
     }
 
     // Component change event to update modes
@@ -65,12 +93,16 @@ const CreateTab = {
    * Add a new requirement
    */
   addRequirement() {
-    console.log('CreateTab: addRequirement function called');
+    console.log('🔧 CreateTab: addRequirement function called');
 
     const formData = this.getFormData();
+    console.log('📝 CreateTab: Form data collected:', formData);
+    
     if (!this.validateFormData(formData)) {
+      console.log('❌ CreateTab: Form validation failed');
       return;
     }
+    console.log('✅ CreateTab: Form validation passed');
 
     const parentId = formData.parentRequirement;
     let level = 1;
@@ -95,8 +127,11 @@ const CreateTab = {
       // For level 2, find how many children the parent already has
       const childrenCount = AppGlobals.state.allRequirements.filter(req => req.parentId === parentId).length;
       const parentNumber = parentId.replace('R', ''); // Extract parent number
-      newId = `R${parentNumber}-${childrenCount}`;
+      newId = `R${parentNumber}-${childrenCount + 1}`;
     }
+
+    console.log('🆔 CreateTab: Generated new requirement ID:', newId);
+    console.log('📊 CreateTab: Updated req counter:', AppGlobals.state.reqCounter);
 
     const newReq = {
       id: newId,
@@ -113,9 +148,13 @@ const CreateTab = {
       justification: formData.justification
     };
 
+    console.log('✅ CreateTab: New requirement created:', newReq);
+    console.log('📋 CreateTab: Total requirements before adding:', AppGlobals.state.allRequirements.length);
+
     // Add requirement to global state
     if (level === 1) {
       AppGlobals.state.allRequirements.push(newReq);
+      console.log('➕ CreateTab: Added level 1 requirement');
     } else {
       // Insert level 2 requirement after its parent
       const insertIndex = parentIndex + 1;
@@ -129,24 +168,26 @@ const CreateTab = {
         }
       }
       AppGlobals.state.allRequirements.splice(finalInsertIndex, 0, newReq);
+      console.log('➕ CreateTab: Added level 2 requirement at index:', finalInsertIndex);
     }
 
-    console.log('New requirement added:', newReq);
-    console.log('Updated requirements array:', AppGlobals.state.allRequirements);
+    console.log('📋 CreateTab: Total requirements after adding:', AppGlobals.state.allRequirements.length);
+    console.log('📊 CreateTab: Updated requirements array:', AppGlobals.state.allRequirements);
 
-    // Update UI
+    // Save to storage
+    if (typeof window.Storage !== 'undefined' && window.Storage.saveRequirements) {
+      window.Storage.saveRequirements();
+      console.log('💾 CreateTab: Requirements saved to localStorage');
+    }
+
+    // Clear form and update UI
     this.clearForm();
     this.updateParentRequirementOptions();
 
-    // Trigger updates in other tabs if their update functions exist
-    if (typeof window.renderRequirementsList === 'function') {
-      window.renderRequirementsList();
-    }
-    if (typeof window.renderTreeView === 'function') {
-      window.renderTreeView();
-    }
+    // Mark that data has been updated so other tabs can refresh when activated
+    window.dataUpdated = true;
 
-    DOMUtils.showToast(`Requisito ${newId} añadido correctamente.`, 'success');
+    DOMUtils.showToast(`Requisito ${newId} añadido correctamente. Ve a la pestaña "Lista" o "Árbol" para verlo.`, 'success');
   },
 
   /**
@@ -250,75 +291,103 @@ const CreateTab = {
    * Update the requirement preview
    */
   updatePreview() {
-    const previewElement = document.getElementById('requirementPreview');
-    if (!previewElement) {return;}
-
     const formData = this.getFormData();
 
-    // Determine requirement level
-    const level = formData.parentRequirement ? 2 : 1;
-    const levelText = level === 1 ? 'Nivel 1 (Principal)' : 'Nivel 2 (Derivado)';
+    // Update individual output elements
+    const outputId = document.getElementById('outputId');
+    const outputFunction = document.getElementById('outputFunction');
+    const outputVariable = document.getElementById('outputVariable');
+    const outputComponent = document.getElementById('outputComponent');
+    const outputLogic = document.getElementById('outputLogic');
+    const outputLatency = document.getElementById('outputLatency');
+    const outputJustification = document.getElementById('outputJustification');
 
-    // Generate preview ID
+    if (!outputId) return; // If elements don't exist, skip update
+
+    // Determine requirement level and ID
+    const level = formData.parentRequirement ? 2 : 1;
     let previewId = 'R?';
     if (level === 1) {
       previewId = `R${AppGlobals.state.reqCounter.level1}`;
     } else if (formData.parentRequirement) {
       const childrenCount = AppGlobals.state.allRequirements.filter(req => req.parentId === formData.parentRequirement).length;
       const parentNumber = formData.parentRequirement.replace('R', '');
-      previewId = `R${parentNumber}-${childrenCount}`;
+      previewId = `R${parentNumber}-${childrenCount + 1}`;
     }
 
-    const preview = `
-      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div class="flex items-center mb-3">
-          <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">${levelText}</span>
-          <span class="ml-2 font-bold text-blue-900">${previewId}</span>
-        </div>
-        
-        ${formData.parentRequirement ? `
-          <div class="mb-2">
-            <span class="text-sm text-gray-600">Requisito Padre:</span>
-            <span class="ml-1 font-medium">${formData.parentRequirement}</span>
-          </div>
-        ` : ''}
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm mb-3">
-          <div><span class="font-medium">Componente:</span> ${formData.component || '-'}</div>
-          <div><span class="font-medium">Función:</span> ${formData.function || '-'}</div>
-          <div><span class="font-medium">Variable:</span> ${formData.variable || '-'}</div>
-          <div><span class="font-medium">Modo:</span> ${formData.mode || '-'}</div>
-        </div>
-        
-        ${formData.condition ? `
-          <div class="mb-2">
-            <span class="font-medium text-sm">Condición:</span>
-            <p class="text-gray-700 mt-1">${formData.condition}</p>
-          </div>
-        ` : ''}
-        
-        ${formData.behavior ? `
-          <div class="mb-2">
-            <span class="font-medium text-sm">Comportamiento Requerido:</span>
-            <p class="text-gray-700 mt-1">${formData.behavior}</p>
-          </div>
-        ` : ''}
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm mb-3">
-          <div><span class="font-medium">Latencia Máx.:</span> ${formData.latency || '-'}</div>
-          <div><span class="font-medium">Tolerancia:</span> ${formData.tolerance || '-'}</div>
-        </div>
-        
-        ${formData.justification ? `
-          <div>
-            <span class="font-medium text-sm">Justificación:</span>
-            <p class="text-gray-700 mt-1">${formData.justification}</p>
-          </div>
-        ` : ''}
-      </div>
-    `;
+    // Update ID
+    outputId.textContent = previewId;
 
-    previewElement.innerHTML = preview;
+    // Update function, variable, component
+    outputFunction.textContent = formData.function || '-';
+    outputVariable.textContent = formData.variable || '-';
+    outputComponent.textContent = formData.component || '-';
+
+    // Update logic/behavior section
+    let logicText = '';
+    if (formData.condition) {
+      logicText += `Cuando ${formData.condition}, `;
+    }
+    if (formData.behavior) {
+      logicText += `el sistema debe ${formData.behavior}`;
+    }
+    if (formData.tolerance) {
+      logicText += ` con una tolerancia de ${formData.tolerance}`;
+    }
+    if (formData.mode) {
+      logicText += ` en modo ${formData.mode}`;
+    }
+    
+    outputLogic.textContent = logicText || 'Completa los campos para ver la descripción del requisito';
+
+    // Update latency and justification
+    outputLatency.textContent = formData.latency || '-';
+    outputJustification.textContent = formData.justification || '-';
+  },
+
+  /**
+   * Generate AI prompt for requirement refinement
+   */
+  generatePrompt() {
+    const formData = this.getFormData();
+
+    const prompt = `Por favor, ayúdame a refinar este requisito del sistema siguiendo la metodología del Systems Engineering Handbook:
+
+**Contexto del Sistema:**
+- Componente: ${formData.component || '[No especificado]'}
+- Función Asociada: ${formData.func || '[No especificado]'}
+- Variable Controlada: ${formData.variable || '[No especificado]'}
+- Modo del Sistema: ${formData.mode || '[No especificado]'}
+
+**Requisito Actual:**
+${formData.condition ? `- Condición: ${formData.condition}` : ''}
+- Comportamiento: ${formData.behavior || '[No especificado]'}
+- Latencia Máxima: ${formData.latency || '[No especificado]'}
+- Tolerancia: ${formData.tolerance || '[No especificado]'}
+- Justificación: ${formData.justification || '[No especificado]'}
+
+**Solicitud:**
+1. Analiza si el requisito es claro, medible y verificable
+2. Sugiere mejoras en la redacción del comportamiento
+3. Evalúa si la latencia y tolerancia son apropiadas
+4. Propone una justificación más sólida si es necesario
+5. Identifica posibles requisitos derivados (sub-requisitos)
+
+Por favor, proporciona retroalimentación constructiva y sugerencias específicas.`;
+
+    // Copy to clipboard
+    navigator.clipboard.writeText(prompt).then(() => {
+      DOMUtils.showToast('Prompt copiado al portapapeles. Puedes pegarlo en tu IA favorita.', 'success');
+    }).catch(() => {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = prompt;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      DOMUtils.showToast('Prompt copiado al portapapeles.', 'success');
+    });
   }
 };
 
