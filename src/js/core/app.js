@@ -32,6 +32,61 @@ let reqCounter = {
 };
 let allRequirements = [];
 
+// --- About Modal Functions (defined early to ensure availability) ---
+function showAboutModal() {
+    const aboutModal = document.getElementById('aboutModal');
+    if (aboutModal) {
+        aboutModal.classList.remove('hidden');
+    } else {
+        console.error('About modal element not found');
+        // Try to ensure modal is loaded
+        ensureModalIsLoaded();
+    }
+}
+
+function hideAboutModal() {
+    const aboutModal = document.getElementById('aboutModal');
+    if (aboutModal) {
+        aboutModal.classList.add('hidden');
+    } else {
+        console.error('About modal element not found when trying to hide');
+    }
+}
+
+// Helper function to ensure modal is loaded and event listeners are attached
+function ensureModalIsLoaded() {
+    console.log('Ensuring modal is loaded...');
+    
+    // Check if modal exists now
+    const aboutModal = document.getElementById('aboutModal');
+    if (aboutModal) {
+        console.log('Modal found, attaching any missing event listeners');
+        
+        // Ensure close button has event listener
+        const closeBtn = document.getElementById('closeAboutModal');
+        if (closeBtn && !closeBtn.hasAttribute('data-listener-attached')) {
+            closeBtn.addEventListener('click', hideAboutModal);
+            closeBtn.setAttribute('data-listener-attached', 'true');
+        }
+        
+        // Ensure modal background click listener
+        if (!aboutModal.hasAttribute('data-listener-attached')) {
+            aboutModal.addEventListener('click', (e) => {
+                if (e.target === aboutModal) hideAboutModal();
+            });
+            aboutModal.setAttribute('data-listener-attached', 'true');
+        }
+        
+        return true;
+    }
+    
+    return false;
+}
+
+// Immediately assign modal functions to window to prevent reference errors
+window.showAboutModal = showAboutModal;
+window.hideAboutModal = hideAboutModal;
+
 // --- DOM Elements Cache ---
 let domElements = {};
 
@@ -472,47 +527,17 @@ function showToast(message, type = 'info') {
 }
 
 // --- Tab Navigation Functions ---
+// Note: Tab navigation is now handled by setupTabNavigation() in index.html
+// This function is kept for compatibility but is no longer used
 function switchTab(event, tabId) {
-    // Hide all tab contents
-    const tabContents = document.querySelectorAll('.tab-content');
-    tabContents.forEach(content => {
-        content.classList.remove('active');
-    });
-    
-    // Remove active class from all tab buttons
-    const tabButtons = document.querySelectorAll('.tab-button');
-    tabButtons.forEach(button => {
-        button.classList.remove('active');
-    });
-    
-    // Show the selected tab content
-    document.getElementById(tabId).classList.add('active');
-    
-    // Add active class to the clicked button
-    event.target.classList.add('active');
-    
-    // If switching to tree view, render the tree
-    if (tabId === 'treeContent') {
-        renderTreeView();
-    }
+    console.log('switchTab called but tab navigation is handled by index.html');
+    // This function is deprecated - tab navigation is now handled in index.html
 }
 
 function initializeTabs() {
-    console.log('Initializing tabs...');
-    
-    const configTabBtn = document.getElementById('configTab');
-    const createTabBtn = document.getElementById('createTab');
-    const listTabBtn = document.getElementById('listTab');
-    const treeTabBtn = document.getElementById('treeTab');
-    const guidelinesTabBtn = document.getElementById('guidelinesTab');
-    
-    if (configTabBtn) configTabBtn.addEventListener('click', (e) => switchTab(e, 'configContent'));
-    if (createTabBtn) createTabBtn.addEventListener('click', (e) => switchTab(e, 'createContent'));
-    if (listTabBtn) listTabBtn.addEventListener('click', (e) => switchTab(e, 'listContent'));
-    if (treeTabBtn) treeTabBtn.addEventListener('click', (e) => switchTab(e, 'treeContent'));
-    if (guidelinesTabBtn) guidelinesTabBtn.addEventListener('click', (e) => switchTab(e, 'guidelinesContent'));
-    
-    console.log('Tabs initialized');
+    console.log('Tab navigation handled by index.html - skipping app.js tab initialization');
+    // Note: Tab navigation is now handled by setupTabNavigation() in index.html
+    // This function is kept for compatibility but does nothing
 }
 
 function loadInitialExample() {
@@ -609,12 +634,20 @@ function initialize() {
     try {
         console.log('Starting application initialization...');
         
+        // Debug: Check if modal functions are available
+        console.log('Modal functions check:', {
+            showAboutModal: typeof showAboutModal,
+            hideAboutModal: typeof hideAboutModal,
+            windowShowAboutModal: typeof window.showAboutModal,
+            windowHideAboutModal: typeof window.hideAboutModal
+        });
+        
         // Initialize DOM elements first
         initializeDOMElements();
         console.log('DOM elements initialized');
         
-        // Initialize tabs
-        initializeTabs();
+        // Note: Tab navigation is now handled by setupTabNavigation() in index.html
+        // initializeTabs() call removed to avoid conflicts
         
         // Load configuration and data
         loadConfig();
@@ -760,20 +793,32 @@ function initialize() {
         
         // Add event listeners for About modal
         if (domElements.aboutBtn) {
-            domElements.aboutBtn.addEventListener('click', showAboutModal);
-            console.log('About button listener attached');
+            if (typeof window.showAboutModal === 'function') {
+                domElements.aboutBtn.addEventListener('click', window.showAboutModal);
+                console.log('About button listener attached');
+            } else {
+                console.error('showAboutModal function not available on window object');
+            }
         }
         if (domElements.closeAboutModal) {
-            domElements.closeAboutModal.addEventListener('click', hideAboutModal);
-            console.log('Close About modal button listener attached');
+            if (typeof window.hideAboutModal === 'function') {
+                domElements.closeAboutModal.addEventListener('click', window.hideAboutModal);
+                console.log('Close About modal button listener attached');
+            } else {
+                console.error('hideAboutModal function not available on window object');
+            }
         }
         if (domElements.aboutModal) {
-            domElements.aboutModal.addEventListener('click', (e) => {
-                if (e.target === domElements.aboutModal) {
-                    hideAboutModal();
-                }
-            });
-            console.log('About modal background click listener attached');
+            if (typeof window.hideAboutModal === 'function') {
+                domElements.aboutModal.addEventListener('click', (e) => {
+                    if (e.target === domElements.aboutModal) {
+                        window.hideAboutModal();
+                    }
+                });
+                console.log('About modal background click listener attached');
+            } else {
+                console.error('hideAboutModal function not available for modal background click');
+            }
         }
         
         console.log('Application initialized successfully');
@@ -787,19 +832,330 @@ function initialize() {
 // Make initialize function globally available immediately
 window.initialize = initialize;
 
-// --- Initialize when DOM is ready ---
-document.addEventListener('DOMContentLoaded', initialize);
+/**
+ * Re-initialize DOM elements after dynamic content load
+ * This function is called when a new tab is loaded dynamically
+ */
+function initializeDOMElementsForCurrentTab() {
+    console.log('🔄 Re-initializing DOM elements for current tab...');
+    
+    // Re-cache DOM elements that might exist in the current tab - call the original function directly
+    // Form elements
+    domElements.componentSelect = document.getElementById('componentSelect');
+    domElements.functionSelect = document.getElementById('functionSelect');
+    domElements.variableSelect = document.getElementById('variableSelect');
+    domElements.modeSelect = document.getElementById('modeSelect');
+    domElements.parentRequirementSelect = document.getElementById('parentRequirementSelect');
+    domElements.conditionInput = document.getElementById('conditionInput');
+    domElements.behaviorInput = document.getElementById('behaviorInput');
+    domElements.latencyInput = document.getElementById('latencyInput');
+    domElements.toleranceInput = document.getElementById('toleranceInput');
+    domElements.justificationInput = document.getElementById('justificationInput');
+    domElements.generatePromptBtn = document.getElementById('generatePromptBtn');
+    
+    // Buttons
+    domElements.addReqBtn = document.getElementById('addReqBtn');
+    domElements.clearAllBtn = document.getElementById('clearAllBtn');
+    domElements.exportCsvBtn = document.getElementById('exportCsvBtn');
+    domElements.exportLatexBtn = document.getElementById('exportLatexBtn');
+    
+    // Lists and displays
+    domElements.requirementsList = document.getElementById('requirementsList');
+    domElements.functionsList = document.getElementById('functionsList');
+    domElements.variablesList = document.getElementById('variablesList');
+    domElements.componentsList = document.getElementById('componentsList');
+    domElements.functionsPreview = document.getElementById('functionsPreview');
+    domElements.variablesPreview = document.getElementById('variablesPreview');
+    
+    // Configuration elements
+    domElements.newFunctionInput = document.getElementById('newFunctionInput');
+    domElements.addFunctionBtn = document.getElementById('addFunctionBtn');
+    domElements.newVariableInput = document.getElementById('newVariableInput');
+    domElements.addVariableBtn = document.getElementById('addVariableBtn');
+    domElements.resetConfigBtn = document.getElementById('resetConfigBtn');
+    domElements.newComponentInput = document.getElementById('newComponentInput');
+    domElements.addComponentBtn = document.getElementById('addComponentBtn');
+    
+    // Project import/export
+    domElements.importProjectBtn = document.getElementById('importProjectBtn');
+    domElements.exportProjectBtn = document.getElementById('exportProjectBtn');
+    domElements.importFileInput = document.getElementById('importFileInput');
+    
+    // About modal
+    domElements.aboutBtn = document.getElementById('aboutBtn');
+    domElements.aboutModal = document.getElementById('aboutModal');
+    domElements.closeAboutModal = document.getElementById('closeAboutModal');
+    
+    // Output elements
+    domElements.outputId = document.getElementById('outputId');
+    domElements.outputComponent = document.getElementById('outputComponent');
+    domElements.outputFunction = document.getElementById('outputFunction');
+    domElements.outputVariable = document.getElementById('outputVariable');
+    domElements.outputLogic = document.getElementById('outputLogic');
+    domElements.outputLatency = document.getElementById('outputLatency');
+    domElements.outputJustification = document.getElementById('outputJustification');
+    
+    // Re-populate selects if they exist in current tab
+    if (domElements.functionSelect) {
+        updateSelects();
+    }
+    
+    // Re-render config lists if in config tab
+    if (document.getElementById('functionsList')) {
+        renderConfigLists();
+    }
+    
+    // Re-render requirements if in list or tree tab
+    if (document.getElementById('requirementsList')) {
+        if (typeof renderRequirementsList === 'function') {
+            renderRequirementsList();
+        }
+    }
+    
+    if (document.getElementById('treeView')) {
+        if (typeof renderTreeView === 'function') {
+            renderTreeView();
+        }
+    }
+    
+    // Update parent requirements dropdown if in create tab
+    if (document.getElementById('parentRequirementSelect')) {
+        if (typeof updateParentRequirementOptions === 'function') {
+            updateParentRequirementOptions();
+        }
+    }
+    
+    console.log('✅ DOM elements re-initialized for current tab');
+}
 
-// Make functions globally available for onclick handlers
+/**
+ * Bind event listeners for the current tab content
+ * This function is called after dynamic content load
+ */
+function bindEventListenersForCurrentTab() {
+    console.log('🔗 Binding event listeners for current tab...');
+    
+    try {
+        // Core requirement management
+        const addReqBtn = document.getElementById('addReqBtn');
+        if (addReqBtn) {
+            addReqBtn.addEventListener('click', addRequirement);
+        }
+        
+        const clearAllBtn = document.getElementById('clearAllBtn');
+        if (clearAllBtn) {
+            clearAllBtn.addEventListener('click', clearAllRequirements);
+        }
+        
+        // Export buttons
+        const exportCsvBtn = document.getElementById('exportCsvBtn');
+        if (exportCsvBtn) {
+            exportCsvBtn.addEventListener('click', exportToCSV);
+        }
+        
+        const exportLatexBtn = document.getElementById('exportLatexBtn');
+        if (exportLatexBtn) {
+            exportLatexBtn.addEventListener('click', exportToLaTeX);
+        }
+        
+        // Configuration management
+        const addFunctionBtn = document.getElementById('addFunctionBtn');
+        if (addFunctionBtn) {
+            addFunctionBtn.addEventListener('click', addFunction);
+        }
+        
+        const addVariableBtn = document.getElementById('addVariableBtn');
+        if (addVariableBtn) {
+            addVariableBtn.addEventListener('click', addVariable);
+        }
+        
+        const addComponentBtn = document.getElementById('addComponentBtn');
+        if (addComponentBtn) {
+            addComponentBtn.addEventListener('click', addComponent);
+        }
+        
+        const resetConfigBtn = document.getElementById('resetConfigBtn');
+        if (resetConfigBtn) {
+            resetConfigBtn.addEventListener('click', () => {
+                resetToDefaults();
+                renderConfigLists();
+                updateSelects();
+                showToast('Configuración restaurada a valores por defecto', 'info');
+            });
+        }
+        
+        // Real-time preview updates for create tab
+        const functionSelect = document.getElementById('functionSelect');
+        if (functionSelect) {
+            functionSelect.addEventListener('change', updatePreview);
+        }
+        
+        const variableSelect = document.getElementById('variableSelect');
+        if (variableSelect) {
+            variableSelect.addEventListener('change', updatePreview);
+        }
+        
+        const componentSelect = document.getElementById('componentSelect');
+        if (componentSelect) {
+            componentSelect.addEventListener('change', updateModeOptions);
+        }
+        
+        const modeSelect = document.getElementById('modeSelect');
+        if (modeSelect) {
+            modeSelect.addEventListener('change', updatePreview);
+        }
+        
+        const parentRequirementSelect = document.getElementById('parentRequirementSelect');
+        if (parentRequirementSelect) {
+            parentRequirementSelect.addEventListener('change', updatePreview);
+        }
+        
+        const conditionInput = document.getElementById('conditionInput');
+        if (conditionInput) {
+            conditionInput.addEventListener('input', updatePreview);
+        }
+        
+        const behaviorInput = document.getElementById('behaviorInput');
+        if (behaviorInput) {
+            behaviorInput.addEventListener('input', updatePreview);
+        }
+        
+        const latencyInput = document.getElementById('latencyInput');
+        if (latencyInput) {
+            latencyInput.addEventListener('input', updatePreview);
+        }
+        
+        const toleranceInput = document.getElementById('toleranceInput');
+        if (toleranceInput) {
+            toleranceInput.addEventListener('input', updatePreview);
+        }
+        
+        const justificationInput = document.getElementById('justificationInput');
+        if (justificationInput) {
+            justificationInput.addEventListener('input', updatePreview);
+        }
+        
+        // Generate prompt button
+        const generatePromptBtn = document.getElementById('generatePromptBtn');
+        if (generatePromptBtn) {
+            generatePromptBtn.addEventListener('click', generateJustificationPrompt);
+        }
+        
+        // Enter key handlers
+        const newFunctionInput = document.getElementById('newFunctionInput');
+        if (newFunctionInput) {
+            newFunctionInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') addFunction();
+            });
+        }
+        
+        const newVariableInput = document.getElementById('newVariableInput');
+        if (newVariableInput) {
+            newVariableInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') addVariable();
+            });
+        }
+        
+        const newComponentInput = document.getElementById('newComponentInput');
+        if (newComponentInput) {
+            newComponentInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') addComponent();
+            });
+        }
+        
+        // Tree view buttons
+        const expandAllBtn = document.getElementById('expandAllBtn');
+        if (expandAllBtn && typeof expandAllTreeNodes === 'function') {
+            expandAllBtn.addEventListener('click', expandAllTreeNodes);
+        }
+        
+        const collapseAllBtn = document.getElementById('collapseAllBtn');
+        if (collapseAllBtn && typeof collapseAllTreeNodes === 'function') {
+            collapseAllBtn.addEventListener('click', collapseAllTreeNodes);
+        }
+        
+        // Header buttons (should be available across all tabs)
+        const aboutBtn = document.getElementById('aboutBtn');
+        if (aboutBtn) {
+            if (typeof window.showAboutModal === 'function') {
+                aboutBtn.addEventListener('click', window.showAboutModal);
+            } else {
+                console.error('showAboutModal function not available in bindEventListeners');
+            }
+        }
+        
+        const closeAboutModal = document.getElementById('closeAboutModal');
+        if (closeAboutModal) {
+            if (typeof window.hideAboutModal === 'function') {
+                closeAboutModal.addEventListener('click', window.hideAboutModal);
+            } else {
+                console.error('hideAboutModal function not available in bindEventListeners');
+            }
+        }
+        
+        const exportProjectBtn = document.getElementById('exportProjectBtn');
+        if (exportProjectBtn) {
+            exportProjectBtn.addEventListener('click', exportProject);
+        }
+        
+        const importProjectBtn = document.getElementById('importProjectBtn');
+        if (importProjectBtn) {
+            importProjectBtn.addEventListener('click', importProject);
+        }
+        
+        const aboutModal = document.getElementById('aboutModal');
+        if (aboutModal) {
+            if (typeof window.hideAboutModal === 'function') {
+                aboutModal.addEventListener('click', (e) => {
+                    if (e.target === aboutModal) window.hideAboutModal();
+                });
+            } else {
+                console.error('hideAboutModal function not available for aboutModal background click');
+            }
+        }
+        
+        console.log('✅ Event listeners bound for current tab');
+        
+    } catch (error) {
+        console.error('❌ Error binding event listeners:', error);
+    }
+}
+
+/**
+ * Update UI elements after tab change
+ */
+function updateUIForCurrentTab() {
+    console.log('🎨 Updating UI for current tab...');
+    
+    // Update preview if in create tab
+    if (document.getElementById('outputId')) {
+        updatePreview();
+    }
+    
+    // Update requirements count if in list tab
+    const requirementsCount = document.getElementById('requirementsCount');
+    if (requirementsCount) {
+        requirementsCount.textContent = `Total: ${allRequirements.length} requisitos`;
+    }
+    
+    console.log('✅ UI updated for current tab');
+}
+
+// Export functions for use in modular loading
+window.initializeDOMElementsForCurrentTab = initializeDOMElementsForCurrentTab;
+window.bindEventListenersForCurrentTab = bindEventListenersForCurrentTab;
+window.updateUIForCurrentTab = updateUIForCurrentTab;
+
+// Export with simpler names for compatibility (but don't override the original functions)
+window.reinitializeDOMElements = initializeDOMElementsForCurrentTab;
+window.bindEventListeners = bindEventListenersForCurrentTab;
+window.updateUI = updateUIForCurrentTab;
+
+// Make functions globally available immediately
 window.deleteFunction = deleteFunction;
 window.deleteVariable = deleteVariable;
 window.deleteComponent = deleteComponent;
 window.addModeToComponent = addModeToComponent;
 window.deleteModeFromComponent = deleteModeFromComponent;
-window.moveRequirementUp = moveRequirementUp;
-window.moveRequirementDown = moveRequirementDown;
-window.moveRequirementToTop = moveRequirementToTop;
-window.moveRequirementToBottom = moveRequirementToBottom;
-window.deleteRequirement = deleteRequirement;
-window.showAboutModal = showAboutModal;
-window.hideAboutModal = hideAboutModal;
+// Movement and deletion functions are exposed by requirements.js module
+// Modal functions - already assigned immediately after definition

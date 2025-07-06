@@ -130,9 +130,9 @@ select:focus, input:focus, textarea:focus {
     background-color: #eff6ff;
 }
 
-/* Tab content */
+/* Tab content - For dynamic loading, content should always be visible */
 .tab-content {
-    display: none;
+    display: block;
 }
 
 .tab-content.active {

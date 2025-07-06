@@ -1,0 +1,67 @@
+<!-- Configuration Tab Content -->
+<div id="configContent" class="tab-content active p-6 md:p-8">
+    <h3 class="text-2xl font-bold mb-6">Configuración del Sistema</h3>
+    
+    <!-- Functions Configuration -->
+    <div>
+        <h4 class="text-xl font-semibold mb-4">Funciones Disponibles</h4>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+                <div class="flex gap-2 mb-3">
+                    <input type="text" id="newFunctionInput" placeholder="Nueva función..." class="flex-1 p-2">
+                    <button id="addFunctionBtn" class="btn btn-primary">Añadir</button>
+                </div>
+                <div id="functionsList" class="space-y-2 max-h-60 overflow-y-auto"></div>
+            </div>
+            <div>
+                <h5 class="font-medium text-gray-700 mb-2">Funciones actuales:</h5>
+                <div class="bg-gray-50 p-3 rounded text-sm">
+                    <div id="functionsPreview" class="text-gray-600"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Variables Configuration -->
+    <div>
+        <h4 class="text-xl font-semibold mb-4">Variables Controladas Disponibles</h4>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+                <div class="flex gap-2 mb-3">
+                    <input type="text" id="newVariableInput" placeholder="Nueva variable..." class="flex-1 p-2">
+                    <button id="addVariableBtn" class="btn btn-primary">Añadir</button>
+                </div>
+                <div id="variablesList" class="space-y-2 max-h-60 overflow-y-auto"></div>
+            </div>
+            <div>
+                <h5 class="font-medium text-gray-700 mb-2">Variables actuales:</h5>
+                <div class="bg-gray-50 p-3 rounded text-sm">
+                    <div id="variablesPreview" class="text-gray-600"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset to Defaults -->
+    <div class="pt-4 border-t">
+        <button id="resetConfigBtn" class="btn bg-orange-600 hover:bg-orange-700 text-white">Restaurar Valores por Defecto</button>
+    </div>
+
+    <!-- Components and Modes Configuration -->
+    <div>
+        <h4 class="text-xl font-semibold mb-4">Componentes del Sistema y sus Modos</h4>
+        <div class="space-y-6">
+            <!-- Add New Component -->
+            <div class="border rounded-lg p-4 bg-gray-50">
+                <h5 class="font-medium text-gray-700 mb-3">Añadir Nuevo Componente</h5>
+                <div class="flex gap-2 mb-3">
+                    <input type="text" id="newComponentInput" placeholder="Nombre del componente..." class="flex-1 p-2">
+                    <button id="addComponentBtn" class="btn btn-primary">Añadir Componente</button>
+                </div>
+            </div>
+
+            <!-- Existing Components and Their Modes -->
+            <div id="componentsList" class="space-y-4"></div>
+        </div>
+    </div>
+</div>
