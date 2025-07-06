@@ -189,7 +189,11 @@ function handleFileImport(event) {
       modes = projectData.config.modes || JSON.parse(JSON.stringify(defaultModes));
 
       // Import requirements
-      allRequirements = projectData.requirements.list || [];
+      // Import requirements data with array clearing approach
+      allRequirements.length = 0;
+      if (projectData.requirements.list && Array.isArray(projectData.requirements.list)) {
+        allRequirements.push(...projectData.requirements.list);
+      }
       reqCounter = projectData.requirements.counter || allRequirements.length;
 
       // Save to localStorage

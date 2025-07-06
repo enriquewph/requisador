@@ -234,7 +234,9 @@ function deleteRequirement(index) {
   if (confirm(confirmMessage)) {
     if (req.level === 1) {
       // Remove parent and all its children
-      allRequirements = allRequirements.filter(r => r.id !== req.id && r.parentId !== req.id);
+      const filteredRequirements = allRequirements.filter(r => r.id !== req.id && r.parentId !== req.id);
+      allRequirements.length = 0;
+      allRequirements.push(...filteredRequirements);
     } else {
       // Just remove the child requirement
       allRequirements.splice(index, 1);
@@ -261,7 +263,8 @@ function clearAllRequirements() {
       '¿Estás seguro de que quieres eliminar todos los requisitos? Esta acción no se puede deshacer.'
     )
   ) {
-    allRequirements = [];
+    // Clear the array instead of reassigning
+    allRequirements.length = 0;
     reqCounter = { level1: 0, level2: 0 };
     saveToLocalStorage();
     renderRequirementsList();
@@ -535,64 +538,74 @@ function saveToLocalStorage() {
 }
 
 function loadFromLocalStorage() {
-  const savedData = localStorage.getItem('requirementsData');
-  if (savedData) {
-    try {
-      const data = JSON.parse(savedData);
-      allRequirements = data.requirements || [];
+  try {
+    const savedData = localStorage.getItem('requirementsData');
+    if (!savedData) {
+      console.log('No saved requirements data found');
+      return;
+    }
 
-      // Check if this is legacy data (no version field or old version)
-      const isLegacyData = !data.version || data.version !== '3.0';
+    console.log('Loading requirements from localStorage...');
+    const data = JSON.parse(savedData);
+    
+    // Clear and repopulate the array instead of reassigning
+    allRequirements.length = 0;
+    if (data.requirements && Array.isArray(data.requirements)) {
+      allRequirements.push(...data.requirements);
+    }
 
-      // Handle legacy data format
-      if (typeof data.counter === 'number' || isLegacyData) {
-        console.log('Migrating data to new RN-M ID format...');
-        reqCounter = { level1: 0, level2: 0 };
+    // Check if this is legacy data (no version field or old version)
+    const isLegacyData = !data.version || data.version !== '3.0';
 
-        // Update ALL requirements to new format
-        allRequirements.forEach((req, index) => {
-          req.level = 1; // All legacy requirements become level 1
-          req.parentId = null;
-        });
+    // Handle legacy data format
+    if (typeof data.counter === 'number' || isLegacyData) {
+      console.log('Migrating data to new RN-M ID format...');
+      reqCounter = { level1: 0, level2: 0 };
 
-        // Force save with new format
-        recalculateIds();
-        saveToLocalStorage();
-        showToast('Datos migrados al nuevo formato RN-M de IDs', 'info');
-      } else {
-        reqCounter = data.counter || { level1: 0, level2: 0 };
-      }
-
-      // Ensure ALL requirements have proper level and structure
+      // Update ALL requirements to new format
       allRequirements.forEach((req, index) => {
-        // If level is missing, assume it's level 1
-        if (!req.level) {
-          req.level = 1;
-          req.parentId = null;
-        }
-
-        // Ensure parentId is properly set
-        if (req.level === 1) {
-          req.parentId = null;
-        } else if (req.level === 2 && !req.parentId) {
-          // If it's level 2 but has no parent, convert to level 1
-          req.level = 1;
-          req.parentId = null;
-        }
+        req.level = 1; // All legacy requirements become level 1
+        req.parentId = null;
       });
 
-      // Recalculate IDs to ensure consistency
+      // Force save with new format
       recalculateIds();
-
-      renderRequirementsList();
-      renderTreeView(); // Update tree view
-      updateParentRequirementOptions();
-      updatePreview();
-    } catch (error) {
-      console.error('Error loading saved data:', error);
-      allRequirements = [];
-      reqCounter = { level1: 0, level2: 0 };
+      saveToLocalStorage();
+      showToast('Datos migrados al nuevo formato RN-M de IDs', 'info');
+    } else {
+      reqCounter = data.counter || { level1: 0, level2: 0 };
     }
+
+    // Ensure ALL requirements have proper level and structure
+    allRequirements.forEach((req, index) => {
+      // If level is missing, assume it's level 1
+      if (!req.level) {
+        req.level = 1;
+        req.parentId = null;
+      }
+
+      // Ensure parentId is properly set
+      if (req.level === 1) {
+        req.parentId = null;
+      } else if (req.level === 2 && !req.parentId) {
+        // If it's level 2 but has no parent, convert to level 1
+        req.level = 1;
+        req.parentId = null;
+      }
+    });
+
+    // Recalculate IDs to ensure consistency
+    recalculateIds();
+
+    renderRequirementsList();
+    renderTreeView(); // Update tree view
+    updateParentRequirementOptions();
+    updatePreview();
+  } catch (error) {
+    console.error('Error loading saved data:', error);
+    // Clear the array instead of reassigning
+    allRequirements.length = 0;
+    reqCounter = { level1: 0, level2: 0 };
   }
 }
 

@@ -4,7 +4,7 @@
  * Following Systems Engineering Handbook methodology
  */
 
-/* global addRequirement, clearAllRequirements, deleteRequirement, moveRequirementUp, moveRequirementDown, moveRequirementToTop, moveRequirementToBottom, convertRequirementLevel, convertToLevel1, convertToLevel2, renderRequirementsList, renderTreeView, clearForm, updateParentRequirementOptions, exportToCSV, exportToLaTeX, importProject, exportProject, expandAllTreeNodes, collapseAllTreeNodes, reqCounter:writable, renderConfigLists, updateSelects, loadFromLocalStorage, saveToLocalStorage */
+/* global addRequirement, clearAllRequirements, deleteRequirement, moveRequirementUp, moveRequirementDown, moveRequirementToTop, moveRequirementToBottom, convertRequirementLevel, convertToLevel1, convertToLevel2, renderRequirementsList, renderTreeView, clearForm, updateParentRequirementOptions, exportToCSV, exportToLaTeX, importProject, exportProject, handleFileImport, expandAllTreeNodes, collapseAllTreeNodes, reqCounter:writable, renderConfigLists, updateSelects, loadFromLocalStorage, saveToLocalStorage */
 
 // --- Data Definitions ---
 let modes = {
@@ -92,7 +92,7 @@ const reqCounter = {
   level1: 0,
   level2: 0,
 };
-const allRequirements = [];
+let allRequirements = [];
 
 // --- About Modal Functions (defined early to ensure availability) ---
 function showAboutModal() {
@@ -713,6 +713,9 @@ La justificación debe ser específica, técnica y alineada con los estándares 
 function initialize() {
   try {
     console.log('Starting application initialization...');
+    
+    // Use performance timing for debugging
+    const startTime = performance.now();
 
     // Debug: Check if modal functions are available
     console.log('Modal functions check:', {
@@ -741,7 +744,7 @@ function initialize() {
     renderConfigLists();
     console.log('Config lists rendered');
 
-    // Load saved requirements
+    // Load saved requirements (this was causing the assignment error)
     loadFromLocalStorage();
     console.log('Requirements loaded from localStorage');
 
@@ -870,6 +873,12 @@ function initialize() {
       domElements.importProjectBtn.addEventListener('click', importProject);
       console.log('Import project button listener attached');
     }
+    
+    // Add event listener for file input
+    if (domElements.importFileInput) {
+      domElements.importFileInput.addEventListener('change', handleFileImport);
+      console.log('Import file input listener attached');
+    }
 
     // Add event listeners for About modal
     if (domElements.aboutBtn) {
@@ -902,6 +911,11 @@ function initialize() {
     }
 
     console.log('Application initialized successfully');
+    
+    // Log performance timing
+    const endTime = performance.now();
+    console.log(`🚀 Application initialization completed in ${(endTime - startTime).toFixed(2)}ms`);
+    
     showToast('Aplicación inicializada correctamente', 'success');
   } catch (error) {
     console.error('Error during initialization:', error);
@@ -1181,6 +1195,12 @@ function bindEventListenersForCurrentTab() {
     const importProjectBtn = document.getElementById('importProjectBtn');
     if (importProjectBtn) {
       importProjectBtn.addEventListener('click', importProject);
+    }
+    
+    // File input event listener
+    const importFileInput = document.getElementById('importFileInput');
+    if (importFileInput) {
+      importFileInput.addEventListener('change', handleFileImport);
     }
 
     const aboutModal = document.getElementById('aboutModal');
