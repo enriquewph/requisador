@@ -63,14 +63,26 @@
     <!-- Core Configuration -->
     <script src="./js/core/config.js"></script>
 
+    <!-- Core State and Data Management (must load first) -->
+    <script src="./js/core/globals.js"></script>
+    
     <!-- Utilities -->
+    <script src="./js/utils/dom-utils.js"></script>
+    <script src="./js/core/storage.js"></script>
     <script src="./js/utils/page-loader.js?v=6"></script>
     <script src="./js/utils/init.js"></script>
+
+    <!-- Tab Modules -->
+    <script src="./js/tabs/config-tab.js"></script>
+    <script src="./js/tabs/create-tab.js"></script>
+    <script src="./js/tabs/list-tab.js"></script>
+    <script src="./js/tabs/tree-tab.js"></script>
+    <script src="./js/tabs/export-tab.js"></script>
 
     <!-- Core Application -->
     <script src="./js/core/app.js?v=6"></script>
 
-    <!-- Modules -->
+    <!-- Legacy Modules (to be refactored) -->
     <script src="./js/modules/requirements.js?v=6"></script>
     <script src="./js/modules/export.js?v=6"></script>
 

@@ -1,14 +1,19 @@
 /**
- * Export/Import Module
+ * Export/Import Module (Legacy - to be replaced by ExportTab)
  * Handles CSV, LaTeX, and project export/import functionality
+ *
+ * NOTE: This module is kept for backward compatibility.
+ * New functionality should use the ExportTab module instead.
  */
 
-/* global allRequirements:writable, allFunctions:writable, allVariables:writable, allComponents:writable, modes:writable, domElements, showToast, renderRequirementsList, updatePreview, reqCounter:writable, renderConfigLists, updateSelects, defaultFunctions, defaultVariables, defaultComponents, defaultModes, saveConfig, saveToLocalStorage */
+/* global AppGlobals, DOMUtils, Storage */
+
+// Legacy export functions using new modular structure
 
 // --- Export Functions ---
 function exportToCSV() {
-  if (allRequirements.length === 0) {
-    showToast('No hay requisitos para exportar.', 'warning');
+  if (AppGlobals.state.allRequirements.length === 0) {
+    DOMUtils.showToast('No hay requisitos para exportar.', 'warning');
     return;
   }
 
@@ -33,7 +38,7 @@ function exportToCSV() {
   };
 
   const csvRows = [headers.join(',')];
-  allRequirements.forEach(req => {
+  AppGlobals.state.allRequirements.forEach(req => {
     const component = req.component === 'Ambos' ? 'HMI, ECI' : req.component;
     const row = [
       req.id, // Use the actual ID instead of R${index}
@@ -52,12 +57,12 @@ function exportToCSV() {
 
   const csvString = csvRows.join('\n');
   downloadFile(csvString, 'requisitos_detallados.csv', 'text/csv');
-  showToast('Archivo CSV exportado exitosamente', 'success');
+  DOMUtils.showToast('Archivo CSV exportado exitosamente', 'success');
 }
 
 function exportToLaTeX() {
-  if (allRequirements.length === 0) {
-    showToast('No hay requisitos para exportar.', 'warning');
+  if (AppGlobals.state.allRequirements.length === 0) {
+    DOMUtils.showToast('No hay requisitos para exportar.', 'warning');
     return;
   }
 
@@ -90,7 +95,7 @@ function exportToLaTeX() {
 \\endfoot
 \\bottomrule`;
 
-  allRequirements.forEach(req => {
+  AppGlobals.state.allRequirements.forEach(req => {
     const condition = req.condition === '-' ? 'N/A' : req.condition;
     const component = req.component === 'Ambos' ? 'HMI, ECI' : req.component;
     // Add indentation for level 2 requirements in LaTeX
@@ -104,7 +109,7 @@ function exportToLaTeX() {
 \\label{tab:requisitos-detallados}`;
 
   downloadFile(latexContent, 'requisitos_detallados.tex', 'text/plain');
-  showToast('Archivo LaTeX exportado exitosamente', 'success');
+  DOMUtils.showToast('Archivo LaTeX exportado exitosamente', 'success');
 }
 
 // --- Project Import/Export Functions ---
@@ -113,17 +118,17 @@ function exportProject() {
     version: '1.0',
     timestamp: new Date().toISOString(),
     config: {
-      functions: [...allFunctions],
-      variables: [...allVariables],
-      components: [...allComponents],
-      modes: JSON.parse(JSON.stringify(modes)),
+      functions: [...AppGlobals.state.allFunctions],
+      variables: [...AppGlobals.state.allVariables],
+      components: [...AppGlobals.state.allComponents],
+      modes: JSON.parse(JSON.stringify(AppGlobals.state.modes)),
     },
     requirements: {
-      list: [...allRequirements],
-      counter: reqCounter,
+      list: [...AppGlobals.state.allRequirements],
+      counter: AppGlobals.state.reqCounter,
     },
     metadata: {
-      totalRequirements: allRequirements.length,
+      totalRequirements: AppGlobals.state.allRequirements.length,
       exportedBy: 'Requisador de Requisitos',
       description: 'Proyecto completo con configuración y requisitos del sistema',
     },
@@ -138,12 +143,13 @@ function exportProject() {
   const filename = `requisitos_proyecto_${dateStr}_${timeStr}.json`;
 
   downloadFile(jsonString, filename, 'application/json');
-  showToast(`Proyecto exportado exitosamente como: ${filename}`, 'success');
+  DOMUtils.showToast(`Proyecto exportado exitosamente como: ${filename}`, 'success');
 }
 
 function importProject() {
-  if (domElements.importFileInput) {
-    domElements.importFileInput.click();
+  const importFileInput = document.getElementById('importFileInput');
+  if (importFileInput) {
+    importFileInput.click();
   }
 }
 
@@ -159,7 +165,7 @@ function handleFileImport(event) {
 
   if (file.type !== 'application/json') {
     console.log('❌ Invalid file type:', file.type);
-    showToast('Por favor selecciona un archivo JSON válido.', 'error');
+    DOMUtils.showToast('Por favor selecciona un archivo JSON válido.', 'error');
     return;
   }
 
@@ -200,60 +206,66 @@ function handleFileImport(event) {
       console.log('✅ Starting import process...');
 
       // Import configuration
-      allFunctions.length = 0;
-      allVariables.length = 0;
-      allComponents.length = 0;
-      allFunctions.push(...(projectData.config.functions || defaultFunctions));
-      allVariables.push(...(projectData.config.variables || defaultVariables));
-      allComponents.push(...(projectData.config.components || defaultComponents));
-      
-      // Clear and repopulate modes object instead of reassigning
-      Object.keys(modes).forEach(key => delete modes[key]);
-      const importedModes = projectData.config.modes || JSON.parse(JSON.stringify(defaultModes));
-      Object.assign(modes, importedModes);
+      AppGlobals.state.allFunctions.length = 0;
+      AppGlobals.state.allVariables.length = 0;
+      AppGlobals.state.allComponents.length = 0;
+      AppGlobals.state.allFunctions.push(...(projectData.config.functions || AppGlobals.defaults.functions));
+      AppGlobals.state.allVariables.push(...(projectData.config.variables || AppGlobals.defaults.variables));
+      AppGlobals.state.allComponents.push(...(projectData.config.components || AppGlobals.defaults.components));
 
-      // Import requirements
+      // Clear and repopulate modes object instead of reassigning
+      Object.keys(AppGlobals.state.modes).forEach(key => delete AppGlobals.state.modes[key]);
+      const importedModes = projectData.config.modes || JSON.parse(JSON.stringify(AppGlobals.defaults.modes));
+      Object.assign(AppGlobals.state.modes, importedModes);
+
       // Import requirements data with array clearing approach
-      allRequirements.length = 0;
+      AppGlobals.state.allRequirements.length = 0;
       if (projectData.requirements.list && Array.isArray(projectData.requirements.list)) {
-        allRequirements.push(...projectData.requirements.list);
+        AppGlobals.state.allRequirements.push(...projectData.requirements.list);
       }
-      
+
       // Update reqCounter properties instead of reassigning
-      const importedCounter = projectData.requirements.counter || { level1: allRequirements.length, level2: 0 };
-      reqCounter.level1 = importedCounter.level1 || 0;
-      reqCounter.level2 = importedCounter.level2 || 0;
+      const importedCounter = projectData.requirements.counter || { level1: AppGlobals.state.allRequirements.length, level2: 0 };
+      AppGlobals.state.reqCounter.level1 = importedCounter.level1 || 0;
+      AppGlobals.state.reqCounter.level2 = importedCounter.level2 || 0;
 
       // Save to localStorage
-      saveConfig();
-      saveToLocalStorage();
+      Storage.saveConfig();
+      Storage.saveRequirements();
 
-      // Update UI
-      renderConfigLists();
-      updateSelects();
-      renderRequirementsList();
-      if (typeof renderTreeView === 'function') {
-        renderTreeView();
+      // Update UI using new modular system
+      if (typeof window.ConfigTab !== 'undefined' && window.ConfigTab.renderAllLists) {
+        window.ConfigTab.renderAllLists();
       }
-      if (typeof updateParentRequirementOptions === 'function') {
-        updateParentRequirementOptions();
+      if (typeof window.ListTab !== 'undefined' && window.ListTab.renderRequirementsList) {
+        window.ListTab.renderRequirementsList();
       }
-      updatePreview();
+      if (typeof window.TreeTab !== 'undefined' && window.TreeTab.renderTreeView) {
+        window.TreeTab.renderTreeView();
+      }
+      if (typeof window.CreateTab !== 'undefined' && window.CreateTab.updateParentRequirementOptions) {
+        window.CreateTab.updateParentRequirementOptions();
+      }
+      if (typeof window.CreateTab !== 'undefined' && window.CreateTab.updatePreview) {
+        window.CreateTab.updatePreview();
+      }
+
+      DOMUtils.updateSelects();
 
       console.log('✅ Import completed successfully');
-      showToast(
-        `Proyecto importado exitosamente. ${allRequirements.length} requisitos cargados.`,
+      DOMUtils.showToast(
+        `Proyecto importado exitosamente. ${AppGlobals.state.allRequirements.length} requisitos cargados.`,
         'success'
       );
     } catch (error) {
       console.error('❌ Import error:', error);
-      showToast('Error al importar el proyecto: ' + error.message, 'error');
+      DOMUtils.showToast('Error al importar el proyecto: ' + error.message, 'error');
     }
   };
 
   reader.onerror = function () {
     console.error('❌ File reading error');
-    showToast('Error al leer el archivo', 'error');
+    DOMUtils.showToast('Error al leer el archivo', 'error');
   };
 
   console.log('📚 Starting file read...');
