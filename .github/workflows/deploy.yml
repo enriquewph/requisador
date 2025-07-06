@@ -37,14 +37,38 @@ jobs:
 
       - name: 🔍 Validate HTML files
         run: |
-          echo "🔍 Custom HTML validation for dynamic application..."
+          echo "🔍 HTML validation for dynamic web application..."
           
-          # Validate main HTML document
+          # Install htmlhint for JavaScript-based HTML validation
+          npm install -g htmlhint
+          
+          # Create htmlhint configuration
+          cat > .htmlhintrc << 'EOF'
+          {
+            "doctype-first": true,
+            "doctype-html5": true,
+            "title-require": true,
+            "head-script-disabled": false,
+            "style-disabled": false,
+            "script-disabled": false,
+            "attr-lowercase": false,
+            "attr-value-double-quotes": true,
+            "tag-pair": true,
+            "tag-self-close": false,
+            "tagname-lowercase": true,
+            "empty-tag-not-self-closed": false,
+            "id-unique": true,
+            "src-not-empty": true,
+            "alt-require": false
+          }
+          EOF
+          
+          # Validate main HTML file
           echo "📄 Validating main HTML document..."
-          if html5validator src/index.html; then
-            echo "✅ Main HTML document is valid"
+          if htmlhint src/index.html; then
+            echo "✅ Main HTML document validation passed"
           else
-            echo "⚠️ Main HTML document has warnings (may be acceptable for dynamic apps)"
+            echo "⚠️ HTML validation warnings found (may be acceptable for dynamic apps)"
           fi
           
           # Check HTML fragments structure

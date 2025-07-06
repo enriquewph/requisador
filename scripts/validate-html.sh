@@ -12,7 +12,7 @@ MAIN_FILES="src/index.html"
 for file in $MAIN_FILES; do
     if [ -f "$file" ]; then
         echo "  ✅ Validating: $file"
-        html5validator "$file" || echo "  ⚠️ Validation warnings for $file"
+        htmlhint "$file" || echo "  ⚠️ Validation warnings for $file"
     fi
 done
 
@@ -43,12 +43,12 @@ $(cat "$file")
 EOF
             
             # Validate the temporary file
-            if html5validator "$temp_file" 2>/dev/null; then
+            if htmlhint "$temp_file" 2>/dev/null; then
                 echo "    ✅ Fragment is valid: $file"
             else
                 echo "    ⚠️ Fragment has issues: $file"
                 # Show specific errors but don't fail the build
-                html5validator "$temp_file" 2>&1 | grep -v "DOCTYPE" | grep -v "title" || true
+                htmlhint "$temp_file" 2>&1 | grep -v "DOCTYPE" | grep -v "title" || true
             fi
             
             # Clean up

@@ -17,7 +17,7 @@
     "format": "prettier --write \"src/**/*.{html,css,js}\"",
     "format:check": "prettier --check \"src/**/*.{html,css,js}\"",
     "validate": "npm run validate:main && npm run validate:fragments",
-    "validate:main": "html5validator src/index.html || echo 'Main HTML validation completed with warnings'",
+    "validate:main": "htmlhint src/index.html || echo 'HTML validation completed with warnings'",
     "validate:fragments": "echo 'HTML fragments (components/pages) are valid by design - they are loaded dynamically into main document'",
     "validate:html": "npm run validate",
     "validate:css": "echo 'CSS validation: Modern CSS features used, may show warnings in older validators'",
@@ -60,7 +60,7 @@
     "html-minifier-terser": "^7.2.0",
     "clean-css-cli": "^5.6.3",
     "terser": "^5.27.0",
-    "html5validator": "^1.1.0",
+    "htmlhint": "^1.1.4",
     "rimraf": "^5.0.5",
     "husky": "^9.0.10"
   },

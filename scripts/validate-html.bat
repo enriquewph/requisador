@@ -8,7 +8,7 @@ REM Validate main HTML files
 echo 📄 Validating main HTML documents...
 if exist "src\index.html" (
     echo   ✅ Validating: src\index.html
-    html5validator src\index.html || echo   ⚠️ Validation warnings for src\index.html
+    htmlhint src\index.html || echo   ⚠️ Validation warnings for src\index.html
 )
 
 REM Validate HTML fragments
