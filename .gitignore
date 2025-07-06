@@ -10,6 +10,11 @@ build/
 .vuepress/dist/
 
 # ===========================
+# 🎨 TailwindCSS Generated Files
+# ===========================
+src/css/tailwind.css
+
+# ===========================
 # 🔧 Node.js & NPM
 # ===========================
 node_modules/

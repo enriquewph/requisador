@@ -44,26 +44,20 @@
 
 ### Instalación de Dependencias
 
-```bash
-# Instalar dependencias de desarrollo
-npm install
+**Prerrequisitos:** [Docker Desktop](https://www.docker.com/products/docker-desktop) instalado y ejecutándose
 
-# O si prefieres usar yarn
-yarn install
+```bash
+# Configuración inicial completa
+dev.bat setup    # Windows
+./dev.sh setup   # Unix/Linux/macOS
 ```
 
 ### Ejecutar el Proyecto Localmente
 
 ```bash
-# Método 1: Usando npm scripts
-npm run dev
-
-# Método 2: Usando scripts del sistema
-# Windows
-start-server.bat
-
-# Linux/Mac
-./start-server.sh
+# Iniciar servidor de desarrollo
+dev.bat start    # Windows
+./dev.sh start   # Unix/Linux/macOS
 ```
 
 El sitio estará disponible en `http://localhost:8000`
@@ -72,14 +66,37 @@ El sitio estará disponible en `http://localhost:8000`
 
 ```bash
 # Ejecutar linter
-npm run lint
+dev.bat lint
 
 # Verificar formato
-npm run format:check
+dev.bat format-check
 
 # Validar HTML
-npm run validate
+dev.bat validate
+
+# Formatear código
+dev.bat format
 ```
+
+### VS Code Tasks (F1 Shortcuts)
+
+El proyecto incluye tareas preconfiguradas para VS Code. Presiona **F1** y busca:
+
+- `Dev: Setup` - Configuración inicial
+- `Dev: Start Server` - Iniciar servidor
+- `Dev: Build CSS` - Compilar TailwindCSS
+- `Dev: Watch CSS` - TailwindCSS en modo observación
+- `Dev: Lint Code` - Análisis de código con ESLint
+- `Dev: Format Code` - Formatear con Prettier
+- `Dev: Check Format` - Verificar formato
+- `Dev: Validate HTML` - Validar archivos HTML
+- `Dev: Shell Access` - Acceso al contenedor
+- `Dev: Show Logs` - Ver logs del contenedor
+- `Dev: Clean` - Limpiar contenedores Docker
+
+Alternativas de teclado:
+- **Ctrl+Shift+P** → `Tasks: Run Task` → Seleccionar tarea
+- **Ctrl+Shift+F1** → Ejecutar última tarea
 
 ---
 
@@ -315,13 +332,16 @@ chore: actualizar dependencias
 
 ```bash
 # Ejecutar linter
-npm run lint
+dev.bat lint
 
 # Validar HTML
-npm run validate
+dev.bat validate
 
 # Verificar formato
-npm run format:check
+dev.bat format-check
+
+# Ejecutar todas las verificaciones
+dev.bat lint && dev.bat validate && dev.bat format-check
 ```
 
 ---
