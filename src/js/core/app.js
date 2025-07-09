@@ -283,6 +283,12 @@ const RequisadorApp = {
   showAboutModal() {
     const aboutModal = document.getElementById('aboutModal');
     if (aboutModal) {
+      // Update version text if available
+      const versionElement = document.getElementById('aboutVersionText');
+      if (versionElement && AppVersion) {
+        versionElement.textContent = `Versión ${AppVersion.getFullVersion()}`;
+      }
+      
       aboutModal.classList.remove('hidden');
     } else {
       console.error('About modal element not found');

@@ -13,7 +13,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./css/styles.css?v=6" />
+    <link rel="stylesheet" href="./css/styles.css" />
   </head>
   <body class="text-gray-900">
     <!-- Header will be loaded here -->
@@ -60,16 +60,19 @@
     <!-- Footer will be loaded here -->
     <div id="footer-container"></div>
 
+    <!-- Version Management (must load first) -->
+    <script src="./js/core/version.js"></script>
+
     <!-- Core Configuration -->
     <script src="./js/core/config.js"></script>
 
-    <!-- Core State and Data Management (must load first) -->
+    <!-- Core State and Data Management -->
     <script src="./js/core/globals.js"></script>
     
     <!-- Utilities -->
     <script src="./js/utils/dom-utils.js"></script>
     <script src="./js/core/storage.js"></script>
-    <script src="./js/utils/page-loader.js?v=6"></script>
+    <script id="page-loader-script" src="./js/utils/page-loader.js"></script>
     <script src="./js/utils/init.js"></script>
 
     <!-- Tab Modules -->
@@ -80,13 +83,36 @@
     <script src="./js/tabs/export-tab.js"></script>
 
     <!-- Core Application -->
-    <script src="./js/core/app.js?v=6"></script>
+    <script id="app-script" src="./js/core/app.js"></script>
 
     <!-- Application Initialization -->
     <script>
+      // Add cache busting to scripts after version is loaded
+      if (typeof AppVersion !== 'undefined') {
+        const cacheBuster = AppVersion.getCacheBuster();
+        
+        // Update CSS with cache buster
+        const cssLink = document.querySelector('link[href*="styles.css"]');
+        if (cssLink && !cssLink.href.includes('?v=')) {
+          cssLink.href = './css/styles.css' + cacheBuster;
+        }
+        
+        // Update scripts with cache buster
+        const pageLoaderScript = document.getElementById('page-loader-script');
+        if (pageLoaderScript && !pageLoaderScript.src.includes('?v=')) {
+          pageLoaderScript.src = './js/utils/page-loader.js' + cacheBuster;
+        }
+        
+        const appScript = document.getElementById('app-script');
+        if (appScript && !appScript.src.includes('?v=')) {
+          appScript.src = './js/core/app.js' + cacheBuster;
+        }
+      }
+
       // Initialize the application when DOM is ready
       document.addEventListener('DOMContentLoaded', async function () {
-        console.log('🚀 Starting Requisador de Requisitos v0.1');
+        const appVersion = AppVersion ? AppVersion.getFullVersion() : 'v0.1.0';
+        console.log(`🚀 Starting Requisador de Requisitos ${appVersion}`);
 
         // Check if all required objects are available
         console.log('🔍 Checking dependencies:');

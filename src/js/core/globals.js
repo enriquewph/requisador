@@ -175,7 +175,7 @@ window.AppGlobals = {
 
     try {
       const projectData = {
-        version: '1.0',
+        version: AppVersion ? AppVersion.getProjectVersion() : '1.0',
         exportDate: new Date().toISOString(),
         configuration: {
           functions: [...allFunctions],

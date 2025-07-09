@@ -3,11 +3,14 @@
  * Central configuration for the Requirements Manager application
  */
 
+/* global AppVersion */
+
 const AppConfig = {
   // Application metadata
   app: {
     name: 'Requisador de Requisitos',
-    version: '0.1',
+    get version() { return AppVersion ? AppVersion.app : '0.1.0'; },
+    get fullVersion() { return AppVersion ? AppVersion.getFullVersion() : '0.1.0'; },
     author: 'Enrique Walter Philippeaux',
     organization: 'UTN FRC 2025',
   },

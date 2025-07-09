@@ -275,7 +275,7 @@ Este documento presenta los requisitos del sistema generados utilizando la metod
 
     try {
       const projectData = {
-        version: '1.0',
+        version: AppVersion ? AppVersion.getProjectVersion() : '1.0',
         exportDate: new Date().toISOString(),
         configuration: {
           functions: AppGlobals.state.allFunctions,

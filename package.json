@@ -1,6 +1,6 @@
 {
   "name": "requisador-de-requisitos",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Herramienta moderna para la gestión de requisitos en ingeniería de sistemas",
   "main": "src/index.html",
   "scripts": {

@@ -103,7 +103,7 @@ function resetToDefaults() {
  */
 function saveToLocalStorage() {
   const data = {
-    version: '3.0',
+    version: AppVersion ? AppVersion.getStorageVersion() : '3.0',
     requirements: [...AppGlobals.allRequirements],
     counter: { ...AppGlobals.reqCounter },
     timestamp: new Date().toISOString()
@@ -132,7 +132,8 @@ function loadFromLocalStorage() {
     }
 
     // Check if this is legacy data (no version field or old version)
-    const isLegacyData = !data.version || data.version !== '3.0';
+    const currentStorageVersion = AppVersion ? AppVersion.getStorageVersion() : '3.0';
+    const isLegacyData = !data.version || data.version !== currentStorageVersion;
 
     // Handle legacy data format
     if (typeof data.counter === 'number' || isLegacyData) {
