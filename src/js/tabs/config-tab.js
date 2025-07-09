@@ -1,6 +1,6 @@
 /**
  * Configuration Tab Module
- * Handles all configuration tab functionality including functions, variables, components, and modes management
+ * Handles all configuration tab functionality using reusable list managers
  */
 
 /* global AppGlobals, DOMUtils, Storage */
@@ -9,50 +9,58 @@
  * Configuration Tab functionality
  */
 const ConfigTab = {
+  listManagers: {},
+
   /**
    * Initialize configuration tab
    */
   init() {
     console.log('🔧 ConfigTab: Initializing configuration tab...');
-    this.bindEvents();
+    this.initializeListManagers();
+    this.bindCustomEvents();
     this.renderAllLists();
     console.log('✅ ConfigTab: Configuration tab initialized successfully');
   },
 
   /**
-   * Bind event listeners for configuration tab
+   * Initialize reusable list managers
    */
-  bindEvents() {
-    // Function management
-    const addFunctionBtn = document.getElementById('addFunctionBtn');
-    if (addFunctionBtn) {
-      addFunctionBtn.addEventListener('click', () => this.addFunction());
-    }
+  initializeListManagers() {
+    // Functions list manager
+    this.listManagers.functions = new DOMUtils.ConfigListManager({
+      listId: 'functionsList',
+      inputId: 'newFunctionInput',
+      buttonId: 'addFunctionBtn',
+      dataPath: 'allFunctions',
+      itemName: 'función',
+      onAdd: () => DOMUtils.updateSelects(),
+      onRemove: () => DOMUtils.updateSelects()
+    });
 
-    const newFunctionInput = document.getElementById('newFunctionInput');
-    if (newFunctionInput) {
-      newFunctionInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          this.addFunction();
-        }
-      });
-    }
+    // Variables list manager
+    this.listManagers.variables = new DOMUtils.ConfigListManager({
+      listId: 'variablesList',
+      inputId: 'newVariableInput',
+      buttonId: 'addVariableBtn',
+      dataPath: 'allVariables',
+      itemName: 'variable',
+      onAdd: () => DOMUtils.updateSelects(),
+      onRemove: () => DOMUtils.updateSelects()
+    });
 
-    // Variable management
-    const addVariableBtn = document.getElementById('addVariableBtn');
-    if (addVariableBtn) {
-      addVariableBtn.addEventListener('click', () => this.addVariable());
-    }
+    // Initialize all managers
+    Object.values(this.listManagers).forEach(manager => manager.init());
 
-    const newVariableInput = document.getElementById('newVariableInput');
-    if (newVariableInput) {
-      newVariableInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          this.addVariable();
-        }
-      });
-    }
+    // Expose managers globally for onclick handlers
+    window.ConfigListManagers = this.listManagers;
+  },
 
+  /**
+   * Bind custom events (non-list events)
+   */
+  bindCustomEvents() {
+    console.log('🔧 ConfigTab: Binding custom events...');
+    
     // Component management
     const addComponentBtn = document.getElementById('addComponentBtn');
     if (addComponentBtn) {
@@ -89,120 +97,7 @@ const ConfigTab = {
       resetBtn.addEventListener('click', () => this.resetConfiguration());
     }
 
-    // Save functionality
-    const saveBtn = document.getElementById('saveConfigBtn');
-    if (saveBtn) {
-      saveBtn.addEventListener('click', () => this.saveConfiguration());
-    }
-  },
-
-  /**
-   * Add a new function
-   */
-  addFunction() {
-    const input = document.getElementById('newFunctionInput');
-    if (!input || !input.value.trim()) {
-      DOMUtils.showToast('Por favor, introduce el nombre de la función.', 'warning');
-      return;
-    }
-
-    const newFunction = input.value.trim();
-    if (AppGlobals.state.allFunctions.includes(newFunction)) {
-      DOMUtils.showToast('Esta función ya existe.', 'warning');
-      return;
-    }
-
-    AppGlobals.state.allFunctions.push(newFunction);
-    input.value = '';
-    this.renderFunctionsList();
-    DOMUtils.updateSelects();
-    DOMUtils.showToast('Función añadida correctamente.', 'success');
-  },
-
-  /**
-   * Remove a function
-   */
-  removeFunction(index) {
-    if (index >= 0 && index < AppGlobals.state.allFunctions.length) {
-      const removedFunction = AppGlobals.state.allFunctions.splice(index, 1)[0];
-      this.renderFunctionsList();
-      DOMUtils.updateSelects();
-      DOMUtils.showToast(`Función "${removedFunction}" eliminada.`, 'success');
-    }
-  },
-
-  /**
-   * Add a new variable
-   */
-  addVariable() {
-    const input = document.getElementById('newVariableInput');
-    if (!input || !input.value.trim()) {
-      DOMUtils.showToast('Por favor, introduce el nombre de la variable.', 'warning');
-      return;
-    }
-
-    const newVariable = input.value.trim();
-    if (AppGlobals.state.allVariables.includes(newVariable)) {
-      DOMUtils.showToast('Esta variable ya existe.', 'warning');
-      return;
-    }
-
-    AppGlobals.state.allVariables.push(newVariable);
-    input.value = '';
-    this.renderVariablesList();
-    DOMUtils.updateSelects();
-    DOMUtils.showToast('Variable añadida correctamente.', 'success');
-  },
-
-  /**
-   * Remove a variable
-   */
-  removeVariable(index) {
-    if (index >= 0 && index < AppGlobals.state.allVariables.length) {
-      const removedVariable = AppGlobals.state.allVariables.splice(index, 1)[0];
-      this.renderVariablesList();
-      DOMUtils.updateSelects();
-      DOMUtils.showToast(`Variable "${removedVariable}" eliminada.`, 'success');
-    }
-  },
-
-  /**
-   * Add a new component
-   */
-  addComponent() {
-    const input = document.getElementById('newComponentInput');
-    if (!input || !input.value.trim()) {
-      DOMUtils.showToast('Por favor, introduce el nombre del componente.', 'warning');
-      return;
-    }
-
-    const newComponent = input.value.trim();
-    if (AppGlobals.state.allComponents.includes(newComponent)) {
-      DOMUtils.showToast('Este componente ya existe.', 'warning');
-      return;
-    }
-
-    AppGlobals.state.allComponents.push(newComponent);
-    AppGlobals.state.modes[newComponent] = ['Modo por defecto']; // Initialize with default mode
-    input.value = '';
-    this.renderComponentsList();
-    this.renderModesList();
-    DOMUtils.updateSelects();
-    DOMUtils.showToast('Componente añadido correctamente.', 'success');
-  },
-
-  /**
-   * Remove a component
-   */
-  removeComponent(index) {
-    if (index >= 0 && index < AppGlobals.state.allComponents.length) {
-      const removedComponent = AppGlobals.state.allComponents.splice(index, 1)[0];
-      delete AppGlobals.state.modes[removedComponent];
-      this.renderComponentsList();
-      this.renderModesList();
-      DOMUtils.updateSelects();
-      DOMUtils.showToast(`Componente "${removedComponent}" eliminado.`, 'success');
-    }
+    console.log('✅ ConfigTab: Custom events bound successfully');
   },
 
   /**
@@ -237,8 +132,9 @@ const ConfigTab = {
     AppGlobals.state.modes[selectedComponent].push(newMode);
     input.value = '';
     this.renderModesList();
-    DOMUtils.updateSelects();
+    this.saveState();
     DOMUtils.showToast('Modo añadido correctamente.', 'success');
+    console.log('🔧 ConfigTab: Mode added:', newMode, 'to component:', selectedComponent);
   },
 
   /**
@@ -247,9 +143,60 @@ const ConfigTab = {
   removeMode(component, modeIndex) {
     if (AppGlobals.state.modes[component] && modeIndex >= 0 && modeIndex < AppGlobals.state.modes[component].length) {
       const removedMode = AppGlobals.state.modes[component].splice(modeIndex, 1)[0];
+      
+      // If this was the last mode for the component, remove the component entry
+      if (AppGlobals.state.modes[component].length === 0) {
+        delete AppGlobals.state.modes[component];
+      }
+      
       this.renderModesList();
-      DOMUtils.updateSelects();
+      this.saveState();
       DOMUtils.showToast(`Modo "${removedMode}" eliminado del componente "${component}".`, 'success');
+      console.log('🔧 ConfigTab: Mode removed:', removedMode, 'from component:', component);
+    }
+  },
+
+  /**
+   * Add a new component
+   */
+  addComponent() {
+    const input = document.getElementById('newComponentInput');
+    if (!input || !input.value.trim()) {
+      DOMUtils.showToast('Por favor, introduce el nombre del componente.', 'warning');
+      return;
+    }
+
+    const newComponent = input.value.trim();
+    if (AppGlobals.state.allComponents.includes(newComponent)) {
+      DOMUtils.showToast('Este componente ya existe.', 'warning');
+      return;
+    }
+
+    AppGlobals.state.allComponents.push(newComponent);
+    // Initialize with a default mode
+    AppGlobals.state.modes[newComponent] = ['Modo por defecto'];
+    input.value = '';
+    this.renderComponentsList();
+    this.renderModesList();
+    this.updateModeComponentSelect();
+    this.saveState();
+    DOMUtils.showToast('Componente añadido correctamente.', 'success');
+    console.log('🔧 ConfigTab: Component added:', newComponent);
+  },
+
+  /**
+   * Remove a component
+   */
+  removeComponent(index) {
+    if (index >= 0 && index < AppGlobals.state.allComponents.length) {
+      const removedComponent = AppGlobals.state.allComponents.splice(index, 1)[0];
+      delete AppGlobals.state.modes[removedComponent];
+      this.renderComponentsList();
+      this.renderModesList();
+      this.updateModeComponentSelect();
+      this.saveState();
+      DOMUtils.showToast(`Componente "${removedComponent}" eliminado.`, 'success');
+      console.log('🔧 ConfigTab: Component removed:', removedComponent);
     }
   },
 
@@ -258,159 +205,133 @@ const ConfigTab = {
    */
   resetConfiguration() {
     if (confirm('¿Estás seguro de que quieres resetear toda la configuración? Esta acción no se puede deshacer.')) {
+      console.log('🔧 ConfigTab: Resetting configuration to defaults...');
       AppGlobals.resetGlobalState();
       this.renderAllLists();
-      DOMUtils.updateSelects();
+      this.updateModeComponentSelect();
       DOMUtils.showToast('Configuración reseteada a valores por defecto.', 'success');
+      console.log('✅ ConfigTab: Configuration reset successfully');
     }
   },
 
   /**
-   * Save configuration to localStorage
+   * Save state to localStorage
    */
-  saveConfiguration() {
+  saveState() {
     try {
       Storage.saveConfig();
-      DOMUtils.showToast('Configuración guardada correctamente.', 'success');
+      console.log('🔧 ConfigTab: Configuration saved to localStorage');
     } catch (error) {
-      console.error('Error saving configuration:', error);
-      DOMUtils.showToast('Error al guardar la configuración.', 'error');
+      console.error('❌ ConfigTab: Error saving configuration:', error);
     }
+  },
+
+  /**
+   * Update the mode component select dropdown
+   */
+  updateModeComponentSelect() {
+    const select = document.getElementById('modeComponentSelect');
+    if (!select) return;
+
+    select.innerHTML = '<option value="">Seleccionar componente...</option>';
+    AppGlobals.state.allComponents.forEach(component => {
+      const option = document.createElement('option');
+      option.value = component;
+      option.textContent = component;
+      select.appendChild(option);
+    });
   },
 
   /**
    * Render all configuration lists
    */
   renderAllLists() {
-    this.renderFunctionsList();
-    this.renderVariablesList();
+    console.log('🔧 ConfigTab: Rendering all lists...');
+    // Functions and variables are handled by their list managers
+    Object.values(this.listManagers).forEach(manager => manager.render());
+    
+    // Custom lists that need special handling
     this.renderComponentsList();
     this.renderModesList();
+    this.updateModeComponentSelect();
+    
+    console.log('✅ ConfigTab: All lists rendered successfully');
   },
 
   /**
-   * Render functions list
-   */
-  renderFunctionsList() {
-    const container = document.getElementById('functionsList');
-    if (!container) {return;}
-
-    if (AppGlobals.state.allFunctions.length === 0) {
-      container.innerHTML = '<p class="text-gray-500 italic">No hay funciones configuradas.</p>';
-      return;
-    }
-
-    container.innerHTML = AppGlobals.state.allFunctions
-      .map((func, index) => `
-        <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-          <span class="font-medium">${func}</span>
-          <button 
-            onclick="ConfigTab.removeFunction(${index})" 
-            class="text-red-600 hover:text-red-800 text-sm"
-            title="Eliminar función"
-          >
-            ✕
-          </button>
-        </div>
-      `).join('');
-  },
-
-  /**
-   * Render variables list
-   */
-  renderVariablesList() {
-    const container = document.getElementById('variablesList');
-    if (!container) {return;}
-
-    if (AppGlobals.state.allVariables.length === 0) {
-      container.innerHTML = '<p class="text-gray-500 italic">No hay variables configuradas.</p>';
-      return;
-    }
-
-    container.innerHTML = AppGlobals.state.allVariables
-      .map((variable, index) => `
-        <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-          <span class="font-medium">${variable}</span>
-          <button 
-            onclick="ConfigTab.removeVariable(${index})" 
-            class="text-red-600 hover:text-red-800 text-sm"
-            title="Eliminar variable"
-          >
-            ✕
-          </button>
-        </div>
-      `).join('');
-  },
-
-  /**
-   * Render components list
+   * Render components list with improved styling
    */
   renderComponentsList() {
     const container = document.getElementById('componentsList');
-    if (!container) {return;}
+    if (!container) return;
 
     if (AppGlobals.state.allComponents.length === 0) {
-      container.innerHTML = '<p class="text-gray-500 italic">No hay componentes configurados.</p>';
+      container.innerHTML = '<p class="text-gray-500 italic text-sm col-span-full">No hay componentes configurados.</p>';
       return;
     }
 
     container.innerHTML = AppGlobals.state.allComponents
       .map((component, index) => `
-        <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
-          <span class="font-medium">${component}</span>
+        <div class="config-list-item">
+          <span class="font-medium text-gray-800 flex-1">${component}</span>
+          <span class="text-xs text-gray-500 mr-2">${AppGlobals.state.modes[component]?.length || 0} modos</span>
           <button 
             onclick="ConfigTab.removeComponent(${index})" 
-            class="text-red-600 hover:text-red-800 text-sm"
+            class="remove-btn"
             title="Eliminar componente"
           >
-            ✕
+            <i class="fas fa-times"></i>
           </button>
         </div>
       `).join('');
-
-    // Update mode component select
-    const modeComponentSelect = document.getElementById('modeComponentSelect');
-    if (modeComponentSelect) {
-      DOMUtils.populateSelect(modeComponentSelect, AppGlobals.state.allComponents, 'Selecciona un componente');
-    }
   },
 
   /**
-   * Render modes list
+   * Render modes list with improved styling and component grouping
    */
   renderModesList() {
     const container = document.getElementById('modesList');
-    if (!container) {return;}
+    if (!container) return;
 
     if (Object.keys(AppGlobals.state.modes).length === 0) {
-      container.innerHTML = '<p class="text-gray-500 italic">No hay modos configurados.</p>';
+      container.innerHTML = '<p class="text-gray-500 italic text-sm">No hay modos configurados.</p>';
       return;
     }
 
     let html = '';
     Object.entries(AppGlobals.state.modes).forEach(([component, modes]) => {
-      html += `
-        <div class="mb-4 p-3 bg-gray-50 rounded">
-          <h4 class="font-semibold text-gray-800 mb-2">${component}</h4>
-          <div class="space-y-1">
-            ${modes.map((mode, index) => `
-              <div class="flex items-center justify-between p-1">
-                <span class="text-sm">${mode}</span>
-                <button 
-                  onclick="ConfigTab.removeMode('${component}', ${index})" 
-                  class="text-red-600 hover:text-red-800 text-xs"
-                  title="Eliminar modo"
-                >
-                  ✕
-                </button>
-              </div>
-            `).join('')}
+      if (modes && modes.length > 0) {
+        html += `
+          <div class="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <h5 class="font-semibold text-gray-800 mb-2 text-sm flex items-center gap-2">
+              <i class="fas fa-microchip text-purple-600"></i>
+              ${component}
+              <span class="text-xs font-normal text-gray-500">(${modes.length} modos)</span>
+            </h5>
+            <div class="space-y-1">
+              ${modes.map((mode, index) => `
+                <div class="flex items-center justify-between p-2 bg-white rounded border border-gray-100">
+                  <span class="text-sm text-gray-700">${mode}</span>
+                  <button 
+                    onclick="ConfigTab.removeMode('${component}', ${index})" 
+                    class="text-red-500 hover:text-red-700 text-xs p-1 rounded hover:bg-red-50 transition-colors"
+                    title="Eliminar modo"
+                  >
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              `).join('')}
+            </div>
           </div>
-        </div>
-      `;
+        `;
+      }
     });
 
-    container.innerHTML = html;
+    if (html === '') {
+      container.innerHTML = '<p class="text-gray-500 italic text-sm">No hay modos configurados.</p>';
+    } else {
+      container.innerHTML = html;
+    }
   }
 };
 

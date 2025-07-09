@@ -194,6 +194,118 @@ function reinitializeDOMElements() {
   console.log('✅ DOM elements re-initialized for current tab');
 }
 
+// --- Reusable Configuration List Manager ---
+class ConfigListManager {
+  constructor(config) {
+    this.listId = config.listId;
+    this.inputId = config.inputId;
+    this.buttonId = config.buttonId;
+    this.dataPath = config.dataPath; // e.g., 'allFunctions', 'allVariables'
+    this.itemName = config.itemName; // e.g., 'función', 'variable'
+    this.validate = config.validate || (() => true);
+    this.onAdd = config.onAdd || (() => {});
+    this.onRemove = config.onRemove || (() => {});
+  }
+
+  init() {
+    this.bindEvents();
+    this.render();
+  }
+
+  bindEvents() {
+    const button = document.getElementById(this.buttonId);
+    const input = document.getElementById(this.inputId);
+
+    if (button) {
+      button.addEventListener('click', () => this.addItem());
+    }
+
+    if (input) {
+      input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          this.addItem();
+        }
+      });
+    }
+  }
+
+  addItem() {
+    const input = document.getElementById(this.inputId);
+    if (!input || !input.value.trim()) {
+      DOMUtils.showToast(`Por favor, introduce el nombre de la ${this.itemName}.`, 'warning');
+      return;
+    }
+
+    const newItem = input.value.trim();
+    const dataArray = this.getDataArray();
+
+    if (dataArray.includes(newItem)) {
+      DOMUtils.showToast(`Esta ${this.itemName} ya existe.`, 'warning');
+      return;
+    }
+
+    if (!this.validate(newItem)) {
+      return;
+    }
+
+    dataArray.push(newItem);
+    input.value = '';
+    this.render();
+    this.onAdd(newItem);
+    DOMUtils.showToast(`${this.itemName.charAt(0).toUpperCase() + this.itemName.slice(1)} añadida correctamente.`, 'success');
+    
+    // Auto-save
+    if (window.Storage && Storage.saveConfig) {
+      Storage.saveConfig();
+    }
+  }
+
+  removeItem(index) {
+    const dataArray = this.getDataArray();
+    if (index >= 0 && index < dataArray.length) {
+      const removedItem = dataArray.splice(index, 1)[0];
+      this.render();
+      this.onRemove(removedItem, index);
+      DOMUtils.showToast(`${this.itemName.charAt(0).toUpperCase() + this.itemName.slice(1)} "${removedItem}" eliminada.`, 'success');
+      
+      // Auto-save
+      if (window.Storage && Storage.saveConfig) {
+        Storage.saveConfig();
+      }
+    }
+  }
+
+  getDataArray() {
+    return window.AppGlobals?.state?.[this.dataPath] || [];
+  }
+
+  render() {
+    const container = document.getElementById(this.listId);
+    if (!container) return;
+
+    const dataArray = this.getDataArray();
+
+    if (dataArray.length === 0) {
+      container.innerHTML = `<p class="text-gray-500 italic text-sm">No hay ${this.itemName}s configuradas.</p>`;
+      return;
+    }
+
+    container.innerHTML = dataArray
+      .map((item, index) => `
+        <div class="config-list-item">
+          <span class="font-medium text-gray-800 flex-1">${item}</span>
+          <button 
+            onclick="window.ConfigListManagers.${this.dataPath}.removeItem(${index})" 
+            class="remove-btn"
+            title="Eliminar ${this.itemName}"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      `).join('');
+  }
+}
+
 // --- Export functions ---
 window.DOMUtils = {
   domElements,
@@ -201,7 +313,8 @@ window.DOMUtils = {
   populateSelect,
   updateSelects,
   showToast,
-  reinitializeDOMElements
+  reinitializeDOMElements,
+  ConfigListManager
 };
 
 console.log('✅ DOM utilities module loaded');

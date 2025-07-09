@@ -663,3 +663,87 @@ textarea:focus {
 #aboutModal .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
 }
+
+/* Configuration Tab Styles */
+.config-list-block {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  height: fit-content;
+}
+
+.config-list-block:hover {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  border-color: #d1d5db;
+}
+
+/* Custom scrollbar for config lists */
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+.scrollbar-thumb-gray-300::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thumb-gray-300::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 3px;
+}
+
+.scrollbar-thumb-gray-300::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.scrollbar-thumb-gray-300::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Config list item styles */
+.config-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: between;
+  padding: 0.75rem;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.config-list-item:hover {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.config-list-item .remove-btn {
+  color: #dc2626;
+  background: none;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+}
+
+.config-list-item .remove-btn:hover {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* Responsive grid adjustments for config */
+@media (min-width: 1280px) {
+  .config-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .config-list-block {
+    padding: 1rem;
+  }
+}
