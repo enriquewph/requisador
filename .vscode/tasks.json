@@ -1,42 +1,57 @@
 {
-  // For more information, visit: https://go.microsoft.com/fwlink/?LinkId=733558
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "type": "npm",
-      "script": "start",
-      "isBackground": true,
-      "problemMatcher": {
-        "owner": "typescript",
-        "pattern": "$tsc",
-        "background": {
-          "activeOnStart": true,
-          "beginsPattern": {
-            "regexp": "(.*?)"
-          },
-          "endsPattern": {
-            "regexp": "bundle generation complete"
-          }
-        }
-      }
-    },
-    {
-      "type": "npm",
-      "script": "test",
-      "isBackground": true,
-      "problemMatcher": {
-        "owner": "typescript",
-        "pattern": "$tsc",
-        "background": {
-          "activeOnStart": true,
-          "beginsPattern": {
-            "regexp": "(.*?)"
-          },
-          "endsPattern": {
-            "regexp": "bundle generation complete"
-          }
-        }
-      }
-    }
-  ]
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "🚀 Iniciar Servidor Dev",
+			"type": "shell",
+			"command": "docker-compose up --build",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"isBackground": true
+		},
+		{
+			"label": "🛑 Detener Servidor Dev", 
+			"type": "shell",
+			"command": "docker-compose down",
+			"group": "build"
+		},
+		{
+			"label": "🏗️ Construir Sitio Estático",
+			"type": "shell",
+			"command": "docker-compose run --rm app ng build; if ($?) { echo 'Build completado! Revisa la carpeta ./dist/' }",
+			"group": "build",
+			"options": {
+				"shell": {
+					"executable": "powershell.exe",
+					"args": ["-Command"]
+				}
+			}
+		},
+		{
+			"label": "🔨 Build Simple (Solo)",
+			"type": "shell",
+			"command": "docker-compose run --rm app ng build",
+			"group": "build"
+		},
+		{
+			"label": "🏗️ Build COMPLETO con Verificación",
+			"type": "shell",
+			"command": "if (!(Test-Path .\\dist)) { New-Item -ItemType Directory -Path .\\dist }; docker-compose run --rm app ng build; if ($?) { echo '=== Build completado! ==='; Get-ChildItem .\\dist }",
+			"group": "build",
+			"options": {
+				"shell": {
+					"executable": "powershell.exe",
+					"args": ["-Command"]
+				}
+			}
+		},
+		{
+			"label": "🧪 Ejecutar Pruebas",
+			"type": "shell",
+			"command": "docker-compose run --rm app ng test --watch=false",
+			"group": "test"
+		}
+	]
 }
