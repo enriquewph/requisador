@@ -101,24 +101,25 @@ const AppConfig = {
       'Mensajes de sincronización',
       'Respuestas a Terminal de Ingeniería',
     ],
-    components: ['HMI', 'ECI', 'Ambos'],
-    modes: {
-      HMI: [
-        'Initialization Mode',
-        'Pre-operational Mode',
-        'Operational Mode',
-        'Fault Mode',
-        'Stopped Mode',
-      ],
-      ECI: [
-        'Initialization Mode',
-        'Pre-operational Mode',
-        'Operational (gw inactive)',
-        'Operational (gw active)',
-        'Fault mode',
-      ],
-      Ambos: ['Initialization Mode', 'Pre-operational Mode', 'Operational Mode', 'Fault Mode'],
-    },
+    components: ['HMI', 'ECI'],
+    modes: [
+      'Initialization Mode',
+      'Pre-operational Mode', 
+      'Operational Mode',
+      'Fault Mode',
+      'Stopped Mode',
+      'Operational (gw inactive)',
+      'Operational (gw active)'
+    ],
+    modeAssociations: [
+      { mode: 'Initialization Mode', components: ['HMI', 'ECI'] },
+      { mode: 'Pre-operational Mode', components: ['HMI', 'ECI'] },
+      { mode: 'Operational Mode', components: ['HMI'] },
+      { mode: 'Fault Mode', components: ['HMI', 'ECI'] },
+      { mode: 'Stopped Mode', components: ['HMI'] },
+      { mode: 'Operational (gw inactive)', components: ['ECI'] },
+      { mode: 'Operational (gw active)', components: ['ECI'] }
+    ],
   },
 
   // UI Configuration

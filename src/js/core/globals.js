@@ -9,24 +9,9 @@ const allFunctions = [];
 const allVariables = [];
 const allComponents = [];
 
-// Modes configuration for each component
-const modes = {
-  HMI: [
-    'Initialization Mode',
-    'Pre-operational Mode',
-    'Operational Mode',
-    'Fault Mode',
-    'Stopped Mode',
-  ],
-  ECI: [
-    'Initialization Mode',
-    'Pre-operational Mode',
-    'Operational (gw inactive)',
-    'Operational (gw active)',
-    'Fault mode',
-  ],
-  Ambos: ['Initialization Mode', 'Pre-operational Mode', 'Operational Mode', 'Fault Mode'],
-};
+// New many-to-many relationship structure
+const allModes = [];
+const modeComponentAssociations = []; // Array of { mode: 'ModeName', components: ['Comp1', 'Comp2'] }
 
 // Requirements counter for ID generation
 const reqCounter = {
@@ -35,47 +20,7 @@ const reqCounter = {
 };
 
 // --- Default Values for Reset Functionality ---
-const defaultFunctions = [
-  'Runtime Manager',
-  'Config Manager',
-  'CAN NMT Slave',
-  'CAN NMT Master',
-  'CAN-GPIO Translator',
-  'CAN-ETH Translator',
-  'CAN Driver',
-  'GPIO Driver',
-  'ETH Driver',
-];
-
-const defaultVariables = [
-  'Indicador de estado',
-  'Comandos a Red CAN',
-  'Estado de salidas fisicas',
-  'Reportes a Proc. Robot',
-  'Comandos de gestión de red',
-  'Mensajes de sincronización',
-  'Respuestas a Terminal de Ingeniería',
-];
-
-const defaultModes = {
-  HMI: [
-    'Initialization Mode',
-    'Pre-operational Mode',
-    'Operational Mode',
-    'Fault Mode',
-    'Stopped Mode',
-  ],
-  ECI: [
-    'Initialization Mode',
-    'Pre-operational Mode',
-    'Operational (gw inactive)',
-    'Operational (gw active)',
-    'Fault mode',
-  ],
-  Ambos: ['Initialization Mode', 'Pre-operational Mode', 'Operational Mode', 'Fault Mode'],
-};
-
-const defaultComponents = ['HMI', 'ECI', 'Ambos'];
+// Note: Default values are now centralized in AppConfig.defaults
 
 // --- State Management Functions ---
 
@@ -87,14 +32,26 @@ function resetGlobalState() {
   allFunctions.length = 0;
   allVariables.length = 0;
   allComponents.length = 0;
+  allModes.length = 0;
+  modeComponentAssociations.length = 0;
 
-  allFunctions.push(...defaultFunctions);
-  allVariables.push(...defaultVariables);
-  allComponents.push(...defaultComponents);
+  // Use AppConfig.defaults if available, otherwise use fallback values
+  const defaults = window.AppConfig?.defaults || {
+    functions: ['Runtime Manager', 'Config Manager'],
+    variables: ['Indicador de estado'],
+    components: ['HMI', 'ECI'],
+    modes: ['Initialization Mode', 'Operational Mode'],
+    modeAssociations: [
+      { mode: 'Initialization Mode', components: ['HMI', 'ECI'] },
+      { mode: 'Operational Mode', components: ['HMI'] }
+    ]
+  };
 
-  // Clear and reset modes
-  Object.keys(modes).forEach(key => delete modes[key]);
-  Object.assign(modes, JSON.parse(JSON.stringify(defaultModes)));
+  allFunctions.push(...defaults.functions);
+  allVariables.push(...defaults.variables);
+  allComponents.push(...defaults.components);
+  allModes.push(...defaults.modes);
+  modeComponentAssociations.push(...defaults.modeAssociations.map(assoc => ({ ...assoc, components: [...assoc.components] })));
 
   // Reset counter
   reqCounter.level1 = 1;
@@ -110,7 +67,8 @@ function getStateSnapshot() {
     functions: [...allFunctions],
     variables: [...allVariables],
     components: [...allComponents],
-    modes: JSON.parse(JSON.stringify(modes)),
+    modes: [...allModes],
+    modeComponentAssociations: modeComponentAssociations.map(assoc => ({ ...assoc, components: [...assoc.components] })),
     counter: { ...reqCounter }
   };
 }
@@ -124,17 +82,17 @@ function loadStateFromSnapshot(snapshot) {
   allFunctions.length = 0;
   allVariables.length = 0;
   allComponents.length = 0;
+  allModes.length = 0;
+  modeComponentAssociations.length = 0;
 
   // Load data
   if (snapshot.requirements) {allRequirements.push(...snapshot.requirements);}
   if (snapshot.functions) {allFunctions.push(...snapshot.functions);}
   if (snapshot.variables) {allVariables.push(...snapshot.variables);}
   if (snapshot.components) {allComponents.push(...snapshot.components);}
-
-  // Load modes
-  if (snapshot.modes) {
-    Object.keys(modes).forEach(key => delete modes[key]);
-    Object.assign(modes, snapshot.modes);
+  if (snapshot.modes) {allModes.push(...snapshot.modes);}
+  if (snapshot.modeComponentAssociations) {
+    modeComponentAssociations.push(...snapshot.modeComponentAssociations.map(assoc => ({ ...assoc, components: [...assoc.components] })));
   }
 
   // Load counter
@@ -152,22 +110,84 @@ window.AppGlobals = {
     get allFunctions() { return allFunctions; },
     get allVariables() { return allVariables; },
     get allComponents() { return allComponents; },
-    get modes() { return modes; },
+    get allModes() { return allModes; },
+    get modeComponentAssociations() { return modeComponentAssociations; },
     get reqCounter() { return reqCounter; }
   },
 
-  // Default values
-  defaults: {
-    functions: defaultFunctions,
-    variables: defaultVariables,
-    modes: defaultModes,
-    components: defaultComponents
+  // Default values (referencing centralized config)
+  get defaults() {
+    return window.AppConfig?.defaults || {
+      functions: ['Runtime Manager', 'Config Manager'],
+      variables: ['Indicador de estado'],
+      components: ['HMI', 'ECI'],
+      modes: ['Initialization Mode', 'Operational Mode'],
+      modeAssociations: [
+        { mode: 'Initialization Mode', components: ['HMI', 'ECI'] },
+        { mode: 'Operational Mode', components: ['HMI'] }
+      ]
+    };
   },
 
   // State management
   resetGlobalState,
   getStateSnapshot,
   loadStateFromSnapshot,
+
+  // Mode-Component relationship utilities
+  addModeComponentAssociation(mode, selectedComponents) {
+    // Remove existing association for this mode
+    const existingIndex = modeComponentAssociations.findIndex(assoc => assoc.mode === mode);
+    if (existingIndex !== -1) {
+      modeComponentAssociations.splice(existingIndex, 1);
+    }
+    
+    // Add new association if components are selected
+    if (selectedComponents && selectedComponents.length > 0) {
+      modeComponentAssociations.push({
+        mode: mode,
+        components: [...selectedComponents]
+      });
+    }
+  },
+
+  removeModeComponentAssociation(mode) {
+    const index = modeComponentAssociations.findIndex(assoc => assoc.mode === mode);
+    if (index !== -1) {
+      modeComponentAssociations.splice(index, 1);
+    }
+  },
+
+  removeComponentFromAllModes(componentToRemove) {
+    // Remove component from all mode associations
+    modeComponentAssociations.forEach(assoc => {
+      assoc.components = assoc.components.filter(comp => comp !== componentToRemove);
+    });
+    
+    // Remove associations that have no components left
+    for (let i = modeComponentAssociations.length - 1; i >= 0; i--) {
+      if (modeComponentAssociations[i].components.length === 0) {
+        // Also remove the mode itself if it has no components
+        const modeName = modeComponentAssociations[i].mode;
+        const modeIndex = allModes.indexOf(modeName);
+        if (modeIndex !== -1) {
+          allModes.splice(modeIndex, 1);
+        }
+        modeComponentAssociations.splice(i, 1);
+      }
+    }
+  },
+
+  getComponentsForMode(mode) {
+    const association = modeComponentAssociations.find(assoc => assoc.mode === mode);
+    return association ? [...association.components] : [];
+  },
+
+  getModesForComponent(component) {
+    return modeComponentAssociations
+      .filter(assoc => assoc.components.includes(component))
+      .map(assoc => assoc.mode);
+  },
 
   // Global project import/export functions
   exportProject() {
@@ -181,7 +201,8 @@ window.AppGlobals = {
           functions: [...allFunctions],
           variables: [...allVariables],
           components: [...allComponents],
-          modes: JSON.parse(JSON.stringify(modes))
+          modes: [...allModes],
+          modeComponentAssociations: modeComponentAssociations.map(assoc => ({ ...assoc, components: [...assoc.components] }))
         },
         requirements: [...allRequirements],
         counters: { ...reqCounter }
@@ -344,8 +365,13 @@ window.AppGlobals = {
       }
 
       if (projectData.configuration.modes) {
-        Object.keys(modes).forEach(key => delete modes[key]);
-        Object.assign(modes, projectData.configuration.modes);
+        allModes.length = 0;
+        allModes.push(...projectData.configuration.modes);
+      }
+
+      if (projectData.configuration.modeComponentAssociations) {
+        modeComponentAssociations.length = 0;
+        modeComponentAssociations.push(...projectData.configuration.modeComponentAssociations.map(assoc => ({ ...assoc, components: [...assoc.components] })));
       }
 
       // Load requirements

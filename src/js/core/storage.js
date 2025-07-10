@@ -13,7 +13,11 @@ function saveConfig() {
     functions: [...AppGlobals.state.allFunctions],
     variables: [...AppGlobals.state.allVariables],
     components: [...AppGlobals.state.allComponents],
-    modes: JSON.parse(JSON.stringify(AppGlobals.state.modes)),
+    modes: [...AppGlobals.state.allModes],
+    modeComponentAssociations: AppGlobals.state.modeComponentAssociations.map(assoc => ({ 
+      ...assoc, 
+      components: [...assoc.components] 
+    }))
   };
   localStorage.setItem('systemConfig', JSON.stringify(config));
 }
@@ -26,16 +30,33 @@ function loadConfig() {
   if (savedConfig) {
     try {
       const config = JSON.parse(savedConfig);
+      
+      // Clear existing arrays
       AppGlobals.state.allFunctions.length = 0;
       AppGlobals.state.allVariables.length = 0;
       AppGlobals.state.allComponents.length = 0;
+      AppGlobals.state.allModes.length = 0;
+      AppGlobals.state.modeComponentAssociations.length = 0;
+      
+      // Load data with fallbacks to defaults
       AppGlobals.state.allFunctions.push(...(config.functions || AppGlobals.defaults.functions));
       AppGlobals.state.allVariables.push(...(config.variables || AppGlobals.defaults.variables));
       AppGlobals.state.allComponents.push(...(config.components || AppGlobals.defaults.components));
-
-      // Clear and reload modes
-      Object.keys(AppGlobals.state.modes).forEach(key => delete AppGlobals.state.modes[key]);
-      Object.assign(AppGlobals.state.modes, config.modes || JSON.parse(JSON.stringify(AppGlobals.defaults.modes)));
+      AppGlobals.state.allModes.push(...(config.modes || AppGlobals.defaults.modes));
+      
+      // Load mode-component associations
+      if (config.modeComponentAssociations) {
+        AppGlobals.state.modeComponentAssociations.push(...config.modeComponentAssociations.map(assoc => ({ 
+          ...assoc, 
+          components: [...assoc.components] 
+        })));
+      } else {
+        // Fallback to defaults
+        AppGlobals.state.modeComponentAssociations.push(...AppGlobals.defaults.modeAssociations.map(assoc => ({ 
+          ...assoc, 
+          components: [...assoc.components] 
+        })));
+      }
     } catch (error) {
       console.error('Error loading config:', error);
       resetToDefaults();
@@ -88,12 +109,17 @@ function resetToDefaults() {
   AppGlobals.state.allFunctions.length = 0;
   AppGlobals.state.allVariables.length = 0;
   AppGlobals.state.allComponents.length = 0;
+  AppGlobals.state.allModes.length = 0;
+  AppGlobals.state.modeComponentAssociations.length = 0;
+  
   AppGlobals.state.allFunctions.push(...AppGlobals.defaults.functions);
   AppGlobals.state.allVariables.push(...AppGlobals.defaults.variables);
   AppGlobals.state.allComponents.push(...AppGlobals.defaults.components);
-
-  Object.keys(AppGlobals.state.modes).forEach(key => delete AppGlobals.state.modes[key]);
-  Object.assign(AppGlobals.state.modes, JSON.parse(JSON.stringify(AppGlobals.defaults.modes)));
+  AppGlobals.state.allModes.push(...AppGlobals.defaults.modes);
+  AppGlobals.state.modeComponentAssociations.push(...AppGlobals.defaults.modeAssociations.map(assoc => ({ 
+    ...assoc, 
+    components: [...assoc.components] 
+  })));
 
   saveConfig();
 }

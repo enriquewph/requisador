@@ -6,16 +6,16 @@
 // Application version configuration
 const AppVersion = {
   // Main application version
-  app: '0.1.0',
+  app: '0.2.1',
   
   // Project export/import format version
-  project: '1.0',
+  project: '2.0',
   
   // Storage format version (for localStorage compatibility)
-  storage: '3.0',
+  storage: '4.0',
   
   // Cache busting version for development (increment when files change)
-  cache: 7,
+  cache: 9,
   
   // Build information
   build: {

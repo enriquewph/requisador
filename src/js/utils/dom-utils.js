@@ -306,6 +306,215 @@ class ConfigListManager {
   }
 }
 
+// --- Many-to-Many Configuration List Manager ---
+class ManyToManyListManager {
+  constructor(config) {
+    this.listId = config.listId;
+    this.inputId = config.inputId;
+    this.buttonId = config.buttonId;
+    this.itemName = config.itemName; // e.g., 'modo'
+    this.associatedItemName = config.associatedItemName; // e.g., 'componente'
+    this.getItems = config.getItems; // function to get main items array
+    this.getAssociatedItems = config.getAssociatedItems; // function to get associated items array
+    this.addItem = config.addItem; // function to add new item
+    this.removeItem = config.removeItem; // function to remove item
+    this.getAssociations = config.getAssociations; // function to get associations for an item
+    this.setAssociations = config.setAssociations; // function to set associations for an item
+    this.validate = config.validate || (() => true);
+    this.onAdd = config.onAdd || (() => {});
+    this.onRemove = config.onRemove || (() => {});
+    this.onAssociationChange = config.onAssociationChange || (() => {});
+  }
+
+  init() {
+    this.bindEvents();
+    this.render();
+  }
+
+  bindEvents() {
+    const button = document.getElementById(this.buttonId);
+    const input = document.getElementById(this.inputId);
+
+    if (button) {
+      button.addEventListener('click', () => this.addNewItem());
+    }
+
+    if (input) {
+      input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          this.addNewItem();
+        }
+      });
+    }
+  }
+
+  addNewItem() {
+    const input = document.getElementById(this.inputId);
+    if (!input || !input.value.trim()) {
+      DOMUtils.showToast(`Por favor, introduce el nombre del ${this.itemName}.`, 'warning');
+      return;
+    }
+
+    const newItem = input.value.trim();
+    const items = this.getItems();
+
+    if (items.includes(newItem)) {
+      DOMUtils.showToast(`Este ${this.itemName} ya existe.`, 'warning');
+      return;
+    }
+
+    if (!this.validate(newItem)) {
+      return;
+    }
+
+    this.addItem(newItem);
+    input.value = '';
+    this.render();
+    this.onAdd(newItem);
+    DOMUtils.showToast(`${this.itemName.charAt(0).toUpperCase() + this.itemName.slice(1)} añadido correctamente.`, 'success');
+    
+    // Auto-save
+    if (window.Storage && Storage.saveConfig) {
+      Storage.saveConfig();
+    }
+  }
+
+  removeItemByIndex(index) {
+    const items = this.getItems();
+    if (index >= 0 && index < items.length) {
+      const removedItem = items[index];
+      this.removeItem(removedItem);
+      this.render();
+      this.onRemove(removedItem, index);
+      DOMUtils.showToast(`${this.itemName.charAt(0).toUpperCase() + this.itemName.slice(1)} "${removedItem}" eliminado.`, 'success');
+      
+      // Auto-save
+      if (window.Storage && Storage.saveConfig) {
+        Storage.saveConfig();
+      }
+    }
+  }
+
+  updateAssociations(item, selectedAssociations) {
+    this.setAssociations(item, selectedAssociations);
+    this.onAssociationChange(item, selectedAssociations);
+    
+    // Auto-save
+    if (window.Storage && Storage.saveConfig) {
+      Storage.saveConfig();
+    }
+  }
+
+  render() {
+    const container = document.getElementById(this.listId);
+    if (!container) return;
+
+    const items = this.getItems();
+    const associatedItems = this.getAssociatedItems();
+
+    if (items.length === 0) {
+      container.innerHTML = `<p class="text-gray-500 italic text-sm">No hay ${this.itemName}s configurados.</p>`;
+      return;
+    }
+
+    container.innerHTML = items
+      .map((item, index) => {
+        const associations = this.getAssociations(item);
+        
+        // Create checkbox-based multi-select UI
+        const associationCheckboxes = associatedItems
+          .map(assocItem => {
+            const isSelected = associations.includes(assocItem);
+            const checkboxId = `${this.listId}_${index}_${assocItem.replace(/\s+/g, '_')}`;
+            return `
+              <label class="mode-component-label inline-flex items-center px-3 py-1 rounded-full border cursor-pointer transition-all text-sm ${
+                isSelected 
+                  ? 'bg-purple-100 border-purple-300 text-purple-800' 
+                  : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+              }" onclick="window.ManyToManyManagers.modes.toggleAssociation('${item}', '${assocItem}')">>
+                <span class="font-medium">${assocItem}</span>
+                ${isSelected ? '<i class="fas fa-check ml-2 text-purple-600"></i>' : ''}
+              </label>
+            `;
+          }).join('');
+
+        return `
+          <div class="mb-3 p-3 bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-3 flex-1">
+                <div class="flex items-center gap-2">
+                  <i class="fas fa-layer-group text-purple-600"></i>
+                  <h5 class="font-semibold text-gray-800">${item}</h5>
+                </div>
+                <div class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                  ${associations.length} ${this.associatedItemName}${associations.length !== 1 ? 's' : ''}
+                </div>
+              </div>
+              <button 
+                onclick="window.ManyToManyManagers.modes.removeItemByIndex(${index})" 
+                class="text-red-500 hover:text-red-700 p-1.5 rounded-full hover:bg-red-50 transition-colors"
+                title="Eliminar ${this.itemName}"
+              >
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            
+            ${associatedItems.length > 0 ? `
+              <div class="space-y-2">
+                <label class="block text-xs font-medium text-gray-600 mb-2">
+                  Seleccionar ${this.associatedItemName}s:
+                </label>
+                <div class="flex flex-wrap gap-2">
+                  ${associationCheckboxes}
+                </div>
+              </div>
+            ` : `
+              <div class="text-xs text-gray-500 bg-yellow-50 p-2 rounded border border-yellow-200">
+                <i class="fas fa-exclamation-triangle mr-1 text-yellow-600"></i>
+                No hay ${this.associatedItemName}s disponibles. Añade ${this.associatedItemName}s primero.
+              </div>
+            `}
+          </div>
+        `;
+      }).join('');
+
+    // Add click event listeners to component labels
+    setTimeout(() => {
+      const container = document.getElementById(this.listId);
+      if (container) {
+        const labels = container.querySelectorAll('.mode-component-label');
+        labels.forEach(label => {
+          label.addEventListener('click', (e) => {
+            e.preventDefault();
+            const mode = label.dataset.mode;
+            const component = label.dataset.component;
+            this.toggleAssociation(mode, component);
+          });
+        });
+      }
+    }, 0);
+  }
+
+  // Handle toggling associations for checkbox-style labels
+  toggleAssociation(item, associatedItem) {
+    const currentAssociations = this.getAssociations(item);
+    const isCurrentlySelected = currentAssociations.includes(associatedItem);
+    
+    let newAssociations;
+    if (isCurrentlySelected) {
+      // Remove the association
+      newAssociations = currentAssociations.filter(assoc => assoc !== associatedItem);
+    } else {
+      // Add the association
+      newAssociations = [...currentAssociations, associatedItem];
+    }
+    
+    this.updateAssociations(item, newAssociations);
+    // Re-render to update the visual state
+    this.render();
+  }
+}
+
 // --- Export functions ---
 window.DOMUtils = {
   domElements,
@@ -314,7 +523,8 @@ window.DOMUtils = {
   updateSelects,
   showToast,
   reinitializeDOMElements,
-  ConfigListManager
+  ConfigListManager,
+  ManyToManyListManager
 };
 
 console.log('✅ DOM utilities module loaded');

@@ -154,7 +154,7 @@ const ListTab = {
 
     const parentInfo = req.parentId ? `<span class="text-xs text-gray-500 ml-2">← ${req.parentId}</span>` : '';
 
-    const component = req.component === 'Ambos' ? 'HMI+ECI' : req.component;
+    const component = req.component;
 
     // Truncate behavior to keep it condensed
     const behaviorSummary = req.behavior.length > 60 
@@ -165,7 +165,7 @@ const ListTab = {
     const tooltipContent = `
 ID: ${req.id}
 ${req.parentId ? `Padre: ${req.parentId}` : ''}
-Componente: ${req.component === 'Ambos' ? 'HMI, ECI' : req.component}
+Componente: ${req.component}
 Función: ${req.func}
 Variable: ${req.variable}
 Modo: ${req.mode}

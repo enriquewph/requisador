@@ -39,7 +39,7 @@ function exportToCSV() {
 
   const csvRows = [headers.join(',')];
   AppGlobals.state.allRequirements.forEach(req => {
-    const component = req.component === 'Ambos' ? 'HMI, ECI' : req.component;
+    const component = req.component;
     const row = [
       req.id, // Use the actual ID instead of R${index}
       component,
@@ -97,7 +97,7 @@ function exportToLaTeX() {
 
   AppGlobals.state.allRequirements.forEach(req => {
     const condition = req.condition === '-' ? 'N/A' : req.condition;
-    const component = req.component === 'Ambos' ? 'HMI, ECI' : req.component;
+    const component = req.component;
     // Add indentation for level 2 requirements in LaTeX
     const indentation = req.level === 2 ? '\\quad ' : '';
     latexContent += `${indentation}${escapeLatexCell(req.id)} & ${escapeLatexCell(component)} & ${escapeLatexCell(req.func)} & ${escapeLatexCell(req.variable)} & ${escapeLatexCell(req.mode)} & ${escapeLatexCell(condition)} & ${escapeLatexCell(req.behavior)} \\\\\n`;

@@ -99,7 +99,7 @@ const TreeTab = {
     const hasChildren = children.length > 0;
     const nodeId = `tree-node-${req.id}`;
 
-    const component = req.component === 'Ambos' ? 'HMI+ECI' : req.component;
+    const component = req.component;
 
     // Truncate behavior for compact view
     const behaviorSummary = req.behavior.length > 80 
@@ -110,7 +110,7 @@ const TreeTab = {
     const tooltipContent = `
 ID: ${req.id}
 ${req.parentId ? `Padre: ${req.parentId}` : ''}
-Componente: ${req.component === 'Ambos' ? 'HMI, ECI' : req.component}
+Componente: ${req.component}
 Función: ${req.func}
 Variable: ${req.variable}
 Modo: ${req.mode}
@@ -346,7 +346,7 @@ Justificación: ${req.justification}
    */
   generateTextNode(req, prefix) {
     const children = AppGlobals.state.allRequirements.filter(r => r.parentId === req.id);
-    const component = req.component === 'Ambos' ? 'HMI, ECI' : req.component;
+    const component = req.component;
 
     let text = `${prefix}${req.id} - ${req.behavior}\n`;
     text += `${prefix}  └─ Componente: ${component}\n`;

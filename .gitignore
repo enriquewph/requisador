@@ -174,3 +174,8 @@ coverage/
 .coverage
 .pytest_cache/
 test-results/
+
+# ===========================
+# 🤖 AI Assistant Instructions  
+# ===========================
+AI_INSTRUCTIONS.txt

@@ -87,7 +87,7 @@ const ExportTab = {
 
       const csvRows = [headers.join(',')];
       AppGlobals.state.allRequirements.forEach(req => {
-        const component = req.component === 'Ambos' ? 'HMI, ECI' : req.component;
+        const component = req.component;
         const row = [
           req.id,
           req.level,
@@ -166,7 +166,7 @@ Este documento presenta los requisitos del sistema generados utilizando la metod
     const level1Reqs = AppGlobals.state.allRequirements.filter(req => req.level === 1);
 
     level1Reqs.forEach(req => {
-      const component = req.component === 'Ambos' ? 'HMI, ECI' : req.component;
+      const component = req.component;
 
       latexContent += `\\subsection{${req.id}}
 \\begin{itemize}
@@ -196,7 +196,7 @@ Este documento presenta los requisitos del sistema generados utilizando la metod
 
 `;
         children.forEach(child => {
-          const childComponent = child.component === 'Ambos' ? 'HMI, ECI' : child.component;
+          const childComponent = child.component;
           latexContent += `\\paragraph{${child.id}}
 \\begin{itemize}
     \\item \\textbf{Componente:} ${childComponent}
@@ -235,7 +235,7 @@ Este documento presenta los requisitos del sistema generados utilizando la metod
 `;
 
     AppGlobals.state.allRequirements.forEach(req => {
-      const component = req.component === 'Ambos' ? 'HMI, ECI' : req.component;
+      const component = req.component;
       latexContent += `${req.id} & ${component} & ${req.func} & ${req.variable} & ${req.behavior} \\\\ \\hline
 `;
     });
