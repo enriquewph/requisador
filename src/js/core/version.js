@@ -6,16 +6,16 @@
 // Application version configuration
 const AppVersion = {
   // Main application version
-  app: '0.2.2',
+  app: '1.0.0',
   
   // Project export/import format version
-  project: '2.0',
+  project: '3.0',
   
-  // Storage format version (for localStorage compatibility)
-  storage: '4.0',
+  // Database schema version (for SQLite migration)
+  database: '1.0',
   
   // Cache busting version for development (increment when files change)
-  cache: 10,
+  cache: 11,
   
   // Build information
   build: {
@@ -36,6 +36,11 @@ const AppVersion = {
   // Get project version for exports
   getProjectVersion() {
     return this.project;
+  },
+  
+  // Get database schema version
+  getDatabaseVersion() {
+    return this.database;
   },
   
   // Get storage version

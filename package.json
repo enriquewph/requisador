@@ -1,7 +1,7 @@
 {
   "name": "requisador-de-requisitos",
-  "version": "0.2.2",
-  "description": "Herramienta moderna para la gestión de requisitos en ingeniería de sistemas",
+  "version": "1.0.0",
+  "description": "Herramienta moderna para la gestión de requisitos en ingeniería de sistemas con base de datos SQLite",
   "main": "src/index.html",
   "scripts": {
     "start": "python3 -m http.server 8000 --directory src",
