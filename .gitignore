@@ -1,190 +1,42 @@
-# 🚫 .gitignore para Requisador de Requisitos
+# See http://help.github.com/ignore-files/ for more about ignoring files.
 
-# ===========================
-# 📁 Build and Distribution
-# ===========================
-dist/
-build/
-.output/
-.nuxt/
-.vuepress/dist/
+# Compiled output
+/dist
+/tmp
+/out-tsc
+/bazel-out
 
-# ===========================
-# 🎨 TailwindCSS Generated Files
-# ===========================
-src/css/tailwind.css
+# Node
+/node_modules
+npm-debug.log
+yarn-error.log
 
-# ===========================
-# 🔧 Node.js & NPM
-# ===========================
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-# package-lock.json  # Commented out - now tracking lock file for reproducible builds
-yarn.lock
-.pnpm-debug.log*
+# IDEs and editors
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
 
-# ===========================
-# 🗄️ Database Files
-# ===========================
-*.db
-*.sqlite
-*.sqlite3
-requisador.db
-# Keep schema.sql for reference
-
-# ===========================
-# 🌐 Environment & Config
-# ===========================
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# ===========================
-# 💻 Operating Systems
-# ===========================
-# Windows
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-$RECYCLE.BIN/
-
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-Icon
-
-# Linux
-*~
-.fuse_hidden*
-.directory
-.Trash-*
-
-# ===========================
-# 🔨 IDEs & Editors
-# ===========================
 # Visual Studio Code
-.vscode/
+.vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+.history/*
 
-# JetBrains
-.idea/
-*.swp
-*.swo
-*~
-
-# Vim
-*.swp
-*.swo
-*.tmp
-
-# Emacs
-*~
-\#*\#
-/.emacs.desktop
-/.emacs.desktop.lock
-*.elc
-
-# ===========================
-# 📊 Logs & Temporary Files
-# ===========================
-*.log
-logs/
-*.pid
-*.seed
-*.pid.lock
-.grunt/
-lib-cov/
-coverage/
-.nyc_output/
-.cache/
-.temp/
-.tmp/
-
-# ===========================
-# 🌐 GitHub Pages & Jekyll
-# ===========================
-_site/
+# Miscellaneous
+/.angular/cache
 .sass-cache/
-.jekyll-cache/
-.jekyll-metadata
+/connect.lock
+/coverage
+/libpeerconnection.log
+testem.log
+/typings
 
-# ===========================
-# 📦 Package Managers
-# ===========================
-# Yarn
-.yarn/cache
-.yarn/unplugged
-.yarn/build-state.yml
-.yarn/install-state.gz
-.pnp.*
-
-# PNPM
-.pnpm-store/
-
-# ===========================
-# 🔒 Security & Secrets
-# ===========================
-*.key
-*.pem
-*.p12
-*.p8
-auth.json
-secrets.json
-
-# ===========================
-# 📱 Mobile Development
-# ===========================
-# React Native
-.expo/
-.expo-shared/
-
-# ===========================
-# 🎯 Project Specific
-# ===========================
-# Backup files
-*.bak
-*.backup
-*.old
-
-# Development server files
-.python-version
-__pycache__/
-*.py[cod]
-*$py.class
-
-# Archives
-*.7z
-*.dmg
-*.gz
-*.iso
-*.jar
-*.rar
-*.tar
-*.zip
-
-# ===========================
-# 📄 Documentation Build
-# ===========================
-docs/_build/
-docs/.doctrees/
-
-# ===========================
-# 🧪 Testing
-# ===========================
-coverage/
-.coverage
-.pytest_cache/
-test-results/
-
-# ===========================
-# 🤖 AI Assistant Instructions  
-# ===========================
-AI_INSTRUCTIONS.txt
+# System files
+.DS_Store
+Thumbs.db
