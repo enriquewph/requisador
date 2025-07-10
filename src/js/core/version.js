@@ -6,7 +6,7 @@
 // Application version configuration
 const AppVersion = {
   // Main application version
-  app: '0.2.1',
+  app: '0.2.2',
   
   // Project export/import format version
   project: '2.0',
@@ -15,7 +15,7 @@ const AppVersion = {
   storage: '4.0',
   
   // Cache busting version for development (increment when files change)
-  cache: 9,
+  cache: 10,
   
   // Build information
   build: {
