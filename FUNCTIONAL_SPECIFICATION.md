@@ -39,8 +39,8 @@ A step-by-step guided process for creating structured requirements:
 ### 3. **Requirements Management**
 Comprehensive CRUD operations for requirements with:
 
-- **Hierarchical Structure**: Parent-child relationships (Level 1 + Level 2)
-- **Automatic ID Generation**: REQ-001, REQ-002, etc.
+- **Hierarchical Structure**: Parent-child relationships (Multiple levels)
+- **Automatic ID Generation**: R0, R1, R1-0, R1-1, R1-1-0 etc. as we go 1 level deep we add one slash
 - **Reordering**: Move requirements up/down within lists
 - **Validation**: Ensure all referenced entities exist
 - **Bulk Operations**: Delete, reorder, export
@@ -64,14 +64,11 @@ Comprehensive CRUD operations for requirements with:
 ### 5. **Data Management**
 
 #### **Import/Export**
-- **Export formats**: JSON, CSV, formatted text
-- **Import**: JSON configuration and requirements
+- **Export formats**: JSON, CSV
 - **Backup/Restore**: Complete application state
-- **Version tracking**: Schema versioning for compatibility
 
 #### **Storage**
-- **Primary**: SQLite database with normalized schema
-- **Migration**: Automatic upgrade from localStorage (v0.2.x → v1.0.0)
+- **Primary**: SQLite database with normalized schema stored on users pc.
 - **Relationships**: Foreign key constraints and referential integrity
 - **Performance**: Indexed queries for fast retrieval
 
@@ -127,7 +124,7 @@ metadata (key, value, timestamps) -- Version tracking
 - Requirements must reference valid Function, Variable, Component, and Mode
 - Mode-Component associations determine valid combinations
 - Parent requirements can only be Level 1 (top-level)
-- Child requirements are always Level 2 (sub-requirements)
+- Child requirements are not level 1 (sub-requirements)
 - Delete cascades: Mode/Component deletion removes associations
 - Delete restrictions: Cannot delete referenced Functions/Variables/Components/Modes
 
