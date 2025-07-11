@@ -10,12 +10,25 @@ export interface Function {
   updated_at?: string;
 }
 
+export interface ToleranceSpecification {
+  id?: number;
+  name: string;
+  type: 'Absoluta' | 'Relativa' | 'Estadística' | 'Funcional';
+  value: number;
+  units: string;
+  physical_interpretation: string;
+  justification: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface Variable {
   id?: number;
   name: string;
   description: string;
   order_index: number;
   latency_spec_id?: number;
+  tolerance_spec_id?: number;
   created_at?: string;
   updated_at?: string;
 }
@@ -79,6 +92,7 @@ export interface InitialData {
   modes: Mode[];
   mode_components: ModeComponent[];
   latency_specifications: LatencySpecification[];
+  tolerance_specifications: ToleranceSpecification[];
 }
 
 @Injectable({
@@ -136,15 +150,29 @@ export class DatabaseService {
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
 
+      CREATE TABLE IF NOT EXISTS tolerance_specifications (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE,
+        type TEXT NOT NULL CHECK (type IN ('Absoluta', 'Relativa', 'Estadística', 'Funcional')),
+        value REAL NOT NULL,
+        units TEXT NOT NULL,
+        physical_interpretation TEXT NOT NULL,
+        justification TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
       CREATE TABLE IF NOT EXISTS variables (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL UNIQUE,
         description TEXT,
         order_index INTEGER NOT NULL,
         latency_spec_id INTEGER,
+        tolerance_spec_id INTEGER,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (latency_spec_id) REFERENCES latency_specifications(id)
+        FOREIGN KEY (latency_spec_id) REFERENCES latency_specifications(id),
+        FOREIGN KEY (tolerance_spec_id) REFERENCES tolerance_specifications(id)
       );
 
       CREATE TABLE IF NOT EXISTS components (
@@ -229,6 +257,14 @@ export class DatabaseService {
         );
       });
 
+      // Insert tolerance specifications  
+      data.tolerance_specifications?.forEach(toleranceSpec => {
+        this.db!.run(
+          'INSERT OR IGNORE INTO tolerance_specifications (id, name, type, value, units, physical_interpretation, justification) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          [toleranceSpec.id!, toleranceSpec.name, toleranceSpec.type, toleranceSpec.value, toleranceSpec.units, toleranceSpec.physical_interpretation, toleranceSpec.justification]
+        );
+      });
+
       // Insert functions
       data.functions.forEach(func => {
         this.db!.run(
@@ -240,8 +276,8 @@ export class DatabaseService {
       // Insert variables
       data.variables.forEach(variable => {
         this.db!.run(
-          'INSERT OR IGNORE INTO variables (id, name, description, order_index, latency_spec_id) VALUES (?, ?, ?, ?, ?)',
-          [variable.id!, variable.name, variable.description, variable.order_index, variable.latency_spec_id || null]
+          'INSERT OR IGNORE INTO variables (id, name, description, order_index, latency_spec_id, tolerance_spec_id) VALUES (?, ?, ?, ?, ?, ?)',
+          [variable.id!, variable.name, variable.description, variable.order_index, variable.latency_spec_id || null, variable.tolerance_spec_id || null]
         );
       });
 
@@ -328,8 +364,8 @@ export class DatabaseService {
 
   addVariable(variable: Omit<Variable, 'id'>): number {
     if (!this.db) return -1;
-    const stmt = this.db.prepare('INSERT INTO variables (name, description, order_index, latency_spec_id) VALUES (?, ?, ?, ?)');
-    stmt.run([variable.name, variable.description, variable.order_index, variable.latency_spec_id || null]);
+    const stmt = this.db.prepare('INSERT INTO variables (name, description, order_index, latency_spec_id, tolerance_spec_id) VALUES (?, ?, ?, ?, ?)');
+    stmt.run([variable.name, variable.description, variable.order_index, variable.latency_spec_id || null, variable.tolerance_spec_id || null]);
     const result = this.db.exec('SELECT last_insert_rowid()')[0];
     stmt.free();
     return result.values[0][0] as number;
@@ -337,8 +373,8 @@ export class DatabaseService {
 
   updateVariable(id: number, variable: Omit<Variable, 'id'>): boolean {
     if (!this.db) return false;
-    const stmt = this.db.prepare('UPDATE variables SET name = ?, description = ?, order_index = ?, latency_spec_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?');
-    stmt.run([variable.name, variable.description, variable.order_index, variable.latency_spec_id || null, id]);
+    const stmt = this.db.prepare('UPDATE variables SET name = ?, description = ?, order_index = ?, latency_spec_id = ?, tolerance_spec_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?');
+    stmt.run([variable.name, variable.description, variable.order_index, variable.latency_spec_id || null, variable.tolerance_spec_id || null, id]);
     const changes = this.db.getRowsModified();
     stmt.free();
     return changes > 0;
@@ -392,14 +428,58 @@ export class DatabaseService {
     return changes > 0;
   }
 
+  // CRUD Operations for Tolerance Specifications
+  getToleranceSpecifications(): ToleranceSpecification[] {
+    if (!this.db) return [];
+    const stmt = this.db.prepare('SELECT * FROM tolerance_specifications ORDER BY name');
+    const results = [];
+    while (stmt.step()) {
+      results.push(stmt.getAsObject() as unknown as ToleranceSpecification);
+    }
+    stmt.free();
+    return results;
+  }
+
+  addToleranceSpecification(toleranceSpec: Omit<ToleranceSpecification, 'id'>): number {
+    if (!this.db) return -1;
+    const stmt = this.db.prepare('INSERT INTO tolerance_specifications (name, type, value, units, physical_interpretation, justification) VALUES (?, ?, ?, ?, ?, ?)');
+    stmt.run([toleranceSpec.name, toleranceSpec.type, toleranceSpec.value, toleranceSpec.units, toleranceSpec.physical_interpretation, toleranceSpec.justification]);
+    const result = this.db.exec('SELECT last_insert_rowid()')[0];
+    stmt.free();
+    return result.values[0][0] as number;
+  }
+
+  updateToleranceSpecification(id: number, toleranceSpec: Omit<ToleranceSpecification, 'id'>): boolean {
+    if (!this.db) return false;
+    const stmt = this.db.prepare('UPDATE tolerance_specifications SET name = ?, type = ?, value = ?, units = ?, physical_interpretation = ?, justification = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?');
+    stmt.run([toleranceSpec.name, toleranceSpec.type, toleranceSpec.value, toleranceSpec.units, toleranceSpec.physical_interpretation, toleranceSpec.justification, id]);
+    const changes = this.db.getRowsModified();
+    stmt.free();
+    return changes > 0;
+  }
+
+  deleteToleranceSpecification(id: number): boolean {
+    if (!this.db) return false;
+    const stmt = this.db.prepare('DELETE FROM tolerance_specifications WHERE id = ?');
+    stmt.run([id]);
+    const changes = this.db.getRowsModified();
+    stmt.free();
+    return changes > 0;
+  }
+
   // Get variable with its latency specification
-  getVariableWithLatency(variableId: number): (Variable & { latency_spec?: LatencySpecification }) | null {
+  // Get variable with its latency and tolerance specifications
+  getVariableWithSpecifications(variableId: number): (Variable & { latency_spec?: LatencySpecification, tolerance_spec?: ToleranceSpecification }) | null {
     if (!this.db) return null;
     const stmt = this.db.prepare(`
-      SELECT v.*, ls.name as latency_name, ls.type as latency_type, ls.value as latency_value, 
-             ls.units as latency_units, ls.physical_interpretation, ls.justification as latency_justification
+      SELECT v.*, 
+             ls.name as latency_name, ls.type as latency_type, ls.value as latency_value, 
+             ls.units as latency_units, ls.physical_interpretation as latency_interpretation, ls.justification as latency_justification,
+             ts.name as tolerance_name, ts.type as tolerance_type, ts.value as tolerance_value,
+             ts.units as tolerance_units, ts.physical_interpretation as tolerance_interpretation, ts.justification as tolerance_justification
       FROM variables v
       LEFT JOIN latency_specifications ls ON v.latency_spec_id = ls.id
+      LEFT JOIN tolerance_specifications ts ON v.tolerance_spec_id = ts.id
       WHERE v.id = ?
     `);
     stmt.bind([variableId]);
@@ -414,6 +494,7 @@ export class DatabaseService {
         description: row['description'] as string,
         order_index: row['order_index'] as number,
         latency_spec_id: row['latency_spec_id'] as number,
+        tolerance_spec_id: row['tolerance_spec_id'] as number,
         created_at: row['created_at'] as string,
         updated_at: row['updated_at'] as string
       };
@@ -425,8 +506,20 @@ export class DatabaseService {
           type: row['latency_type'] as string,
           value: row['latency_value'] as number,
           units: row['latency_units'] as string,
-          physical_interpretation: row['physical_interpretation'] as string,
+          physical_interpretation: row['latency_interpretation'] as string,
           justification: row['latency_justification'] as string
+        };
+      }
+
+      if (row['tolerance_name']) {
+        (variable as any).tolerance_spec = {
+          id: row['tolerance_spec_id'] as number,
+          name: row['tolerance_name'] as string,
+          type: row['tolerance_type'] as string,
+          value: row['tolerance_value'] as number,
+          units: row['tolerance_units'] as string,
+          physical_interpretation: row['tolerance_interpretation'] as string,
+          justification: row['tolerance_justification'] as string
         };
       }
       

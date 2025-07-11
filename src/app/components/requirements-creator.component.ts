@@ -317,13 +317,17 @@ interface RequirementDraft {
               </div>
 
               <!-- Latency Context (if variable has latency specification) -->
-              @if (getSelectedVariableLatency()) {
+              @if (getSelectedVariable()?.latency_spec_id) {
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <h4 class="font-medium text-blue-800 mb-3">Especificación de Latencia Asociada</h4>
                   <div class="text-sm text-blue-700 space-y-2">
-                    <p><strong>{{getSelectedVariableLatency()!.name}}</strong> ({{getSelectedVariableLatency()!.type}})</p>
-                    <p>{{getSelectedVariableLatency()!.physical_interpretation}}</p>
-                    <p class="text-blue-600">Valor base: {{getSelectedVariableLatency()!.value}} {{getSelectedVariableLatency()!.units}}</p>
+                    @for (spec of latencySpecs(); track spec.id) {
+                      @if (spec.id === getSelectedVariable()?.latency_spec_id) {
+                        <p><strong>{{spec.name}}</strong> ({{spec.type}})</p>
+                        <p>{{spec.physical_interpretation}}</p>
+                        <p class="text-blue-600">Valor base: {{spec.value}} {{spec.units}}</p>
+                      }
+                    }
                   </div>
                 </div>
               }

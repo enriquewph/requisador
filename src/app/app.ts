@@ -1,12 +1,11 @@
 import {Component as NgComponent, signal} from '@angular/core';
-import { DatabaseTestComponent } from './components/database-test.component';
 import { ConfigurationComponent } from './components/configuration.component';
-import { LatencyManagementComponent } from './components/latency-management.component';
+import { SpecificationsManagementComponent } from './components/specifications-management.component';
 import { RequirementsCreatorComponent } from './components/requirements-creator.component';
 
 @NgComponent({
   selector: 'app-root',
-  imports: [DatabaseTestComponent, ConfigurationComponent, LatencyManagementComponent, RequirementsCreatorComponent],
+  imports: [ConfigurationComponent, SpecificationsManagementComponent, RequirementsCreatorComponent],
   template: `
     <!-- Header -->
     <header class="bg-white shadow-sm border-b border-gray-200">
@@ -39,10 +38,10 @@ import { RequirementsCreatorComponent } from './components/requirements-creator.
             Configuración
           </button>
           <button 
-            (click)="activeTab.set('latency')"
-            [class]="activeTab() === 'latency' ? 'border-primary-500 text-primary-600 bg-white' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+            (click)="activeTab.set('especificaciones')"
+            [class]="activeTab() === 'especificaciones' ? 'border-primary-500 text-primary-600 bg-white' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
             class="py-4 px-6 border-b-2 font-medium text-sm transition-colors">
-            Latencia
+            Especificaciones
           </button>
           <button 
             (click)="activeTab.set('create')"
@@ -73,8 +72,8 @@ import { RequirementsCreatorComponent } from './components/requirements-creator.
           @case ('config') {
             <app-configuration></app-configuration>
           }
-          @case ('latency') {
-            <app-latency-management></app-latency-management>
+          @case ('especificaciones') {
+            <app-specifications-management></app-specifications-management>
           }
           @case ('create') {
             <app-requirements-creator></app-requirements-creator>
@@ -90,9 +89,6 @@ import { RequirementsCreatorComponent } from './components/requirements-creator.
               <h2 class="text-2xl font-semibold text-gray-900 mb-4">Exportar</h2>
               <p class="text-gray-600">Exporta requisitos en formato JSON o CSV</p>
             </div>
-          }
-          @case ('debug') {
-            <app-database-test></app-database-test>
           }
         }
       </div>
@@ -118,13 +114,6 @@ import { RequirementsCreatorComponent } from './components/requirements-creator.
               Requisador de Requisitos siguiendo metodología del Systems Engineering Handbook
             </p>
           </div>
-          
-          <!-- Debug Access -->
-          <button 
-            (click)="activeTab.set('debug')"
-            class="text-xs text-gray-400 hover:text-gray-600 px-3 py-1 rounded border border-gray-200 hover:border-gray-300 transition-colors">
-            🔧 Debug DB
-          </button>
         </div>
       </div>
     </footer>
@@ -243,6 +232,6 @@ import { RequirementsCreatorComponent } from './components/requirements-creator.
 })
 export class App {
   title = 'Requisador de Requisitos';
-  activeTab = signal<'config' | 'latency' | 'create' | 'manage' | 'export' | 'debug'>('config');
+  activeTab = signal<'config' | 'especificaciones' | 'create' | 'manage' | 'export'>('config');
   showAboutModal = signal(false);
 }

@@ -1,5 +1,5 @@
 import { Component as NgComponent, signal, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { DatabaseService, Function, Variable, Component, Mode } from '../services/database.service';
+import { DatabaseService, Function, Variable, Component, Mode, LatencySpecification, ToleranceSpecification } from '../services/database.service';
 import { FormsModule } from '@angular/forms';
 
 @NgComponent({
@@ -68,21 +68,41 @@ import { FormsModule } from '@angular/forms';
         </div>
         
         <!-- Add Variable Form -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 bg-green-50 rounded-lg">
-          <input
-            [(ngModel)]="newVariable.name"
-            placeholder="Nombre de la variable"
-            class="px-3 py-2 border border-gray-300 rounded-md">
-          <input
-            [(ngModel)]="newVariable.description"
-            placeholder="Descripción"
-            class="px-3 py-2 border border-gray-300 rounded-md">
-          <button
-            (click)="addVariable()"
-            [disabled]="!newVariable.name"
-            class="primary disabled:opacity-50">
-            Agregar Variable
-          </button>
+        <div class="grid grid-cols-1 gap-4 mb-6 p-4 bg-green-50 rounded-lg">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input
+              [(ngModel)]="newVariable.name"
+              placeholder="Nombre de la variable"
+              class="px-3 py-2 border border-gray-300 rounded-md">
+            <input
+              [(ngModel)]="newVariable.description"
+              placeholder="Descripción"
+              class="px-3 py-2 border border-gray-300 rounded-md">
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <select
+              [(ngModel)]="newVariable.latency_spec_id"
+              class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+              <option [value]="null">Latencia: N/A</option>
+              @for (spec of latencySpecs(); track spec.id) {
+                <option [value]="spec.id">{{ spec.name }} ({{ spec.value }} {{ spec.units }})</option>
+              }
+            </select>
+            <select
+              [(ngModel)]="newVariable.tolerance_spec_id"
+              class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+              <option [value]="null">Tolerancia: N/A</option>
+              @for (spec of toleranceSpecs(); track spec.id) {
+                <option [value]="spec.id">{{ spec.name }} ({{ spec.value }} {{ spec.units }})</option>
+              }
+            </select>
+            <button
+              (click)="addVariable()"
+              [disabled]="!newVariable.name"
+              class="primary disabled:opacity-50">
+              Agregar Variable
+            </button>
+          </div>
         </div>
 
         <!-- Variables List -->
@@ -90,10 +110,20 @@ import { FormsModule } from '@angular/forms';
           @for (variable of variables(); track variable.id) {
             <div class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
               <div class="flex-1">
-                <span class="font-medium text-green-700">{{variable.name}}</span>
-                @if (variable.description) {
-                  <span class="text-gray-600 ml-3">{{variable.description}}</span>
-                }
+                <div class="flex items-center space-x-3">
+                  <span class="font-medium text-green-700">{{variable.name}}</span>
+                  @if (variable.description) {
+                    <span class="text-gray-600">{{variable.description}}</span>
+                  }
+                </div>
+                <div class="flex items-center space-x-4 mt-1 text-xs">
+                  <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                    Latencia: {{ getLatencySpecName(variable.latency_spec_id) }}
+                  </span>
+                  <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded">
+                    Tolerancia: {{ getToleranceSpecName(variable.tolerance_spec_id) }}
+                  </span>
+                </div>
               </div>
               <button
                 (click)="variable.id && deleteVariable(variable.id)"
@@ -256,11 +286,13 @@ export class ConfigurationComponent implements OnInit {
   components = signal<Component[]>([]);
   modes = signal<Mode[]>([]);
   modeComponents = signal<{mode_id: number, component_id: number}[]>([]);
+  latencySpecs = signal<LatencySpecification[]>([]);
+  toleranceSpecs = signal<ToleranceSpecification[]>([]);
   statusMessage = signal<{text: string, type: 'success' | 'error'} | null>(null);
 
   // Form data
   newFunction = {name: '', description: ''};
-  newVariable = {name: '', description: ''};
+  newVariable = {name: '', description: '', latency_spec_id: null as number | null, tolerance_spec_id: null as number | null};
   newComponent = {name: '', description: ''};
   newMode = {name: '', description: ''};
 
@@ -275,12 +307,14 @@ export class ConfigurationComponent implements OnInit {
         await new Promise(resolve => setTimeout(resolve, 100));
       }
       
-      const [funcs, vars, comps, modes, modeComps] = await Promise.all([
+      const [funcs, vars, comps, modes, modeComps, latencySpecs, toleranceSpecs] = await Promise.all([
         Promise.resolve(this.db.getFunctions()),
         Promise.resolve(this.db.getVariables()),
         Promise.resolve(this.db.getComponents()),
         Promise.resolve(this.db.getModes()),
-        Promise.resolve(this.db.getModeComponents())
+        Promise.resolve(this.db.getModeComponents()),
+        Promise.resolve(this.db.getLatencySpecifications()),
+        Promise.resolve(this.db.getToleranceSpecifications())
       ]);
 
       this.functions.set(funcs);
@@ -288,6 +322,8 @@ export class ConfigurationComponent implements OnInit {
       this.components.set(comps);
       this.modes.set(modes);
       this.modeComponents.set(modeComps);
+      this.latencySpecs.set(latencySpecs);
+      this.toleranceSpecs.set(toleranceSpecs);
     } catch (error) {
       this.showStatus('Error al cargar datos: ' + error, 'error');
     }
@@ -331,9 +367,11 @@ export class ConfigurationComponent implements OnInit {
       this.db.addVariable({
         name: this.newVariable.name.trim(),
         description: this.newVariable.description.trim(),
-        order_index: this.variables().length
+        order_index: this.variables().length,
+        latency_spec_id: this.newVariable.latency_spec_id || undefined,
+        tolerance_spec_id: this.newVariable.tolerance_spec_id || undefined
       });
-      this.newVariable = {name: '', description: ''};
+      this.newVariable = {name: '', description: '', latency_spec_id: null, tolerance_spec_id: null};
       await this.loadAllData();
       this.showStatus('Variable agregada correctamente', 'success');
     } catch (error) {
@@ -457,6 +495,19 @@ export class ConfigurationComponent implements OnInit {
 
   getModeComponentCount(modeId: number): number {
     return this.modeComponents().filter(mc => mc.mode_id === modeId).length;
+  }
+
+  // Helper methods for specification names
+  getLatencySpecName(specId: number | undefined): string {
+    if (!specId) return 'N/A';
+    const spec = this.latencySpecs().find(s => s.id === specId);
+    return spec ? `${spec.name} (${spec.value} ${spec.units})` : 'N/A';
+  }
+
+  getToleranceSpecName(specId: number | undefined): string {
+    if (!specId) return 'N/A';
+    const spec = this.toleranceSpecs().find(s => s.id === specId);
+    return spec ? `${spec.name} (${spec.value} ${spec.units})` : 'N/A';
   }
 
   private showStatus(text: string, type: 'success' | 'error') {

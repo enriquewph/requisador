@@ -48,27 +48,59 @@
       "justification": "Adecuado para monitoreo de condiciones ambientales no críticas"
     }
   ],
+  "tolerance_specifications": [
+    {
+      "id": 1,
+      "name": "Precisión Estándar",
+      "type": "Absoluta",
+      "value": 0.1,
+      "units": "%",
+      "physical_interpretation": "La desviación máxima permitida respecto al valor nominal en condiciones normales",
+      "justification": "Basado en estándares ISO para sistemas de medición de precisión"
+    },
+    {
+      "id": 2,
+      "name": "Tolerancia de Posición",
+      "type": "Absoluta",
+      "value": 0.5,
+      "units": "m",
+      "physical_interpretation": "El error máximo permitido en la determinación de coordenadas de posición",
+      "justification": "Requerido para navegación con precisión GPS diferencial"
+    },
+    {
+      "id": 3,
+      "name": "Variación Térmica",
+      "type": "Relativa",
+      "value": 2.0,
+      "units": "°C",
+      "physical_interpretation": "La fluctuación máxima permitida de temperatura respecto al punto de referencia",
+      "justification": "Límites operacionales para componentes electrónicos críticos"
+    }
+  ],
   "variables": [
     {
       "id": 1,
       "name": "Speed",
       "description": "Velocity measurement parameter",
       "order_index": 1,
-      "latency_spec_id": 1
+      "latency_spec_id": 1,
+      "tolerance_spec_id": 1
     },
     {
       "id": 2,
       "name": "Position",
       "description": "Location coordinates parameter",
       "order_index": 2,
-      "latency_spec_id": 2
+      "latency_spec_id": 2,
+      "tolerance_spec_id": 2
     },
     {
       "id": 3,
       "name": "Temperature",
       "description": "Temperature measurement parameter",
       "order_index": 3,
-      "latency_spec_id": 3
+      "latency_spec_id": 3,
+      "tolerance_spec_id": 3
     }
   ],
   "components": [
