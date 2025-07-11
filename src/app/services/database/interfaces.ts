@@ -91,6 +91,7 @@ export interface InitialData {
   mode_components: ModeComponent[];
   latency_specifications: LatencySpecification[];
   tolerance_specifications: ToleranceSpecification[];
+  requirements: Requirement[];
 }
 
 // Extended interfaces with relationships

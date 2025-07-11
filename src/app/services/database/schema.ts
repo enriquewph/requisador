@@ -209,6 +209,26 @@ export class SchemaManager {
         stmt.free();
       }
 
+      // Insert requirements
+      if (data.requirements?.length > 0) {
+        const stmt = this.db.prepare('INSERT OR IGNORE INTO requirements (function_id, variable_id, component_id, mode_id, parent_id, behavior, condition, justification, level, order_index) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        data.requirements.forEach(req => {
+          stmt.run([
+            req.function_id,
+            req.variable_id,
+            req.component_id,
+            req.mode_id,
+            req.parent_id || null,
+            req.behavior,
+            req.condition || null,
+            req.justification || null,
+            req.level,
+            req.order_index
+          ]);
+        });
+        stmt.free();
+      }
+
       return true;
     } catch (error) {
       console.error('Error inserting initial data:', error);
