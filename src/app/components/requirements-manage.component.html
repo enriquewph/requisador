@@ -104,9 +104,10 @@
         <!-- TreeTable -->
         <p-treeTable 
           [value]="requirements()" 
-          [columns]="cols"
+          [columns]="allCols()"
           [scrollable]="true" 
           scrollHeight="500px"
+          scrollDirection="both"
           [resizableColumns]="true"
           [globalFilterFields]="['textualId', 'behavior', 'condition', 'component', 'mode', 'function', 'variable', 'justification']"
           styleClass="p-treetable-sm"
@@ -115,132 +116,88 @@
           <!-- Column Headers -->
           <ng-template pTemplate="header" let-columns>
             <tr>
-              @for (col of columns; track col.field) {
+              @for (col of allCols(); track col.field) {
                 <th [style.width]="col.width">
                   <div class="flex items-center">
                     {{ col.header }}
                   </div>
                 </th>
               }
-              <th style="width: 120px">Acciones</th>
             </tr>
           </ng-template>
 
           <!-- Row Content -->
           <ng-template pTemplate="body" let-rowNode let-rowData="rowData" let-columns="columns">
             <tr [ttRow]="rowNode">
-              @for (col of columns; track col.field) {
+              @for (col of allCols(); track col.field) {
                 <td>
                   @switch (col.field) {
-                  @case ('textualId') {
-                    <div class="flex items-center">
-                      <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
-                      <span class="font-mono text-sm font-medium ml-2" 
-                            [class]="getRequirementIdClass(rowData.level)">
-                        {{ rowData.textualId }}
+                    @case ('textualId') {
+                      <div class="flex items-center">
+                        <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
+                        <span class="font-mono text-sm font-medium ml-2" 
+                              [class]="getRequirementIdClass(rowData.level)">
+                          {{ rowData.textualId }}
+                        </span>
+                      </div>
+                    }
+                    @case ('behavior') {
+                      <div class="max-w-md">
+                        <p class="text-sm text-gray-900 line-clamp-2" 
+                           [title]="rowData.behavior">
+                          {{ rowData.behavior }}
+                        </p>
+                      </div>
+                    }
+                    @case ('condition') {
+                      <div class="max-w-md">
+                        <p class="text-sm text-gray-600 line-clamp-1" 
+                           [title]="rowData.condition">
+                          {{ rowData.condition }}
+                        </p>
+                      </div>
+                    }
+                    @case ('justification') {
+                      <div class="max-w-md">
+                        <p class="text-sm text-gray-500 line-clamp-1" 
+                           [title]="rowData.justification">
+                          {{ rowData.justification }}
+                        </p>
+                      </div>
+                    }
+                    @case ('component') {
+                      <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                        {{ rowData.component }}
                       </span>
-                    </div>
+                    }
+                    @case ('mode') {
+                      <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                        {{ rowData.mode }}
+                      </span>
+                    }
+                    @case ('function') {
+                      <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {{ rowData.function }}
+                      </span>
+                    }
+                    @case ('variable') {
+                      <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        {{ rowData.variable }}
+                      </span>
+                    }
+                    @default {
+                      {{ rowData[col.field] }}
+                    }
                   }
-                  @case ('behavior') {
-                    <div class="max-w-md">
-                      <p class="text-sm text-gray-900 line-clamp-2" 
-                         [title]="rowData.behavior">
-                        {{ rowData.behavior }}
-                      </p>
-                    </div>
-                  }
-                  @case ('condition') {
-                    <div class="max-w-md">
-                      <p class="text-sm text-gray-600 line-clamp-1" 
-                         [title]="rowData.condition">
-                        {{ rowData.condition }}
-                      </p>
-                    </div>
-                  }
-                  @case ('justification') {
-                    <div class="max-w-md">
-                      <p class="text-sm text-gray-500 line-clamp-1" 
-                         [title]="rowData.justification">
-                        {{ rowData.justification }}
-                      </p>
-                    </div>
-                  }
-                  @case ('component') {
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                      {{ rowData.component }}
-                    </span>
-                  }
-                  @case ('mode') {
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                      {{ rowData.mode }}
-                    </span>
-                  }
-                  @case ('function') {
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {{ rowData.function }}
-                    </span>
-                  }
-                  @case ('variable') {
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      {{ rowData.variable }}
-                    </span>
-                  }
-                  @default {
-                    {{ rowData[col.field] }}
-                  }
-                }
-              </td>
+                </td>
               }
-              
-              <!-- Actions Column -->
-              <td>
-                <div class="flex items-center space-x-1">
-                  <button 
-                    type="button" 
-                    class="text-gray-400 hover:text-blue-600 p-1 rounded transition-colors"
-                    title="Ver detalles"
-                    (click)="viewRequirement(rowData)">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                    </svg>
-                  </button>
-                  <button 
-                    type="button" 
-                    class="text-gray-400 hover:text-green-600 p-1 rounded transition-colors"
-                    title="Editar"
-                    (click)="editRequirement(rowData)">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                    </svg>
-                  </button>
-                  <button 
-                    type="button" 
-                    class="text-gray-400 hover:text-purple-600 p-1 rounded transition-colors"
-                    title="Agregar sub-requisito"
-                    (click)="addChildRequirement(rowData)">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                    </svg>
-                  </button>
-                  <button 
-                    type="button" 
-                    class="text-gray-400 hover:text-red-600 p-1 rounded transition-colors"
-                    title="Eliminar"
-                    (click)="deleteRequirement(rowData)">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                    </svg>
-                  </button>
-                </div>
-              </td>
             </tr>
           </ng-template>
 
           <!-- Empty State -->
           <ng-template pTemplate="emptymessage">
             <tr>
-              <td [attr.colspan]="cols.length + 1" class="text-center py-8">
+              <td [attr.colspan]="allCols().length" class="text-center py-8">
                 <div class="flex flex-col items-center space-y-4">
                   <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>

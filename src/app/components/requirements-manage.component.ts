@@ -59,6 +59,9 @@ export class RequirementsManageComponent implements OnInit {
     { field: 'justification', header: 'Justificación', width: '200px' }
   ];
 
+  // Computed property for all columns
+  allCols = signal(this.cols);
+
   async ngOnInit() {
     // Wait for database to be ready
     const checkDatabase = () => {
