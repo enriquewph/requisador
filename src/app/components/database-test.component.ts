@@ -8,8 +8,8 @@ import { DatabaseService, Function, Variable, Component as ComponentEntity, Mode
   imports: [CommonModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="p-6 max-w-6xl mx-auto">
-      <h1 class="text-2xl font-bold mb-6" style="color: var(--primary-color)">
+    <div class="p-6 max-w-6xl mx-auto bg-gray-50 min-h-screen">
+      <h1 class="text-2xl font-bold mb-6 text-primary-600">
         Requisador Database Interface
       </h1>
       
@@ -291,38 +291,12 @@ import { DatabaseService, Function, Variable, Component as ComponentEntity, Mode
     </div>
   `,
   styles: [`
-    .primary {
-      padding: 10px 16px;
-      border: solid 1px var(--primary-color);
-      background: var(--primary-color);
-      color: white;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    
-    .primary:hover {
-      background: var(--secondary-color);
-      border-color: var(--secondary-color);
-    }
-    
-    .primary:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
     .tab-active {
-      background: var(--primary-color);
-      color: white;
+      @apply bg-primary-600 text-white;
     }
     
     .tab-inactive {
-      background: #f3f4f6;
-      color: #374151;
-    }
-    
-    .tab-inactive:hover {
-      background: var(--accent-color);
+      @apply bg-gray-100 text-gray-700 hover:bg-primary-50;
     }
   `]
 })
