@@ -45,7 +45,7 @@ Comprehensive CRUD operations for requirements with:
 - **Validation**: Ensure all referenced entities exist
 - **Bulk Operations**: Delete, reorder, export
 
-### 4. **Multiple View Modes**
+### 4. **View Mode**
 
 #### **List View**
 - Tabular display with all requirement details
@@ -53,13 +53,6 @@ Comprehensive CRUD operations for requirements with:
 - Inline editing capabilities
 - Hierarchical indentation for sub-requirements
 - Bulk selection and operations
-
-#### **Tree View**  
-- Interactive hierarchical display
-- Expandable/collapsible nodes
-- Visual parent-child relationships
-- Tooltips with detailed requirement information
-- Drag-and-drop for restructuring
 
 ### 5. **Data Management**
 
@@ -78,7 +71,7 @@ Comprehensive CRUD operations for requirements with:
 
 ### **Layout Structure**
 - **Header**: Application title, version info, about modal
-- **Tab Navigation**: Config, Create, List, Tree views
+- **Tab Navigation**: Config, Create, List
 - **Main Content**: Dynamic tab content loading
 - **Footer**: Status information and actions
 
@@ -86,7 +79,6 @@ Comprehensive CRUD operations for requirements with:
 - **Modern UI**: TailwindCSS with consistent design system
 - **Responsive**: Mobile-first approach with breakpoints
 - **Accessibility**: ARIA labels, keyboard navigation, screen reader support
-- **Performance**: Lazy loading, efficient DOM updates
 - **Visual Feedback**: Loading states, success/error messages, validation hints
 
 ### **Color Coding**
@@ -135,9 +127,9 @@ metadata (key, value, timestamps) -- Version tracking
 ### **Core Technologies**
 - **Frontend**: Modern JavaScript (ES6+), HTML5, CSS3
 - **Styling**: TailwindCSS utility-first framework
-- **Database**: SQLite with foreign key constraints
+- **Database**: SQLite with foreign key constraints, stored locally on client side
 - **Architecture**: Modular component-based structure
-- **Build**: Static site generation (target: Scully + Angular)
+- **Build**: Static site generation.
 
 ### **Key Features to Implement**
 - **State Management**: Centralized application state
@@ -214,23 +206,4 @@ metadata (key, value, timestamps) -- Version tracking
 
 ---
 
-## 💡 Key Insights for Rebuild
-
-### **What Works Well**
-- Clear separation of configuration vs. requirement creation
-- Step-by-step wizard approach reduces user errors
-- Multiple view modes serve different user needs
-- Hierarchical structure supports complex requirements
-- Export capabilities enable integration with other tools
-
-### **Areas for Improvement**
-- **Framework**: Angular + Scully will provide better structure
-- **State Management**: Centralized state with observables
-- **Component Reusability**: Better separation of concerns
-- **Performance**: Virtual scrolling for large datasets
-- **Testing**: Comprehensive unit and integration tests
-- **Documentation**: Better in-app help and guidance
-
----
-
-**🎯 Target: Rebuild as a modern, scalable, professional-grade requirements management system using Angular + Scully with the same core functionality but superior architecture and user experience.**
+**🎯 Target: Build  a modern, scalable, professional-grade requirements management system that will be deployed as a static website app.**
