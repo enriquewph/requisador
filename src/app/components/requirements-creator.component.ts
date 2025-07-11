@@ -16,6 +16,7 @@ interface RequirementDraft {
   mode_id: number | null;
   parent_id: number | null;
   behavior: string;
+  condition: string;
   level: number;
   justification: string;
 }
@@ -27,7 +28,12 @@ interface RequirementDraft {
     <div class="space-y-6">
       <!-- Header -->
       <div class="bg-white rounded-lg shadow p-6">
-        <h2 class="text-2xl font-semibold text-gray-900 mb-2">Asistente de Creación de Requisitos</h2>
+        <h2 class="text-2xl font-semibold text-gray-900 mb-2 flex items-center space-x-2">
+          <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+          </svg>
+          <span>Asistente de Creación de Requisitos</span>
+        </h2>
         <p class="text-gray-600">Crea requisitos estructurados siguiendo la metodología del Systems Engineering Handbook</p>
       </div>
 
@@ -312,39 +318,97 @@ interface RequirementDraft {
                     }
                   </div>
                 </div>
+
+                <!-- Condition Description -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Condición para la Aplicación del Requisito</label>
+                  <textarea
+                    [(ngModel)]="requirementDraft.condition"
+                    placeholder="Ej: cuando la temperatura actual es menor que la temperatura mínima deseada, si el sistema está en modo normal y la velocidad actual excede el límite..."
+                    rows="3"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                  </textarea>
+                  <p class="text-xs text-gray-500 mt-1">
+                    Especifica las condiciones del sistema, variables monitoreadas e internas bajo las cuales se aplicará este requisito.
+                  </p>
+                </div>
               </div>
 
-              <!-- Latency Context (if variable has latency specification) -->
-              @if (getSelectedVariable()?.latency_spec_id) {
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h4 class="font-medium text-blue-800 mb-3">Especificación de Latencia Asociada</h4>
-                  <div class="text-sm text-blue-700 space-y-2">
+              <!-- Latency Specification Selection -->
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 class="font-medium text-blue-800 mb-3 flex items-center space-x-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  <span>Especificación de Latencia</span>
+                </h4>
+                <div class="space-y-3">
+                  <div>
+                    <label class="block text-sm font-medium text-blue-800 mb-2">Especificación Asignada</label>
+                    <select
+                      [ngModel]="latencyDropdownValue()"
+                      (ngModelChange)="updateVariableLatencySpec($event)"
+                      class="w-full px-3 py-2 border border-blue-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                      <option value="">Sin especificación de latencia</option>
+                      @for (spec of latencySpecs(); track spec.id) {
+                        <option [value]="spec.id">{{ spec.name }} ({{ spec.value }} {{ spec.units }})</option>
+                      }
+                    </select>
+                  </div>
+                  @if (selectedLatencySpecId()) {
                     @for (spec of latencySpecs(); track spec.id) {
-                      @if (spec.id === getSelectedVariable()?.latency_spec_id) {
-                        <p><strong>{{spec.name}}</strong> ({{spec.type}})</p>
-                        <p>{{spec.physical_interpretation}}</p>
-                        <p class="text-blue-600">Valor base: {{spec.value}} {{spec.units}}</p>
+                      @if (spec.id === selectedLatencySpecId()) {
+                        <div class="text-sm text-blue-700 space-y-1 bg-blue-100 p-3 rounded">
+                          <p><strong>{{spec.name}}</strong> ({{spec.type}})</p>
+                          <p>{{spec.physical_interpretation}}</p>
+                          <p class="text-blue-600">Valor: {{spec.value}} {{spec.units}}</p>
+                          @if (spec.justification) {
+                            <p class="text-xs text-blue-600">Justificación: {{spec.justification}}</p>
+                          }
+                        </div>
                       }
                     }
-                  </div>
+                  }
                 </div>
-              }
+              </div>
 
-              <!-- Tolerance Context (if variable has tolerance specification) -->
-              @if (getSelectedVariable()?.tolerance_spec_id) {
-                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                  <h4 class="font-medium text-yellow-800 mb-3">Especificación de Tolerancia Asociada</h4>
-                  <div class="text-sm text-yellow-700 space-y-2">
+              <!-- Tolerance Specification Selection -->
+              <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <h4 class="font-medium text-yellow-800 mb-3 flex items-center space-x-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                  </svg>
+                  <span>Especificación de Tolerancia</span>
+                </h4>
+                <div class="space-y-3">
+                  <div>
+                    <label class="block text-sm font-medium text-yellow-800 mb-2">Especificación Asignada</label>
+                    <select
+                      [ngModel]="toleranceDropdownValue()"
+                      (ngModelChange)="updateVariableToleranceSpec($event)"
+                      class="w-full px-3 py-2 border border-yellow-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
+                      <option value="">Sin especificación de tolerancia</option>
+                      @for (spec of toleranceSpecs(); track spec.id) {
+                        <option [value]="spec.id">{{ spec.name }} ({{ spec.value }} {{ spec.units }})</option>
+                      }
+                    </select>
+                  </div>
+                  @if (selectedToleranceSpecId()) {
                     @for (spec of toleranceSpecs(); track spec.id) {
-                      @if (spec.id === getSelectedVariable()?.tolerance_spec_id) {
-                        <p><strong>{{spec.name}}</strong> ({{spec.type}})</p>
-                        <p>{{spec.physical_interpretation}}</p>
-                        <p class="text-yellow-600">Valor base: {{spec.value}} {{spec.units}}</p>
+                      @if (spec.id === selectedToleranceSpecId()) {
+                        <div class="text-sm text-yellow-700 space-y-1 bg-yellow-100 p-3 rounded">
+                          <p><strong>{{spec.name}}</strong> ({{spec.type}})</p>
+                          <p>{{spec.physical_interpretation}}</p>
+                          <p class="text-yellow-600">Valor: {{spec.value}} {{spec.units}}</p>
+                          @if (spec.justification) {
+                            <p class="text-xs text-yellow-600">Justificación: {{spec.justification}}</p>
+                          }
+                        </div>
                       }
                     }
-                  </div>
+                  }
                 </div>
-              }
+              </div>
 
               <!-- Requirement Justification -->
               <div>
@@ -385,6 +449,14 @@ interface RequirementDraft {
                   <p class="text-lg text-gray-900">{{getPreviewRequirementText()}}</p>
                 </div>
 
+                <!-- Condition Section -->
+                @if (requirementDraft.condition && requirementDraft.condition.trim()) {
+                  <div class="bg-amber-50 p-4 rounded border-l-4 border-amber-400 mt-4">
+                    <h5 class="font-medium text-amber-800 mb-2">Condición para Aplicación:</h5>
+                    <p class="text-amber-700">{{requirementDraft.condition}}</p>
+                  </div>
+                }
+
                 <!-- Details Breakdown -->
                 <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
@@ -404,6 +476,61 @@ interface RequirementDraft {
                     <p class="text-gray-600">{{getSelectedMode()?.name}}</p>
                   </div>
                 </div>
+
+                <!-- Specifications Info -->
+                <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <!-- Latency Specification -->
+                  @if (selectedLatencySpecId()) {
+                    @for (spec of latencySpecs(); track spec.id) {
+                      @if (spec.id === selectedLatencySpecId()) {
+                        <div class="bg-blue-50 p-4 rounded border-l-4 border-blue-400">
+                          <h5 class="font-medium text-blue-800 mb-2">Especificación de Latencia:</h5>
+                          <p class="text-blue-700 text-sm"><strong>{{spec.name}}</strong> ({{spec.type}})</p>
+                          <p class="text-blue-600 text-sm">{{spec.physical_interpretation}}</p>
+                          <p class="text-blue-700 text-sm font-medium">Valor: {{spec.value}} {{spec.units}}</p>
+                          @if (spec.justification) {
+                            <p class="text-blue-600 text-xs mt-1">Justificación: {{spec.justification}}</p>
+                          }
+                        </div>
+                      }
+                    }
+                  } @else {
+                    <div class="bg-gray-50 p-4 rounded border-l-4 border-gray-300">
+                      <h5 class="font-medium text-gray-600 mb-2">Especificación de Latencia:</h5>
+                      <p class="text-gray-500 text-sm">Sin especificación asignada</p>
+                    </div>
+                  }
+
+                  <!-- Tolerance Specification -->
+                  @if (selectedToleranceSpecId()) {
+                    @for (spec of toleranceSpecs(); track spec.id) {
+                      @if (spec.id === selectedToleranceSpecId()) {
+                        <div class="bg-yellow-50 p-4 rounded border-l-4 border-yellow-400">
+                          <h5 class="font-medium text-yellow-800 mb-2">Especificación de Tolerancia:</h5>
+                          <p class="text-yellow-700 text-sm"><strong>{{spec.name}}</strong> ({{spec.type}})</p>
+                          <p class="text-yellow-600 text-sm">{{spec.physical_interpretation}}</p>
+                          <p class="text-yellow-700 text-sm font-medium">Valor: {{spec.value}} {{spec.units}}</p>
+                          @if (spec.justification) {
+                            <p class="text-yellow-600 text-xs mt-1">Justificación: {{spec.justification}}</p>
+                          }
+                        </div>
+                      }
+                    }
+                  } @else {
+                    <div class="bg-gray-50 p-4 rounded border-l-4 border-gray-300">
+                      <h5 class="font-medium text-gray-600 mb-2">Especificación de Tolerancia:</h5>
+                      <p class="text-gray-500 text-sm">Sin especificación asignada</p>
+                    </div>
+                  }
+                </div>
+
+                <!-- Justification -->
+                @if (requirementDraft.justification && requirementDraft.justification.trim()) {
+                  <div class="bg-green-50 p-4 rounded border-l-4 border-green-400 mt-4">
+                    <h5 class="font-medium text-green-800 mb-2">Justificación del Requisito:</h5>
+                    <p class="text-green-700">{{requirementDraft.justification}}</p>
+                  </div>
+                }
               </div>
 
               <!-- Hierarchy Info -->
@@ -484,6 +611,21 @@ export class RequirementsCreatorComponent implements OnInit {
   currentStep = signal(1);
   isCreating = signal(false);
   statusMessage = signal<{text: string, type: 'success' | 'error'} | null>(null);
+  
+  // Selected specification IDs for Step 4
+  selectedLatencySpecId = signal<number | null>(null);
+  selectedToleranceSpecId = signal<number | null>(null);
+
+  // Computed values for dropdown display (convert null to empty string)
+  latencyDropdownValue = computed(() => {
+    const value = this.selectedLatencySpecId();
+    return value === null ? "" : value.toString();
+  });
+  
+  toleranceDropdownValue = computed(() => {
+    const value = this.selectedToleranceSpecId();
+    return value === null ? "" : value.toString();
+  });
 
   // Wizard configuration
   wizardSteps: WizardStep[] = [
@@ -502,6 +644,7 @@ export class RequirementsCreatorComponent implements OnInit {
     mode_id: null,
     parent_id: null,
     behavior: '',
+    condition: '',
     level: 1,
     justification: ''
   };
@@ -565,7 +708,13 @@ export class RequirementsCreatorComponent implements OnInit {
   nextStep() {
     if (this.isCurrentStepValid() && this.currentStep() < 5) {
       this.markStepCompleted(this.currentStep());
-      this.currentStep.set(this.currentStep() + 1);
+      const newStep = this.currentStep() + 1;
+      this.currentStep.set(newStep);
+      
+      // Initialize specification IDs when entering step 4
+      if (newStep === 4) {
+        this.initializeSpecificationSelections();
+      }
     }
   }
 
@@ -717,6 +866,8 @@ export class RequirementsCreatorComponent implements OnInit {
         mode_id: this.requirementDraft.mode_id!,
         parent_id: this.requirementDraft.parent_id || undefined,
         behavior: this.requirementDraft.behavior.trim(),
+        condition: this.requirementDraft.condition.trim() || undefined,
+        justification: this.requirementDraft.justification.trim() || undefined,
         level: level,
         order_index: orderIndex
       };
@@ -746,6 +897,7 @@ export class RequirementsCreatorComponent implements OnInit {
       mode_id: null,
       parent_id: null,
       behavior: '',
+      condition: '',
       level: 1,
       justification: ''
     };
@@ -760,5 +912,77 @@ export class RequirementsCreatorComponent implements OnInit {
   private showStatus(text: string, type: 'success' | 'error') {
     this.statusMessage.set({text, type});
     setTimeout(() => this.statusMessage.set(null), 3000);
+  }
+
+  // Specification management methods
+  initializeSpecificationSelections() {
+    const selectedVariable = this.getSelectedVariable();
+    if (selectedVariable) {
+      // Convert null/undefined to empty string for dropdown display consistency
+      this.selectedLatencySpecId.set(selectedVariable.latency_spec_id || null);
+      this.selectedToleranceSpecId.set(selectedVariable.tolerance_spec_id || null);
+    } else {
+      // If no variable selected, initialize with null
+      this.selectedLatencySpecId.set(null);
+      this.selectedToleranceSpecId.set(null);
+    }
+  }
+
+  async updateVariableLatencySpec(latencySpecId: number | string | null) {
+    // Convert empty string to null, and string numbers to numbers
+    const specId = latencySpecId === "" || latencySpecId === null ? null : Number(latencySpecId);
+    this.selectedLatencySpecId.set(specId);
+    const selectedVariable = this.getSelectedVariable();
+    if (selectedVariable?.id) {
+      try {
+        const updateData = {
+          name: selectedVariable.name,
+          description: selectedVariable.description,
+          order_index: selectedVariable.order_index,
+          latency_spec_id: specId || undefined,
+          tolerance_spec_id: selectedVariable.tolerance_spec_id
+        };
+        
+        const success = this.db.updateVariable(selectedVariable.id, updateData);
+        if (success) {
+          // Update the local variables list
+          await this.loadAllData();
+          this.showStatus('Especificación de latencia actualizada correctamente', 'success');
+        } else {
+          this.showStatus('Error al actualizar la especificación de latencia', 'error');
+        }
+      } catch (error) {
+        this.showStatus('Error al actualizar la especificación de latencia: ' + error, 'error');
+      }
+    }
+  }
+
+  async updateVariableToleranceSpec(toleranceSpecId: number | string | null) {
+    // Convert empty string to null, and string numbers to numbers
+    const specId = toleranceSpecId === "" || toleranceSpecId === null ? null : Number(toleranceSpecId);
+    this.selectedToleranceSpecId.set(specId);
+    const selectedVariable = this.getSelectedVariable();
+    if (selectedVariable?.id) {
+      try {
+        const updateData = {
+          name: selectedVariable.name,
+          description: selectedVariable.description,
+          order_index: selectedVariable.order_index,
+          latency_spec_id: selectedVariable.latency_spec_id,
+          tolerance_spec_id: specId || undefined
+        };
+        
+        const success = this.db.updateVariable(selectedVariable.id, updateData);
+        if (success) {
+          // Update the local variables list
+          await this.loadAllData();
+          this.showStatus('Especificación de tolerancia actualizada correctamente', 'success');
+        } else {
+          this.showStatus('Error al actualizar la especificación de tolerancia', 'error');
+        }
+      } catch (error) {
+        this.showStatus('Error al actualizar la especificación de tolerancia: ' + error, 'error');
+      }
+    }
   }
 }

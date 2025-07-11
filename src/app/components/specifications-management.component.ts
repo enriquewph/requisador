@@ -7,23 +7,34 @@ import { DatabaseService, LatencySpecification, ToleranceSpecification } from '.
   selector: 'app-specifications-management',
   imports: [CommonModule, ReactiveFormsModule],
   template: `
-    <div class="max-w-6xl mx-auto p-6">
+    <div class="max-w-7xl mx-auto p-6">
       <div class="bg-white rounded-lg shadow p-6">
-        <h2 class="text-xl font-semibold mb-6 text-orange-600">Gestión de Especificaciones</h2>
+        <h2 class="text-xl font-semibold mb-6 text-orange-600 flex items-center space-x-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"/>
+          </svg>
+          <span>Gestión de Especificaciones</span>
+        </h2>
         
         <!-- Tab Navigation -->
         <nav class="flex space-x-4 border-b border-gray-200 mb-6">
           <button 
             (click)="activeSpecTab.set('latencia')"
             [class]="activeSpecTab() === 'latencia' ? 'border-orange-500 text-orange-600 bg-white' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-            class="py-2 px-4 border-b-2 font-medium text-sm transition-colors">
-            Especificaciones de Latencia
+            class="py-2 px-4 border-b-2 font-medium text-sm transition-colors flex items-center space-x-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>Especificaciones de Latencia</span>
           </button>
           <button 
             (click)="activeSpecTab.set('tolerancia')"
             [class]="activeSpecTab() === 'tolerancia' ? 'border-orange-500 text-orange-600 bg-white' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-            class="py-2 px-4 border-b-2 font-medium text-sm transition-colors">
-            Especificaciones de Tolerancia
+            class="py-2 px-4 border-b-2 font-medium text-sm transition-colors flex items-center space-x-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+            <span>Especificaciones de Tolerancia</span>
           </button>
         </nav>
 

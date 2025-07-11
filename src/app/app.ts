@@ -20,8 +20,11 @@ import { RequirementsCreatorComponent } from './components/requirements-creator.
           <!-- About Button -->
           <button 
             (click)="showAboutModal.set(true)"
-            class="px-4 py-2 text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-colors font-medium">
-            Acerca De
+            class="px-4 py-2 text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-colors font-medium flex items-center space-x-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>Acerca De</span>
           </button>
         </div>
       </div>
@@ -34,32 +37,47 @@ import { RequirementsCreatorComponent } from './components/requirements-creator.
           <button 
             (click)="activeTab.set('config')"
             [class]="activeTab() === 'config' ? 'border-primary-500 text-primary-600 bg-white' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-            class="py-4 px-6 border-b-2 font-medium text-sm transition-colors">
-            Configuración
+            class="py-4 px-6 border-b-2 font-medium text-sm transition-colors flex items-center space-x-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14-7l2 2m0 0l2 2m-2-2v6m0 0l-2 2m2-2l-2-2M7 7h0m0 0v0m0 0h0M7 7l2 2m-2-2v2m0-2l-2 2m2-2h2"/>
+            </svg>
+            <span>Entidades</span>
           </button>
           <button 
             (click)="activeTab.set('especificaciones')"
             [class]="activeTab() === 'especificaciones' ? 'border-primary-500 text-primary-600 bg-white' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-            class="py-4 px-6 border-b-2 font-medium text-sm transition-colors">
-            Especificaciones
+            class="py-4 px-6 border-b-2 font-medium text-sm transition-colors flex items-center space-x-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"/>
+            </svg>
+            <span>Especificaciones</span>
           </button>
           <button 
             (click)="activeTab.set('create')"
             [class]="activeTab() === 'create' ? 'border-primary-500 text-primary-600 bg-white' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-            class="py-4 px-6 border-b-2 font-medium text-sm transition-colors">
-            Crear Requisitos
+            class="py-4 px-6 border-b-2 font-medium text-sm transition-colors flex items-center space-x-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            </svg>
+            <span>Crear Requisitos</span>
           </button>
           <button 
             (click)="activeTab.set('manage')"
             [class]="activeTab() === 'manage' ? 'border-primary-500 text-primary-600 bg-white' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-            class="py-4 px-6 border-b-2 font-medium text-sm transition-colors">
-            Gestionar
+            class="py-4 px-6 border-b-2 font-medium text-sm transition-colors flex items-center space-x-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+            </svg>
+            <span>Gestionar</span>
           </button>
           <button 
             (click)="activeTab.set('export')"
             [class]="activeTab() === 'export' ? 'border-primary-500 text-primary-600 bg-white' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-            class="py-4 px-6 border-b-2 font-medium text-sm transition-colors">
-            Exportar
+            class="py-4 px-6 border-b-2 font-medium text-sm transition-colors flex items-center space-x-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <span>Exportar</span>
           </button>
         </div>
       </div>
@@ -80,14 +98,26 @@ import { RequirementsCreatorComponent } from './components/requirements-creator.
           }
           @case ('manage') {
             <div class="text-center py-16">
-              <h2 class="text-2xl font-semibold text-gray-900 mb-4">Gestionar Requisitos</h2>
-              <p class="text-gray-600">Vista en lista y árbol de requisitos</p>
+              <div class="max-w-md mx-auto">
+                <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                </svg>
+                <h2 class="text-2xl font-semibold text-gray-900 mb-4">Gestionar Requisitos</h2>
+                <p class="text-gray-600">Vista en lista y árbol de requisitos</p>
+                <p class="text-sm text-gray-500 mt-2">Funcionalidad próximamente disponible</p>
+              </div>
             </div>
           }
           @case ('export') {
             <div class="text-center py-16">
-              <h2 class="text-2xl font-semibold text-gray-900 mb-4">Exportar</h2>
-              <p class="text-gray-600">Exporta requisitos en formato JSON o CSV</p>
+              <div class="max-w-md mx-auto">
+                <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <h2 class="text-2xl font-semibold text-gray-900 mb-4">Exportar</h2>
+                <p class="text-gray-600">Exporta requisitos en formato JSON o CSV</p>
+                <p class="text-sm text-gray-500 mt-2">Funcionalidad próximamente disponible</p>
+              </div>
             </div>
           }
         }

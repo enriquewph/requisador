@@ -76,8 +76,7 @@ export interface Requirement {
   mode_id: number;
   parent_id?: number;
   behavior: string;
-  tolerance_value?: number;
-  tolerance_units?: string;
+  condition?: string;
   justification?: string;
   level: number;
   order_index: number;
@@ -114,6 +113,7 @@ export class DatabaseService {
       
       this.db = new SQL.Database();
       this.createTables();
+      this.runMigrations();
       await this.loadInitialData();
       this.isInitialized.set(true);
       console.log('Database initialized successfully');
@@ -209,8 +209,7 @@ export class DatabaseService {
         mode_id INTEGER NOT NULL,
         parent_id INTEGER,
         behavior TEXT NOT NULL,
-        tolerance_value REAL,
-        tolerance_units TEXT,
+        condition TEXT,
         justification TEXT,
         level INTEGER NOT NULL DEFAULT 1,
         order_index INTEGER NOT NULL,
@@ -232,6 +231,17 @@ export class DatabaseService {
     `;
 
     this.db.exec(sql);
+  }
+
+  private runMigrations(): void {
+    if (!this.db) return;
+
+    try {
+      // Future database migrations will go here
+      console.log('Database migrations completed');
+    } catch (error) {
+      console.error('Migration failed:', error);
+    }
   }
 
   private async loadInitialData(): Promise<void> {
@@ -693,8 +703,8 @@ export class DatabaseService {
     if (!this.db) return -1;
     const stmt = this.db.prepare(`
       INSERT INTO requirements 
-      (function_id, variable_id, component_id, mode_id, parent_id, behavior, level, order_index) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      (function_id, variable_id, component_id, mode_id, parent_id, behavior, condition, justification, level, order_index) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     stmt.run([
       requirement.function_id,
@@ -703,6 +713,8 @@ export class DatabaseService {
       requirement.mode_id,
       requirement.parent_id || null,
       requirement.behavior,
+      requirement.condition || null,
+      requirement.justification || null,
       requirement.level,
       requirement.order_index
     ]);
@@ -716,7 +728,7 @@ export class DatabaseService {
     const stmt = this.db.prepare(`
       UPDATE requirements SET 
       function_id = ?, variable_id = ?, component_id = ?, mode_id = ?, 
-      parent_id = ?, behavior = ?, level = ?, order_index = ?, 
+      parent_id = ?, behavior = ?, condition = ?, justification = ?, level = ?, order_index = ?, 
       updated_at = CURRENT_TIMESTAMP 
       WHERE id = ?
     `);
@@ -727,6 +739,8 @@ export class DatabaseService {
       requirement.mode_id,
       requirement.parent_id || null,
       requirement.behavior,
+      requirement.condition || null,
+      requirement.justification || null,
       requirement.level,
       requirement.order_index,
       id

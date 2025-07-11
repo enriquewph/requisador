@@ -9,14 +9,24 @@ import { FormsModule } from '@angular/forms';
     <div class="space-y-8">
       <!-- Header -->
       <div class="bg-white rounded-lg shadow p-6">
-        <h2 class="text-2xl font-semibold text-gray-900 mb-2">Configuración del Sistema</h2>
+        <h2 class="text-2xl font-semibold text-gray-900 mb-2 flex items-center space-x-2">
+          <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14-7l2 2m0 0l2 2m-2-2v6m0 0l-2 2m2-2l-2-2M7 7h0m0 0v0m0 0h0M7 7l2 2m-2-2v2m0-2l-2 2m2-2h2"/>
+          </svg>
+          <span>Gestión de Entidades</span>
+        </h2>
         <p class="text-gray-600">Gestiona las entidades fundamentales para la creación de requisitos</p>
       </div>
 
       <!-- Functions Section -->
       <div class="bg-white rounded-lg shadow p-6">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-xl font-semibold text-blue-600">Funciones</h3>
+          <h3 class="text-xl font-semibold text-blue-600 flex items-center space-x-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+            </svg>
+            <span>Funciones</span>
+          </h3>
           <span class="text-sm text-gray-500">{{functions().length}} funciones</span>
         </div>
         
@@ -33,8 +43,11 @@ import { FormsModule } from '@angular/forms';
           <button
             (click)="addFunction()"
             [disabled]="!newFunction.name"
-            class="primary disabled:opacity-50">
-            Agregar Función
+            class="primary disabled:opacity-50 flex items-center space-x-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            <span>Agregar Función</span>
           </button>
         </div>
 
@@ -50,8 +63,11 @@ import { FormsModule } from '@angular/forms';
               </div>
               <button
                 (click)="func.id && deleteFunction(func.id)"
-                class="text-red-600 hover:text-red-800 px-3 py-1 rounded text-sm">
-                Eliminar
+                class="text-red-600 hover:text-red-800 px-3 py-1 rounded text-sm flex items-center space-x-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                <span>Eliminar</span>
               </button>
             </div>
           } @empty {
@@ -63,7 +79,12 @@ import { FormsModule } from '@angular/forms';
       <!-- Variables Section -->
       <div class="bg-white rounded-lg shadow p-6">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-xl font-semibold text-green-600">Variables</h3>
+          <h3 class="text-xl font-semibold text-green-600 flex items-center space-x-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+            </svg>
+            <span>Variables</span>
+          </h3>
           <span class="text-sm text-gray-500">{{variables().length}} variables</span>
         </div>
         
@@ -99,8 +120,11 @@ import { FormsModule } from '@angular/forms';
             <button
               (click)="addVariable()"
               [disabled]="!newVariable.name"
-              class="primary disabled:opacity-50">
-              Agregar Variable
+              class="primary disabled:opacity-50 flex items-center space-x-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              <span>Agregar Variable</span>
             </button>
           </div>
         </div>
@@ -127,8 +151,11 @@ import { FormsModule } from '@angular/forms';
               </div>
               <button
                 (click)="variable.id && deleteVariable(variable.id)"
-                class="text-red-600 hover:text-red-800 px-3 py-1 rounded text-sm">
-                Eliminar
+                class="text-red-600 hover:text-red-800 px-3 py-1 rounded text-sm flex items-center space-x-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                <span>Eliminar</span>
               </button>
             </div>
           } @empty {
@@ -140,7 +167,12 @@ import { FormsModule } from '@angular/forms';
       <!-- Components Section -->
       <div class="bg-white rounded-lg shadow p-6">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-xl font-semibold text-indigo-600">Componentes</h3>
+          <h3 class="text-xl font-semibold text-indigo-600 flex items-center space-x-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14-7l2 2m0 0l2 2m-2-2v6m0 0l-2 2m2-2l-2-2M7 7h0m0 0v0m0 0h0"/>
+            </svg>
+            <span>Componentes</span>
+          </h3>
           <span class="text-sm text-gray-500">{{components().length}} componentes</span>
         </div>
         
@@ -157,8 +189,11 @@ import { FormsModule } from '@angular/forms';
           <button
             (click)="addComponent()"
             [disabled]="!newComponent.name"
-            class="primary disabled:opacity-50">
-            Agregar Componente
+            class="primary disabled:opacity-50 flex items-center space-x-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            <span>Agregar Componente</span>
           </button>
         </div>
 
@@ -174,8 +209,11 @@ import { FormsModule } from '@angular/forms';
               </div>
               <button
                 (click)="component.id && deleteComponent(component.id)"
-                class="text-red-600 hover:text-red-800 px-3 py-1 rounded text-sm">
-                Eliminar
+                class="text-red-600 hover:text-red-800 px-3 py-1 rounded text-sm flex items-center space-x-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                <span>Eliminar</span>
               </button>
             </div>
           } @empty {
@@ -187,7 +225,12 @@ import { FormsModule } from '@angular/forms';
       <!-- Modes Section -->
       <div class="bg-white rounded-lg shadow p-6">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-xl font-semibold text-purple-600">Modos</h3>
+          <h3 class="text-xl font-semibold text-purple-600 flex items-center space-x-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+            <span>Modos</span>
+          </h3>
           <span class="text-sm text-gray-500">{{modes().length}} modos</span>
         </div>
         
@@ -204,8 +247,11 @@ import { FormsModule } from '@angular/forms';
           <button
             (click)="addMode()"
             [disabled]="!newMode.name"
-            class="primary disabled:opacity-50">
-            Agregar Modo
+            class="primary disabled:opacity-50 flex items-center space-x-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            <span>Agregar Modo</span>
           </button>
         </div>
 
@@ -223,7 +269,10 @@ import { FormsModule } from '@angular/forms';
                 </div>
                 <button
                   (click)="mode.id && deleteMode(mode.id)"
-                  class="text-red-600 hover:text-red-800 px-3 py-1 rounded text-sm">
+                  class="text-red-600 hover:text-red-800 px-3 py-1 rounded text-sm flex items-center gap-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
                   Eliminar
                 </button>
               </div>
