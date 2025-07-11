@@ -8,7 +8,10 @@
 /bazel-out
 
 # Angular cache
+
+.angular
 .angular/
+.angular/*.*
 
 # TypeScript build info
 *.tsbuildinfo
