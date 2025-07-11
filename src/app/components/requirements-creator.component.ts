@@ -1,6 +1,7 @@
 import { Component as NgComponent, signal, computed, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { DatabaseService, Function, Variable, Component, Mode, Requirement, LatencySpecification, ToleranceSpecification } from '../services/database.service';
 import { FormsModule } from '@angular/forms';
+import { RequirementDetailComponent } from './requirement-detail.component';
 
 interface WizardStep {
   id: number;
@@ -23,7 +24,7 @@ interface RequirementDraft {
 
 @NgComponent({
   selector: 'app-requirements-creator',
-  imports: [FormsModule],
+  imports: [FormsModule, RequirementDetailComponent],
   template: `
     <div class="space-y-6">
       <!-- Header -->
@@ -434,104 +435,24 @@ interface RequirementDraft {
                 <p class="text-gray-600 mb-6">Revisa el requisito generado antes de crearlo</p>
               </div>
 
-              <!-- Requirement Preview -->
-              <div class="bg-gray-50 rounded-lg p-6">
-                <h4 class="font-medium text-gray-900 mb-4">Requisito Generado</h4>
-                
-                <!-- Requirement ID Preview -->
-                <div class="mb-4">
-                  <span class="text-sm font-medium text-gray-700">ID: </span>
-                  <span class="font-mono text-primary-600">{{getPreviewRequirementId()}}</span>
-                </div>
-
-                <!-- Requirement Text -->
-                <div class="bg-white p-4 rounded border-l-4 border-primary-500">
-                  <p class="text-lg text-gray-900">{{getPreviewRequirementText()}}</p>
-                </div>
-
-                <!-- Condition Section -->
-                @if (requirementDraft.condition && requirementDraft.condition.trim()) {
-                  <div class="bg-amber-50 p-4 rounded border-l-4 border-amber-400 mt-4">
-                    <h5 class="font-medium text-amber-800 mb-2">Condición para Aplicación:</h5>
-                    <p class="text-amber-700">{{requirementDraft.condition}}</p>
-                  </div>
-                }
-
-                <!-- Details Breakdown -->
-                <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div>
-                    <span class="font-medium text-blue-700">Función:</span>
-                    <p class="text-gray-600">{{getSelectedFunction()?.name}}</p>
-                  </div>
-                  <div>
-                    <span class="font-medium text-green-700">Variable:</span>
-                    <p class="text-gray-600">{{getSelectedVariable()?.name}}</p>
-                  </div>
-                  <div>
-                    <span class="font-medium text-indigo-700">Componente:</span>
-                    <p class="text-gray-600">{{getSelectedComponent()?.name}}</p>
-                  </div>
-                  <div>
-                    <span class="font-medium text-purple-700">Modo:</span>
-                    <p class="text-gray-600">{{getSelectedMode()?.name}}</p>
-                  </div>
-                </div>
-
-                <!-- Specifications Info -->
-                <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <!-- Latency Specification -->
-                  @if (selectedLatencySpecId()) {
-                    @for (spec of latencySpecs(); track spec.id) {
-                      @if (spec.id === selectedLatencySpecId()) {
-                        <div class="bg-blue-50 p-4 rounded border-l-4 border-blue-400">
-                          <h5 class="font-medium text-blue-800 mb-2">Especificación de Latencia:</h5>
-                          <p class="text-blue-700 text-sm"><strong>{{spec.name}}</strong> ({{spec.type}})</p>
-                          <p class="text-blue-600 text-sm">{{spec.physical_interpretation}}</p>
-                          <p class="text-blue-700 text-sm font-medium">Valor: {{spec.value}} {{spec.units}}</p>
-                          @if (spec.justification) {
-                            <p class="text-blue-600 text-xs mt-1">Justificación: {{spec.justification}}</p>
-                          }
-                        </div>
-                      }
-                    }
-                  } @else {
-                    <div class="bg-gray-50 p-4 rounded border-l-4 border-gray-300">
-                      <h5 class="font-medium text-gray-600 mb-2">Especificación de Latencia:</h5>
-                      <p class="text-gray-500 text-sm">Sin especificación asignada</p>
-                    </div>
-                  }
-
-                  <!-- Tolerance Specification -->
-                  @if (selectedToleranceSpecId()) {
-                    @for (spec of toleranceSpecs(); track spec.id) {
-                      @if (spec.id === selectedToleranceSpecId()) {
-                        <div class="bg-yellow-50 p-4 rounded border-l-4 border-yellow-400">
-                          <h5 class="font-medium text-yellow-800 mb-2">Especificación de Tolerancia:</h5>
-                          <p class="text-yellow-700 text-sm"><strong>{{spec.name}}</strong> ({{spec.type}})</p>
-                          <p class="text-yellow-600 text-sm">{{spec.physical_interpretation}}</p>
-                          <p class="text-yellow-700 text-sm font-medium">Valor: {{spec.value}} {{spec.units}}</p>
-                          @if (spec.justification) {
-                            <p class="text-yellow-600 text-xs mt-1">Justificación: {{spec.justification}}</p>
-                          }
-                        </div>
-                      }
-                    }
-                  } @else {
-                    <div class="bg-gray-50 p-4 rounded border-l-4 border-gray-300">
-                      <h5 class="font-medium text-gray-600 mb-2">Especificación de Tolerancia:</h5>
-                      <p class="text-gray-500 text-sm">Sin especificación asignada</p>
-                    </div>
-                  }
-                </div>
-
-                <!-- Justification -->
-                @if (requirementDraft.justification && requirementDraft.justification.trim()) {
-                  <div class="bg-green-50 p-4 rounded border-l-4 border-green-400 mt-4">
-                    <h5 class="font-medium text-green-800 mb-2">Justificación del Requisito:</h5>
-                    <p class="text-green-700">{{requirementDraft.justification}}</p>
-                  </div>
-                }
+              <!-- Requirement ID Preview -->
+              <div class="mb-4">
+                <span class="text-sm font-medium text-gray-700">ID: </span>
+                <span class="font-mono text-primary-600">{{getPreviewRequirementId()}}</span>
               </div>
+
+              <!-- Reusable Requirement Detail Component -->
+              @if (previewRequirement()) {
+                <app-requirement-detail 
+                  [requirement]="previewRequirement()"
+                  [requirementId]="getPreviewRequirementId()"
+                  [showTechnicalDetails]="false">
+                </app-requirement-detail>
+              } @else {
+                <div class="text-center py-8 text-gray-500">
+                  <p>Complete todos los pasos para ver la vista previa</p>
+                </div>
+              }
 
               <!-- Hierarchy Info -->
               @if (requirementDraft.parent_id) {
@@ -669,6 +590,31 @@ export class RequirementsCreatorComponent implements OnInit {
   topLevelRequirements = computed(() => 
     this.existingRequirements().filter(req => !req.parent_id)
   );
+
+  // Generate a preview requirement object from the draft
+  previewRequirement = computed(() => {
+    if (!this.requirementDraft.function_id || !this.requirementDraft.variable_id || 
+        !this.requirementDraft.component_id || !this.requirementDraft.mode_id || 
+        !this.requirementDraft.behavior.trim()) {
+      return null;
+    }
+    
+    return {
+      id: 0, // Temporary ID for preview
+      function_id: this.requirementDraft.function_id,
+      variable_id: this.requirementDraft.variable_id,
+      component_id: this.requirementDraft.component_id,
+      mode_id: this.requirementDraft.mode_id,
+      parent_id: this.requirementDraft.parent_id,
+      behavior: this.requirementDraft.behavior,
+      condition: this.requirementDraft.condition,
+      justification: this.requirementDraft.justification,
+      level: this.requirementDraft.level,
+      order_index: 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    } as Requirement;
+  });
 
   async ngOnInit() {
     await this.loadAllData();
