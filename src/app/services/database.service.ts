@@ -423,6 +423,42 @@ export class DatabaseService {
     return changes > 0;
   }
 
+  // Remove all mode-component associations for a specific component
+  removeComponentAssociations(componentId: number): boolean {
+    if (!this.db) return false;
+    const stmt = this.db.prepare('DELETE FROM mode_components WHERE component_id = ?');
+    stmt.run([componentId]);
+    const changes = this.db.getRowsModified();
+    stmt.free();
+    return changes > 0;
+  }
+
+  // Remove all mode-component associations for a specific mode
+  removeModeAssociations(modeId: number): boolean {
+    if (!this.db) return false;
+    const stmt = this.db.prepare('DELETE FROM mode_components WHERE mode_id = ?');
+    stmt.run([modeId]);
+    const changes = this.db.getRowsModified();
+    stmt.free();
+    return changes > 0;
+  }
+
+  // Get modes that have no component associations
+  getOrphanedModes(): Mode[] {
+    if (!this.db) return [];
+    const stmt = this.db.prepare(`
+      SELECT m.* FROM modes m 
+      LEFT JOIN mode_components mc ON m.id = mc.mode_id 
+      WHERE mc.mode_id IS NULL
+    `);
+    const results = [];
+    while (stmt.step()) {
+      results.push(stmt.getAsObject() as unknown as Mode);
+    }
+    stmt.free();
+    return results;
+  }
+
   // Export database as Uint8Array for backup
   exportDatabase(): Uint8Array | null {
     if (!this.db) return null;
