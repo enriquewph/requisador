@@ -1,5 +1,5 @@
 import { Component as NgComponent, signal, computed, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { DatabaseService, Function, Variable, Component, Mode, Requirement, LatencySpecification } from '../services/database.service';
+import { DatabaseService, Function, Variable, Component, Mode, Requirement, LatencySpecification, ToleranceSpecification } from '../services/database.service';
 import { FormsModule } from '@angular/forms';
 
 interface WizardStep {
@@ -17,8 +17,6 @@ interface RequirementDraft {
   parent_id: number | null;
   behavior: string;
   level: number;
-  tolerance_value: number | null;
-  tolerance_units: string;
   justification: string;
 }
 
@@ -332,82 +330,34 @@ interface RequirementDraft {
                 </div>
               }
 
-              <!-- Tolerance Specification -->
-              <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <h4 class="font-medium text-yellow-800 mb-4">Especificaciones de Tolerancia</h4>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Valor de Tolerancia</label>
-                    <input 
-                      type="number" 
-                      [(ngModel)]="requirementDraft.tolerance_value"
-                      placeholder="Ej: ±5, 10, 0.5"
-                      step="0.01"
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
-                    <p class="text-xs text-gray-500 mt-1">Valor numérico de la tolerancia permitida</p>
-                  </div>
-                  
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Unidades</label>
-                    <select 
-                      [(ngModel)]="requirementDraft.tolerance_units"
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
-                      <option value="">Seleccionar unidades...</option>
-                      <option value="ms">milisegundos (ms)</option>
-                      <option value="s">segundos (s)</option>
-                      <option value="us">microsegundos (μs)</option>
-                      <option value="ns">nanosegundos (ns)</option>
-                      <option value="%">porcentaje (%)</option>
-                      <option value="Hz">Hertz (Hz)</option>
-                      <option value="kHz">kiloHertz (kHz)</option>
-                      <option value="MHz">megaHertz (MHz)</option>
-                      <option value="rpm">revoluciones por minuto (rpm)</option>
-                      <option value="m/s">metros por segundo (m/s)</option>
-                      <option value="km/h">kilómetros por hora (km/h)</option>
-                      <option value="°C">grados Celsius (°C)</option>
-                      <option value="°F">grados Fahrenheit (°F)</option>
-                      <option value="V">voltios (V)</option>
-                      <option value="A">amperios (A)</option>
-                      <option value="W">vatios (W)</option>
-                      <option value="Pa">pascales (Pa)</option>
-                      <option value="bar">bares (bar)</option>
-                      <option value="psi">libras por pulgada cuadrada (psi)</option>
-                    </select>
-                    <p class="text-xs text-gray-500 mt-1">Unidades de medida para la tolerancia</p>
+              <!-- Tolerance Context (if variable has tolerance specification) -->
+              @if (getSelectedVariable()?.tolerance_spec_id) {
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <h4 class="font-medium text-yellow-800 mb-3">Especificación de Tolerancia Asociada</h4>
+                  <div class="text-sm text-yellow-700 space-y-2">
+                    @for (spec of toleranceSpecs(); track spec.id) {
+                      @if (spec.id === getSelectedVariable()?.tolerance_spec_id) {
+                        <p><strong>{{spec.name}}</strong> ({{spec.type}})</p>
+                        <p>{{spec.physical_interpretation}}</p>
+                        <p class="text-yellow-600">Valor base: {{spec.value}} {{spec.units}}</p>
+                      }
+                    }
                   </div>
                 </div>
-              </div>
+              }
 
-              <!-- Justification -->
+              <!-- Requirement Justification -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Justificación Técnica</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Justificación del Requisito</label>
                 <textarea
                   [(ngModel)]="requirementDraft.justification"
-                  placeholder="Ej: Basado en estándares de usabilidad para interfaces críticas, requisitos de tiempo real del sistema..."
+                  placeholder="Ej: Basado en estándares de usabilidad para interfaces críticas, requisitos de seguridad funcional según ISO 26262..."
                   rows="3"
                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                 </textarea>
                 <p class="text-xs text-gray-500 mt-1">
-                  Explica la razón técnica o normativa que justifica estos valores de tolerancia
+                  Explica la razón técnica, normativa o de negocio que justifica este requisito
                 </p>
-              </div>
-
-              <!-- Tolerance Examples -->
-              <div class="bg-gray-50 rounded-lg p-4">
-                <h4 class="font-medium text-gray-900 mb-3">Ejemplos de Tolerancias Comunes</h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                  <div class="space-y-2">
-                    <p><strong>Tiempo de Respuesta:</strong> ±100 ms</p>
-                    <p><strong>Frecuencia de Muestreo:</strong> ±5 Hz</p>
-                    <p><strong>Precisión de Posición:</strong> ±0.1 m</p>
-                  </div>
-                  <div class="space-y-2">
-                    <p><strong>Temperatura:</strong> ±2 °C</p>
-                    <p><strong>Velocidad:</strong> ±5%</p>
-                    <p><strong>Presión:</strong> ±0.5 bar</p>
-                  </div>
-                </div>
               </div>
             </div>
           }
@@ -526,6 +476,7 @@ export class RequirementsCreatorComponent implements OnInit {
   variables = signal<Variable[]>([]);
   components = signal<Component[]>([]);
   latencySpecs = signal<LatencySpecification[]>([]);
+  toleranceSpecs = signal<ToleranceSpecification[]>([]);
   modes = signal<Mode[]>([]);
   modeComponents = signal<{mode_id: number, component_id: number}[]>([]);
   existingRequirements = signal<Requirement[]>([]);
@@ -552,8 +503,6 @@ export class RequirementsCreatorComponent implements OnInit {
     parent_id: null,
     behavior: '',
     level: 1,
-    tolerance_value: null,
-    tolerance_units: '',
     justification: ''
   };
 
@@ -588,14 +537,15 @@ export class RequirementsCreatorComponent implements OnInit {
       while (!this.db.isDatabaseReady()) {
         await new Promise(resolve => setTimeout(resolve, 100));
       }
-        const [funcs, vars, comps, modes, modeComps, reqs, latencySpecs] = await Promise.all([
+        const [funcs, vars, comps, modes, modeComps, reqs, latencySpecs, toleranceSpecs] = await Promise.all([
         Promise.resolve(this.db.getFunctions()),
         Promise.resolve(this.db.getVariables()),
         Promise.resolve(this.db.getComponents()),
         Promise.resolve(this.db.getModes()),
         Promise.resolve(this.db.getModeComponents()),
         Promise.resolve(this.db.getRequirements()),
-        Promise.resolve(this.db.getLatencySpecifications())
+        Promise.resolve(this.db.getLatencySpecifications()),
+        Promise.resolve(this.db.getToleranceSpecifications())
       ]);
       
       this.functions.set(funcs);
@@ -605,6 +555,7 @@ export class RequirementsCreatorComponent implements OnInit {
       this.modeComponents.set(modeComps);
       this.existingRequirements.set(reqs);
       this.latencySpecs.set(latencySpecs);
+      this.toleranceSpecs.set(toleranceSpecs);
     } catch (error) {
       this.showStatus('Error al cargar datos: ' + error, 'error');
     }
@@ -796,8 +747,6 @@ export class RequirementsCreatorComponent implements OnInit {
       parent_id: null,
       behavior: '',
       level: 1,
-      tolerance_value: null,
-      tolerance_units: '',
       justification: ''
     };
     this.wizardSteps.forEach(step => step.completed = false);
