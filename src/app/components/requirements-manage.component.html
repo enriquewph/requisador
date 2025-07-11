@@ -108,7 +108,7 @@
           [scrollable]="true" 
           scrollHeight="500px"
           [resizableColumns]="true"
-          [globalFilterFields]="['id', 'text', 'component', 'mode', 'function', 'variable']"
+          [globalFilterFields]="['textualId', 'behavior', 'condition', 'component', 'mode', 'function', 'variable', 'justification']"
           styleClass="p-treetable-sm"
           #tt>
           
@@ -132,20 +132,36 @@
               @for (col of columns; track col.field) {
                 <td>
                   @switch (col.field) {
-                  @case ('id') {
+                  @case ('textualId') {
                     <div class="flex items-center">
                       <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
                       <span class="font-mono text-sm font-medium ml-2" 
                             [class]="getRequirementIdClass(rowData.level)">
-                        {{ rowData.id }}
+                        {{ rowData.textualId }}
                       </span>
                     </div>
                   }
-                  @case ('text') {
+                  @case ('behavior') {
                     <div class="max-w-md">
                       <p class="text-sm text-gray-900 line-clamp-2" 
-                         [title]="rowData.text">
-                        {{ rowData.text }}
+                         [title]="rowData.behavior">
+                        {{ rowData.behavior }}
+                      </p>
+                    </div>
+                  }
+                  @case ('condition') {
+                    <div class="max-w-md">
+                      <p class="text-sm text-gray-600 line-clamp-1" 
+                         [title]="rowData.condition">
+                        {{ rowData.condition }}
+                      </p>
+                    </div>
+                  }
+                  @case ('justification') {
+                    <div class="max-w-md">
+                      <p class="text-sm text-gray-500 line-clamp-1" 
+                         [title]="rowData.justification">
+                        {{ rowData.justification }}
                       </p>
                     </div>
                   }
@@ -167,11 +183,6 @@
                   @case ('variable') {
                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                       {{ rowData.variable }}
-                    </span>
-                  }
-                  @case ('created_at') {
-                    <span class="text-sm text-gray-600">
-                      {{ formatDate(rowData.created_at) }}
                     </span>
                   }
                   @default {
