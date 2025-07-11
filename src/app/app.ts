@@ -1,10 +1,12 @@
 import {Component as NgComponent, signal} from '@angular/core';
 import { DatabaseTestComponent } from './components/database-test.component';
 import { ConfigurationComponent } from './components/configuration.component';
+import { LatencyManagementComponent } from './components/latency-management.component';
+import { RequirementsCreatorComponent } from './components/requirements-creator.component';
 
 @NgComponent({
   selector: 'app-root',
-  imports: [DatabaseTestComponent, ConfigurationComponent],
+  imports: [DatabaseTestComponent, ConfigurationComponent, LatencyManagementComponent, RequirementsCreatorComponent],
   template: `
     <!-- Header -->
     <header class="bg-white shadow-sm border-b border-gray-200">
@@ -37,6 +39,12 @@ import { ConfigurationComponent } from './components/configuration.component';
             Configuración
           </button>
           <button 
+            (click)="activeTab.set('latency')"
+            [class]="activeTab() === 'latency' ? 'border-primary-500 text-primary-600 bg-white' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+            class="py-4 px-6 border-b-2 font-medium text-sm transition-colors">
+            Latencia
+          </button>
+          <button 
             (click)="activeTab.set('create')"
             [class]="activeTab() === 'create' ? 'border-primary-500 text-primary-600 bg-white' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
             class="py-4 px-6 border-b-2 font-medium text-sm transition-colors">
@@ -65,11 +73,11 @@ import { ConfigurationComponent } from './components/configuration.component';
           @case ('config') {
             <app-configuration></app-configuration>
           }
+          @case ('latency') {
+            <app-latency-management></app-latency-management>
+          }
           @case ('create') {
-            <div class="text-center py-16">
-              <h2 class="text-2xl font-semibold text-gray-900 mb-4">Crear Requisitos</h2>
-              <p class="text-gray-600">Asistente para crear requisitos estructurados</p>
-            </div>
+            <app-requirements-creator></app-requirements-creator>
           }
           @case ('manage') {
             <div class="text-center py-16">
@@ -235,6 +243,6 @@ import { ConfigurationComponent } from './components/configuration.component';
 })
 export class App {
   title = 'Requisador de Requisitos';
-  activeTab = signal<'config' | 'create' | 'manage' | 'export' | 'debug'>('config');
+  activeTab = signal<'config' | 'latency' | 'create' | 'manage' | 'export' | 'debug'>('config');
   showAboutModal = signal(false);
 }

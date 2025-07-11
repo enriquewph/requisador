@@ -19,24 +19,56 @@
       "order_index": 3
     }
   ],
+  "latency_specifications": [
+    {
+      "id": 1,
+      "name": "Response Time Standard",
+      "type": "Real",
+      "value": 100,
+      "units": "ms",
+      "physical_interpretation": "El tiempo máximo durante el cual el sistema debe responder a una entrada del usuario",
+      "justification": "Basado en estándares de usabilidad para interfaces críticas"
+    },
+    {
+      "id": 2,
+      "name": "Position Update Rate",
+      "type": "Real", 
+      "value": 50,
+      "units": "ms",
+      "physical_interpretation": "El tiempo máximo entre actualizaciones consecutivas de posición",
+      "justification": "Requerido para navegación en tiempo real con precisión aceptable"
+    },
+    {
+      "id": 3,
+      "name": "Temperature Sampling",
+      "type": "Real",
+      "value": 1000,
+      "units": "ms", 
+      "physical_interpretation": "El tiempo máximo entre mediciones consecutivas de temperatura",
+      "justification": "Adecuado para monitoreo de condiciones ambientales no críticas"
+    }
+  ],
   "variables": [
     {
       "id": 1,
       "name": "Speed",
       "description": "Velocity measurement parameter",
-      "order_index": 1
+      "order_index": 1,
+      "latency_spec_id": 1
     },
     {
       "id": 2,
       "name": "Position",
       "description": "Location coordinates parameter",
-      "order_index": 2
+      "order_index": 2,
+      "latency_spec_id": 2
     },
     {
       "id": 3,
       "name": "Temperature",
       "description": "Temperature measurement parameter",
-      "order_index": 3
+      "order_index": 3,
+      "latency_spec_id": 3
     }
   ],
   "components": [
