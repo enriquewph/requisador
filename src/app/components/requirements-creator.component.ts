@@ -25,495 +25,7 @@ interface RequirementDraft {
 @NgComponent({
   selector: 'app-requirements-creator',
   imports: [FormsModule, RequirementDetailComponent],
-  template: `
-    <div class="space-y-6">
-      <!-- Header -->
-      <div class="bg-white rounded-lg shadow p-6">
-        <h2 class="text-2xl font-semibold text-gray-900 mb-2 flex items-center space-x-2">
-          <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-          </svg>
-          <span>Asistente de Creación de Requisitos</span>
-        </h2>
-        <p class="text-gray-600">Crea requisitos estructurados siguiendo la metodología del Systems Engineering Handbook</p>
-      </div>
-
-      <!-- Wizard Progress -->
-      <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex items-center justify-between mb-6">
-          @for (step of wizardSteps; track step.id) {
-            <div class="flex items-center" [class]="step.id < wizardSteps.length ? 'flex-1' : ''">
-              <!-- Step Circle -->
-              <div 
-                [class]="currentStep() >= step.id 
-                  ? 'bg-primary-600 text-white' 
-                  : 'bg-gray-200 text-gray-500'"
-                class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium">
-                @if (step.completed) {
-                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                  </svg>
-                } @else {
-                  {{step.id}}
-                }
-              </div>
-              
-              <!-- Step Info -->
-              <div class="ml-3">
-                <p [class]="currentStep() >= step.id ? 'text-primary-600' : 'text-gray-500'" 
-                   class="text-sm font-medium">
-                  {{step.title}}
-                </p>
-                <p class="text-xs text-gray-400">{{step.description}}</p>
-              </div>
-              
-              <!-- Connector Line -->
-              @if (step.id < wizardSteps.length) {
-                <div class="flex-1 h-px bg-gray-200 mx-4"></div>
-              }
-            </div>
-          }
-        </div>
-      </div>
-
-      <!-- Step Content -->
-      <div class="bg-white rounded-lg shadow p-6">
-        @switch (currentStep()) {
-          @case (1) {
-            <!-- Step 1: Select Function + Variable -->
-            <div class="space-y-6">
-              <div>
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Paso 1: Selecciona Función y Variable</h3>
-                <p class="text-gray-600 mb-6">Elige qué capacidad del sistema (Función) controlará qué parámetro (Variable)</p>
-              </div>
-
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Functions Selection -->
-                <div>
-                  <label class="block text-sm font-medium text-blue-700 mb-3">Función del Sistema</label>
-                  <div class="space-y-2 max-h-64 overflow-y-auto border rounded-lg p-3">
-                    @for (func of functions(); track func.id) {
-                      <label class="flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
-                        <input 
-                          type="radio" 
-                          [value]="func.id" 
-                          [(ngModel)]="requirementDraft.function_id"
-                          name="function"
-                          class="mr-3 text-blue-600">
-                        <div>
-                          <span class="font-medium text-blue-700">{{func.name}}</span>
-                          @if (func.description) {
-                            <p class="text-sm text-gray-600">{{func.description}}</p>
-                          }
-                        </div>
-                      </label>
-                    } @empty {
-                      <p class="text-gray-500 text-center py-4">
-                        No hay funciones configuradas. 
-                        <a href="#" (click)="switchToConfig()" class="text-primary-600 hover:text-primary-700">
-                          Configúralas primero
-                        </a>
-                      </p>
-                    }
-                  </div>
-                </div>
-
-                <!-- Variables Selection -->
-                <div>
-                  <label class="block text-sm font-medium text-green-700 mb-3">Variable a Controlar</label>
-                  <div class="space-y-2 max-h-64 overflow-y-auto border rounded-lg p-3">
-                    @for (variable of variables(); track variable.id) {
-                      <label class="flex items-center p-2 hover:bg-green-50 rounded cursor-pointer">
-                        <input 
-                          type="radio" 
-                          [value]="variable.id" 
-                          [(ngModel)]="requirementDraft.variable_id"
-                          name="variable"
-                          class="mr-3 text-green-600">
-                        <div>
-                          <span class="font-medium text-green-700">{{variable.name}}</span>
-                          @if (variable.description) {
-                            <p class="text-sm text-gray-600">{{variable.description}}</p>
-                          }
-                        </div>
-                      </label>
-                    } @empty {
-                      <p class="text-gray-500 text-center py-4">
-                        No hay variables configuradas. 
-                        <a href="#" (click)="switchToConfig()" class="text-primary-600 hover:text-primary-700">
-                          Configúralas primero
-                        </a>
-                      </p>
-                    }
-                  </div>
-                </div>
-              </div>
-            </div>
-          }
-
-          @case (2) {
-            <!-- Step 2: Choose Parent Requirement (Optional) -->
-            <div class="space-y-6">
-              <div>
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Paso 2: Requisito Padre (Opcional)</h3>
-                <p class="text-gray-600 mb-6">¿Este requisito es un sub-requisito de otro? Selecciona el requisito padre para crear una estructura jerárquica</p>
-              </div>
-
-              <div class="space-y-4">
-                <!-- No Parent Option -->
-                <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
-                  <input 
-                    type="radio" 
-                    [value]="null" 
-                    [(ngModel)]="requirementDraft.parent_id"
-                    name="parent"
-                    class="mr-3 text-primary-600">
-                  <div>
-                    <span class="font-medium text-gray-900">Requisito de Nivel Superior</span>
-                    <p class="text-sm text-gray-600">Este será un requisito principal (R0, R1, R2, etc.)</p>
-                  </div>
-                </label>
-
-                <!-- Existing Requirements as Parents -->
-                @if (existingRequirements().length > 0) {
-                  <div class="border-t pt-4">
-                    <h4 class="font-medium text-gray-900 mb-3">Requisitos Existentes (Nivel 1)</h4>
-                    <div class="space-y-2 max-h-64 overflow-y-auto">
-                      @for (req of topLevelRequirements(); track req.id) {
-                        <label class="flex items-start p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
-                          <input 
-                            type="radio" 
-                            [value]="req.id" 
-                            [(ngModel)]="requirementDraft.parent_id"
-                            name="parent"
-                            class="mr-3 mt-1 text-primary-600">
-                          <div class="flex-1">
-                            <span class="font-medium text-gray-900">{{generateRequirementId(req)}}</span>
-                            <p class="text-sm text-gray-600 mt-1">{{generateRequirementText(req)}}</p>
-                          </div>
-                        </label>
-                      }
-                    </div>
-                  </div>
-                } @else {
-                  <div class="text-center py-8 text-gray-500">
-                    <p>No hay requisitos existentes para usar como padre</p>
-                    <p class="text-sm">Este será tu primer requisito</p>
-                  </div>
-                }
-              </div>
-            </div>
-          }
-
-          @case (3) {
-            <!-- Step 3: Select Component + Mode -->
-            <div class="space-y-6">
-              <div>
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Paso 3: Selecciona Componente y Modo</h3>
-                <p class="text-gray-600 mb-6">Elige qué componente del sistema ejecutará la acción y en qué modo operativo</p>
-              </div>
-
-              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Components Selection -->
-                <div>
-                  <label class="block text-sm font-medium text-indigo-700 mb-3">Componente del Sistema</label>
-                  <div class="space-y-2 max-h-64 overflow-y-auto border rounded-lg p-3">
-                    @for (component of components(); track component.id) {
-                      <label class="flex items-center p-2 hover:bg-indigo-50 rounded cursor-pointer">
-                        <input 
-                          type="radio" 
-                          [value]="component.id" 
-                          [(ngModel)]="requirementDraft.component_id"
-                          name="component"
-                          class="mr-3 text-indigo-600">
-                        <div>
-                          <span class="font-medium text-indigo-700">{{component.name}}</span>
-                          @if (component.description) {
-                            <p class="text-sm text-gray-600">{{component.description}}</p>
-                          }
-                        </div>
-                      </label>
-                    } @empty {
-                      <p class="text-gray-500 text-center py-4">
-                        No hay componentes configurados. 
-                        <a href="#" (click)="switchToConfig()" class="text-primary-600 hover:text-primary-700">
-                          Configúralos primero
-                        </a>
-                      </p>
-                    }
-                  </div>
-                </div>
-
-                <!-- Modes Selection (filtered by component) -->
-                <div>
-                  <label class="block text-sm font-medium text-purple-700 mb-3">Modo de Operación</label>
-                  @if (requirementDraft.component_id) {
-                    <div class="space-y-2 max-h-64 overflow-y-auto border rounded-lg p-3">
-                      @for (mode of getModesForComponent(requirementDraft.component_id); track mode.id) {
-                        <label class="flex items-center p-2 hover:bg-purple-50 rounded cursor-pointer">
-                          <input 
-                            type="radio" 
-                            [value]="mode.id" 
-                            [(ngModel)]="requirementDraft.mode_id"
-                            name="mode"
-                            class="mr-3 text-purple-600">
-                          <div>
-                            <span class="font-medium text-purple-700">{{mode.name}}</span>
-                            @if (mode.description) {
-                              <p class="text-sm text-gray-600">{{mode.description}}</p>
-                            }
-                          </div>
-                        </label>
-                      } @empty {
-                        <p class="text-gray-500 text-center py-4">
-                          Este componente no tiene modos asociados. 
-                          <a href="#" (click)="switchToConfig()" class="text-primary-600 hover:text-primary-700">
-                            Configura las asociaciones
-                          </a>
-                        </p>
-                      }
-                    </div>
-                  } @else {
-                    <div class="border rounded-lg p-4 text-center text-gray-500">
-                      <p>Primero selecciona un componente</p>
-                    </div>
-                  }
-                </div>
-              </div>
-            </div>
-          }
-
-          @case (4) {
-            <!-- Step 4: Behavior Description & Tolerances -->
-            <div class="space-y-6">
-              <div>
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Paso 4: Comportamiento y Tolerancias</h3>
-                <p class="text-gray-600 mb-6">Describe el comportamiento específico y define las tolerancias según las especificaciones de latencia</p>
-              </div>
-
-              <!-- Behavior Description -->
-              <div class="space-y-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Comportamiento Requerido *</label>
-                  <textarea
-                    [(ngModel)]="requirementDraft.behavior"
-                    placeholder="Ej: monitorear y mantener, controlar la velocidad de, gestionar la comunicación de..."
-                    rows="3"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
-                  </textarea>
-                  <p class="text-xs text-gray-500 mt-1">
-                    Describe la acción que debe realizar el componente. Usa verbos específicos y claros.
-                  </p>
-                </div>
-
-                <!-- Behavior Suggestions -->
-                <div class="bg-gray-50 rounded-lg p-4">
-                  <h4 class="font-medium text-gray-900 mb-3">Sugerencias de Comportamientos</h4>
-                  <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    @for (suggestion of behaviorSuggestions; track suggestion) {
-                      <button
-                        (click)="addBehaviorSuggestion(suggestion)"
-                        class="text-left px-3 py-2 text-sm bg-white border border-gray-200 rounded hover:bg-primary-50 hover:border-primary-300 transition-colors">
-                        {{suggestion}}
-                      </button>
-                    }
-                  </div>
-                </div>
-
-                <!-- Condition Description -->
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Condición para la Aplicación del Requisito</label>
-                  <textarea
-                    [(ngModel)]="requirementDraft.condition"
-                    placeholder="Ej: cuando la temperatura actual es menor que la temperatura mínima deseada, si el sistema está en modo normal y la velocidad actual excede el límite..."
-                    rows="3"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
-                  </textarea>
-                  <p class="text-xs text-gray-500 mt-1">
-                    Especifica las condiciones del sistema, variables monitoreadas e internas bajo las cuales se aplicará este requisito.
-                  </p>
-                </div>
-              </div>
-
-              <!-- Latency Specification Selection -->
-              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 class="font-medium text-blue-800 mb-3 flex items-center space-x-2">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                  </svg>
-                  <span>Especificación de Latencia</span>
-                </h4>
-                <div class="space-y-3">
-                  <div>
-                    <label class="block text-sm font-medium text-blue-800 mb-2">Especificación Asignada</label>
-                    <select
-                      [ngModel]="latencyDropdownValue()"
-                      (ngModelChange)="updateVariableLatencySpec($event)"
-                      class="w-full px-3 py-2 border border-blue-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-                      <option value="">Sin especificación de latencia</option>
-                      @for (spec of latencySpecs(); track spec.id) {
-                        <option [value]="spec.id">{{ spec.name }} ({{ spec.value }} {{ spec.units }})</option>
-                      }
-                    </select>
-                  </div>
-                  @if (selectedLatencySpecId()) {
-                    @for (spec of latencySpecs(); track spec.id) {
-                      @if (spec.id === selectedLatencySpecId()) {
-                        <div class="text-sm text-blue-700 space-y-1 bg-blue-100 p-3 rounded">
-                          <p><strong>{{spec.name}}</strong> ({{spec.type}})</p>
-                          <p>{{spec.physical_interpretation}}</p>
-                          <p class="text-blue-600">Valor: {{spec.value}} {{spec.units}}</p>
-                          @if (spec.justification) {
-                            <p class="text-xs text-blue-600">Justificación: {{spec.justification}}</p>
-                          }
-                        </div>
-                      }
-                    }
-                  }
-                </div>
-              </div>
-
-              <!-- Tolerance Specification Selection -->
-              <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <h4 class="font-medium text-yellow-800 mb-3 flex items-center space-x-2">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                  </svg>
-                  <span>Especificación de Tolerancia</span>
-                </h4>
-                <div class="space-y-3">
-                  <div>
-                    <label class="block text-sm font-medium text-yellow-800 mb-2">Especificación Asignada</label>
-                    <select
-                      [ngModel]="toleranceDropdownValue()"
-                      (ngModelChange)="updateVariableToleranceSpec($event)"
-                      class="w-full px-3 py-2 border border-yellow-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
-                      <option value="">Sin especificación de tolerancia</option>
-                      @for (spec of toleranceSpecs(); track spec.id) {
-                        <option [value]="spec.id">{{ spec.name }} ({{ spec.value }} {{ spec.units }})</option>
-                      }
-                    </select>
-                  </div>
-                  @if (selectedToleranceSpecId()) {
-                    @for (spec of toleranceSpecs(); track spec.id) {
-                      @if (spec.id === selectedToleranceSpecId()) {
-                        <div class="text-sm text-yellow-700 space-y-1 bg-yellow-100 p-3 rounded">
-                          <p><strong>{{spec.name}}</strong> ({{spec.type}})</p>
-                          <p>{{spec.physical_interpretation}}</p>
-                          <p class="text-yellow-600">Valor: {{spec.value}} {{spec.units}}</p>
-                          @if (spec.justification) {
-                            <p class="text-xs text-yellow-600">Justificación: {{spec.justification}}</p>
-                          }
-                        </div>
-                      }
-                    }
-                  }
-                </div>
-              </div>
-
-              <!-- Requirement Justification -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Justificación del Requisito</label>
-                <textarea
-                  [(ngModel)]="requirementDraft.justification"
-                  placeholder="Ej: Basado en estándares de usabilidad para interfaces críticas, requisitos de seguridad funcional según ISO 26262..."
-                  rows="3"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
-                </textarea>
-                <p class="text-xs text-gray-500 mt-1">
-                  Explica la razón técnica, normativa o de negocio que justifica este requisito
-                </p>
-              </div>
-            </div>
-          }
-
-          @case (5) {
-            <!-- Step 5: Preview & Confirm -->
-            <div class="space-y-6">
-              <div>
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Paso 5: Vista Previa y Confirmación</h3>
-                <p class="text-gray-600 mb-6">Revisa el requisito generado antes de crearlo</p>
-              </div>
-
-              <!-- Requirement ID Preview -->
-              <div class="mb-4">
-                <span class="text-sm font-medium text-gray-700">ID: </span>
-                <span class="font-mono text-primary-600">{{getPreviewRequirementId()}}</span>
-              </div>
-
-              <!-- Reusable Requirement Detail Component -->
-              @if (previewRequirement()) {
-                <app-requirement-detail 
-                  [requirement]="previewRequirement()"
-                  [requirementId]="getPreviewRequirementId()"
-                  [showTechnicalDetails]="false">
-                </app-requirement-detail>
-              } @else {
-                <div class="text-center py-8 text-gray-500">
-                  <p>Complete todos los pasos para ver la vista previa</p>
-                </div>
-              }
-
-              <!-- Hierarchy Info -->
-              @if (requirementDraft.parent_id) {
-                <div class="bg-blue-50 rounded-lg p-4">
-                  <h4 class="font-medium text-blue-900 mb-2">Estructura Jerárquica</h4>
-                  <p class="text-blue-700">
-                    Este requisito será un sub-requisito de: 
-                    <span class="font-mono">{{getParentRequirementId()}}</span>
-                  </p>
-                </div>
-              }
-            </div>
-          }
-        }
-      </div>
-
-      <!-- Navigation Buttons -->
-      <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex justify-between">
-          <button
-            (click)="previousStep()"
-            [disabled]="currentStep() === 1"
-            class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
-            Anterior
-          </button>
-
-          <div class="flex space-x-3">
-            @if (currentStep() < 5) {
-              <button
-                (click)="nextStep()"
-                [disabled]="!isCurrentStepValid()"
-                class="primary disabled:opacity-50">
-                Siguiente
-              </button>
-            } @else {
-              <button
-                (click)="createRequirement()"
-                [disabled]="!isCurrentStepValid() || isCreating()"
-                class="primary disabled:opacity-50">
-                @if (isCreating()) {
-                  Creando...
-                } @else {
-                  Crear Requisito
-                }
-              </button>
-            }
-          </div>
-        </div>
-      </div>
-
-      <!-- Status Message -->
-      @if (statusMessage()) {
-        <div [class]="statusMessage()!.type === 'success' 
-          ? 'bg-green-100 border border-green-400 text-green-700' 
-          : 'bg-red-100 border border-red-400 text-red-700'"
-          class="px-4 py-3 rounded">
-          <p>{{statusMessage()!.text}}</p>
-        </div>
-      }
-    </div>
-  `,
+  templateUrl: './requirements-creator.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RequirementsCreatorComponent implements OnInit {
@@ -623,18 +135,18 @@ export class RequirementsCreatorComponent implements OnInit {
   private async loadAllData() {
     try {
       // Wait for database to be ready
-      while (!this.db.isDatabaseReady()) {
+      while (!this.db.isReady()) {
         await new Promise(resolve => setTimeout(resolve, 100));
       }
         const [funcs, vars, comps, modes, modeComps, reqs, latencySpecs, toleranceSpecs] = await Promise.all([
-        Promise.resolve(this.db.getFunctions()),
-        Promise.resolve(this.db.getVariables()),
-        Promise.resolve(this.db.getComponents()),
-        Promise.resolve(this.db.getModes()),
-        Promise.resolve(this.db.getModeComponents()),
-        Promise.resolve(this.db.getRequirements()),
-        Promise.resolve(this.db.getLatencySpecifications()),
-        Promise.resolve(this.db.getToleranceSpecifications())
+        Promise.resolve(this.db.functions.getAll()),
+        Promise.resolve(this.db.variables.getAll()),
+        Promise.resolve(this.db.components.getAll()),
+        Promise.resolve(this.db.modes.getAll()),
+        Promise.resolve(this.db.modes.getModeComponents()),
+        Promise.resolve(this.db.requirements.getAll()),
+        Promise.resolve(this.db.latencySpecifications.getAll()),
+        Promise.resolve(this.db.toleranceSpecifications.getAll())
       ]);
       
       this.functions.set(funcs);
@@ -758,12 +270,12 @@ export class RequirementsCreatorComponent implements OnInit {
     if (this.requirementDraft.parent_id) {
       const parent = this.existingRequirements().find(r => r.id === this.requirementDraft.parent_id);
       if (parent) {
-        const parentId = this.db.generateRequirementId(parent);
-        const nextChildIndex = this.db.getNextRequirementOrderIndex(this.requirementDraft.parent_id);
+        const parentId = this.db.requirements.generateRequirementId(parent);
+        const nextChildIndex = this.db.requirements.getNextRequirementOrderIndex(this.requirementDraft.parent_id);
         return `${parentId}-${nextChildIndex}`;
       }
     }
-    const nextTopIndex = this.db.getNextRequirementOrderIndex(null);
+    const nextTopIndex = this.db.requirements.getNextRequirementOrderIndex(null);
     return `R${nextTopIndex}`;
   }
 
@@ -773,7 +285,7 @@ export class RequirementsCreatorComponent implements OnInit {
   }
 
   generateRequirementId(requirement: Requirement): string {
-    return this.db.generateRequirementId(requirement);
+    return this.db.requirements.generateRequirementId(requirement);
   }
 
   generateRequirementText(requirement: Requirement): string {
@@ -803,7 +315,7 @@ export class RequirementsCreatorComponent implements OnInit {
     try {
       // Determine level and order index
       const level = this.requirementDraft.parent_id ? 2 : 1;
-      const orderIndex = this.db.getNextRequirementOrderIndex(this.requirementDraft.parent_id);
+      const orderIndex = this.db.requirements.getNextRequirementOrderIndex(this.requirementDraft.parent_id);
 
       const newRequirement: Omit<Requirement, 'id'> = {
         function_id: this.requirementDraft.function_id!,
@@ -818,9 +330,9 @@ export class RequirementsCreatorComponent implements OnInit {
         order_index: orderIndex
       };
 
-      const newId = this.db.addRequirement(newRequirement);
+      const success = this.db.requirements.add(newRequirement);
       
-      if (newId > 0) {
+      if (success) {
         this.showStatus('Requisito creado exitosamente', 'success');
         await this.loadAllData(); // Refresh data
         this.resetWizard();
@@ -889,7 +401,7 @@ export class RequirementsCreatorComponent implements OnInit {
           tolerance_spec_id: selectedVariable.tolerance_spec_id
         };
         
-        const success = this.db.updateVariable(selectedVariable.id, updateData);
+        const success = this.db.variables.update(selectedVariable.id!, updateData);
         if (success) {
           // Update the local variables list
           await this.loadAllData();
@@ -918,7 +430,7 @@ export class RequirementsCreatorComponent implements OnInit {
           tolerance_spec_id: specId || undefined
         };
         
-        const success = this.db.updateVariable(selectedVariable.id, updateData);
+        const success = this.db.variables.update(selectedVariable.id!, updateData);
         if (success) {
           // Update the local variables list
           await this.loadAllData();

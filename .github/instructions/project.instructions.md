@@ -10,6 +10,15 @@ This is a professional requirements management web application built with Angula
 - **TypeScript**: Strict mode enabled with modern ES2022 target
 - **Build**: Static site generation for deployment
 
+## Database Architecture
+📖 **See complete database documentation: [`docs/DATABASE_DOCUMENTATION.md`](../docs/DATABASE_DOCUMENTATION.md)**
+
+The application uses a modular repository pattern with SQLite for data persistence:
+- **Repository Pattern**: Each entity has its own repository class
+- **Type Safety**: Comprehensive TypeScript interfaces
+- **Schema Management**: Automated table creation and data loading
+- **Performance**: Indexed queries and prepared statements
+
 ## Core Domain Model
 The application manages four foundational entities with specific relationships:
 
