@@ -2,10 +2,11 @@ import {Component as NgComponent, signal} from '@angular/core';
 import { ConfigurationComponent } from './components/configuration.component';
 import { SpecificationsManagementComponent } from './components/specifications-management.component';
 import { RequirementsCreatorComponent } from './components/requirements-creator.component';
+import { RequirementsManageComponent } from './components/requirements-manage.component';
 
 @NgComponent({
   selector: 'app-root',
-  imports: [ConfigurationComponent, SpecificationsManagementComponent, RequirementsCreatorComponent],
+  imports: [ConfigurationComponent, SpecificationsManagementComponent, RequirementsCreatorComponent, RequirementsManageComponent],
   template: `
     <!-- Header -->
     <header class="bg-white shadow-sm border-b border-gray-200">
@@ -97,16 +98,7 @@ import { RequirementsCreatorComponent } from './components/requirements-creator.
             <app-requirements-creator></app-requirements-creator>
           }
           @case ('manage') {
-            <div class="text-center py-16">
-              <div class="max-w-md mx-auto">
-                <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
-                </svg>
-                <h2 class="text-2xl font-semibold text-gray-900 mb-4">Gestionar Requisitos</h2>
-                <p class="text-gray-600">Vista en lista y árbol de requisitos</p>
-                <p class="text-sm text-gray-500 mt-2">Funcionalidad próximamente disponible</p>
-              </div>
-            </div>
+            <app-requirements-manage></app-requirements-manage>
           }
           @case ('export') {
             <div class="text-center py-16">
