@@ -7,6 +7,10 @@
 # Only exists if Bazel was run
 /bazel-out
 
+# TypeScript build info
+*.tsbuildinfo
+.tsbuildinfo
+
 # Dependencies
 /node_modules
 
@@ -59,3 +63,29 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.staging
+
+# Logs
+*.log
+logs/
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Temporary folders
+tmp/
+temp/
