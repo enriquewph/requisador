@@ -1,0 +1,90 @@
+{
+  "functions": [
+    {
+      "id": 1,
+      "name": "Navigation",
+      "description": "System navigation capabilities",
+      "order_index": 1
+    },
+    {
+      "id": 2,
+      "name": "Communication",
+      "description": "System communication functions",
+      "order_index": 2
+    },
+    {
+      "id": 3,
+      "name": "Control",
+      "description": "System control operations",
+      "order_index": 3
+    }
+  ],
+  "variables": [
+    {
+      "id": 1,
+      "name": "Speed",
+      "description": "Velocity measurement parameter",
+      "order_index": 1
+    },
+    {
+      "id": 2,
+      "name": "Position",
+      "description": "Location coordinates parameter",
+      "order_index": 2
+    },
+    {
+      "id": 3,
+      "name": "Temperature",
+      "description": "Temperature measurement parameter",
+      "order_index": 3
+    }
+  ],
+  "components": [
+    {
+      "id": 1,
+      "name": "HMI",
+      "description": "Human Machine Interface",
+      "order_index": 1
+    },
+    {
+      "id": 2,
+      "name": "ECI",
+      "description": "Electronic Control Interface",
+      "order_index": 2
+    },
+    {
+      "id": 3,
+      "name": "Sensor Array",
+      "description": "Environmental sensor array",
+      "order_index": 3
+    }
+  ],
+  "modes": [
+    {
+      "id": 1,
+      "name": "Normal",
+      "description": "Standard operating mode",
+      "order_index": 1
+    },
+    {
+      "id": 2,
+      "name": "Emergency",
+      "description": "Emergency operating mode",
+      "order_index": 2
+    },
+    {
+      "id": 3,
+      "name": "Maintenance",
+      "description": "Maintenance operating mode",
+      "order_index": 3
+    }
+  ],
+  "mode_components": [
+    { "mode_id": 1, "component_id": 1 },
+    { "mode_id": 1, "component_id": 2 },
+    { "mode_id": 1, "component_id": 3 },
+    { "mode_id": 2, "component_id": 1 },
+    { "mode_id": 2, "component_id": 2 },
+    { "mode_id": 3, "component_id": 3 }
+  ]
+}

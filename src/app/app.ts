@@ -1,13 +1,14 @@
 import {Component} from '@angular/core';
+import { DatabaseTestComponent } from './components/database-test.component';
 
 @Component({
   selector: 'app-root',
-  imports: [],
+  imports: [DatabaseTestComponent],
   template: `
-    <h1>Hello World!</h1>
+    <app-database-test></app-database-test>
   `,
   styleUrls: ['./app.css'],
 })
 export class App {
-  title = 'default';
+  title = 'Requisador de Requisitos';
 }

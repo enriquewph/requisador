@@ -16,6 +16,7 @@
     "@angular/platform-browser": "^20.1.0-next",
     "@angular/router": "^20.1.0-next",
     "rxjs": "~7.8.0",
+    "sql.js": "^1.13.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
   },
@@ -23,7 +24,12 @@
     "@angular/build": "^20.1.0-next",
     "@angular/cli": "^20.1.0-next",
     "@angular/compiler-cli": "^20.1.0-next",
+    "@tailwindcss/postcss": "^4.1.11",
     "@types/node": "^16.11.35",
+    "@types/sql.js": "^1.4.9",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.11",
     "ts-node": "~10.9.0",
     "typescript": "~5.8.0"
   }
