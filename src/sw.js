@@ -1,12 +1,13 @@
 // Simple service worker for PWA functionality
 const CACHE_NAME = 'requisador-v2.0.0';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/assets/logo.svg',
-  '/assets/icons/icon-192x192.png',
-  '/assets/icons/icon-512x512.png'
+  './',
+  './index.html',
+  './manifest.json',
+  './assets/logo.svg',
+  './assets/icons/apple-touch-icon.png',
+  './assets/icons/web-app-manifest-192x192.png',
+  './assets/icons/web-app-manifest-512x512.png'
 ];
 
 self.addEventListener('install', function(event) {

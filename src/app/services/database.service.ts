@@ -60,7 +60,7 @@ export class DatabaseService {
   async initializeDatabase(): Promise<void> {
     try {
       const SQL = await initSqlJs({
-        locateFile: (file: string) => `/assets/${file}`
+        locateFile: (file: string) => `assets/${file}`
       });
       
       // Try to load from localStorage first
@@ -133,7 +133,7 @@ export class DatabaseService {
   async importDatabase(data: Uint8Array): Promise<boolean> {
     try {
       const SQL = await initSqlJs({
-        locateFile: (file: string) => `/assets/${file}`
+        locateFile: (file: string) => `assets/${file}`
       });
       
       this.db = new SQL.Database(data);
