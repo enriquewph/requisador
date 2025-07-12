@@ -107,7 +107,7 @@
           [columns]="cols"
           [scrollable]="true" 
           scrollHeight="500px"
-          [tableStyle]="{'min-width':'70rem'}"
+          [tableStyle]="{'min-width':'90rem'}"
           [resizableColumns]="true"
           [globalFilterFields]="['textualId', 'behavior', 'condition', 'component', 'mode', 'function', 'variable', 'justification']"
           styleClass="p-treetable-sm"
@@ -134,64 +134,13 @@
           <!-- Row Content -->
           <ng-template pTemplate="body" let-rowNode let-rowData="rowData" let-columns="columns">
             <tr [ttRow]="rowNode">
-              <td *ngFor="let col of columns; let i = index">
+              <td *ngFor="let col of columns; let i = index" class="text-sm">
                 <p-treeTableToggler [rowNode]="rowNode" *ngIf="i === 0"></p-treeTableToggler>
-                @switch (col.field) {
-                  @case ('textualId') {
-                    <span class="font-mono text-sm font-medium" 
-                          [class]="getRequirementIdClass(rowData.level)"
-                          [style.margin-left]="i === 0 ? '8px' : '0'">
-                      {{ rowData.textualId }}
-                    </span>
-                  }
-                  @case ('behavior') {
-                    <div class="max-w-[240px]">
-                      <p class="text-sm text-gray-900 line-clamp-2" 
-                         [title]="rowData.behavior">
-                        {{ rowData.behavior }}
-                      </p>
-                    </div>
-                  }
-                  @case ('condition') {
-                    <div class="max-w-[190px]">
-                      <p class="text-sm text-gray-600 line-clamp-1" 
-                         [title]="rowData.condition">
-                        {{ rowData.condition }}
-                      </p>
-                    </div>
-                  }
-                  @case ('justification') {
-                    <div class="max-w-[190px]">
-                      <p class="text-sm text-gray-500 line-clamp-1" 
-                         [title]="rowData.justification">
-                        {{ rowData.justification }}
-                      </p>
-                    </div>
-                  }
-                  @case ('component') {
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                      {{ rowData.component }}
-                    </span>
-                  }
-                  @case ('mode') {
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                      {{ rowData.mode }}
-                    </span>
-                  }
-                  @case ('function') {
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {{ rowData.function }}
-                    </span>
-                  }
-                  @case ('variable') {
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      {{ rowData.variable }}
-                    </span>
-                  }
-                  @default {
-                    {{ rowData[col.field] }}
-                  }
-                }
+                <span 
+                  [style.margin-left]="i === 0 ? '8px' : '0'"
+                  [class]="getColumnClass(col.field, rowData.level)">
+                  {{ rowData[col.field] }}
+                </span>
               </td>
             </tr>
           </ng-template>

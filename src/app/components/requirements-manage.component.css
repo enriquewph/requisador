@@ -2,8 +2,86 @@
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Requirement ID level colors */
+.req-id-level-0 {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  font-weight: 700;
+  color: #111827;
+}
+
+.req-id-level-1 {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  font-weight: 600;
+  color: #1d4ed8;
+}
+
+.req-id-level-2 {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  font-weight: 500;
+  color: #047857;
+}
+
+.req-id-level-3 {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  font-weight: 500;
+  color: #7c3aed;
+}
+
+.req-id-level-4 {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  font-weight: 500;
+  color: #c2410c;
+}
+
+/* Entity tags */
+.entity-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.component-tag {
+  background-color: #e0e7ff;
+  color: #3730a3;
+}
+
+.mode-tag {
+  background-color: #f3e8ff;
+  color: #6b21a8;
+}
+
+.function-tag {
+  background-color: #dbeafe;
+  color: #1e3a8a;
+}
+
+.variable-tag {
+  background-color: #dcfce7;
+  color: #14532d;
+}
+
+/* Text content styling */
+.text-content {
+  color: #111827;
+  line-height: 1.625;
+}
+
+.text-content-secondary {
+  color: #4b5563;
+  line-height: 1.625;
+}
+
+.text-content-muted {
+  color: #6b7280;
+  line-height: 1.625;
 }
 
 /* PrimeNG TreeTable custom styling */

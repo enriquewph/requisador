@@ -49,14 +49,14 @@ export class RequirementsManageComponent implements OnInit {
   activeSubTab = signal<'tree' | 'list' | 'reports'>('tree');
   
   cols = [
-    { field: 'textualId', header: 'ID', width: '100px' },
-    { field: 'behavior', header: 'Comportamiento', width: '250px' },
-    { field: 'condition', header: 'Condición', width: '200px' },
-    { field: 'component', header: 'Componente', width: '120px' },
-    { field: 'mode', header: 'Modo', width: '100px' },
-    { field: 'function', header: 'Función', width: '120px' },
-    { field: 'variable', header: 'Variable', width: '120px' },
-    { field: 'justification', header: 'Justificación', width: '200px' }
+    { field: 'textualId', header: 'ID', width: '120px' },
+    { field: 'behavior', header: 'Comportamiento', width: '300px' },
+    { field: 'condition', header: 'Condición', width: '250px' },
+    { field: 'component', header: 'Componente', width: '140px' },
+    { field: 'mode', header: 'Modo', width: '120px' },
+    { field: 'function', header: 'Función', width: '140px' },
+    { field: 'variable', header: 'Variable', width: '140px' },
+    { field: 'justification', header: 'Justificación', width: '250px' }
   ];
 
   async ngOnInit() {
@@ -296,6 +296,53 @@ export class RequirementsManageComponent implements OnInit {
       level: indices.length - 1, // R0 = level 0, R0-1 = level 1, R0-1-2 = level 2
       indices
     };
+  }
+
+  /**
+   * Get CSS classes for different column types and requirement levels
+   */
+  getColumnClass(field: string, level: number): string {
+    const baseClasses: string[] = [];
+    
+    switch (field) {
+      case 'textualId':
+        const levelClass = `req-id-level-${Math.min(level, 4)}`;
+        baseClasses.push(levelClass);
+        break;
+        
+      case 'behavior':
+        baseClasses.push('text-content');
+        break;
+        
+      case 'condition':
+        baseClasses.push('text-content-secondary');
+        break;
+        
+      case 'justification':
+        baseClasses.push('text-content-muted');
+        break;
+        
+      case 'component':
+        baseClasses.push('entity-tag', 'component-tag');
+        break;
+        
+      case 'mode':
+        baseClasses.push('entity-tag', 'mode-tag');
+        break;
+        
+      case 'function':
+        baseClasses.push('entity-tag', 'function-tag');
+        break;
+        
+      case 'variable':
+        baseClasses.push('entity-tag', 'variable-tag');
+        break;
+        
+      default:
+        baseClasses.push('text-content');
+    }
+    
+    return baseClasses.join(' ');
   }
 
   deleteRequirement(requirement: any) {
