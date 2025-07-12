@@ -70,6 +70,7 @@
           },
           "configurations": {
             "production": {
+              "baseHref": "/requisador/",
               "budgets": [
                 {
                   "type": "initial",
