@@ -11,6 +11,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { DatabaseService } from '../services/database.service';
 import { Requirement } from '../services/database/interfaces';
 import { RequirementDetailComponent } from './requirement-detail.component';
+import { RequirementEditComponent } from './requirement-edit.component';
 
 interface RequirementTreeNode extends TreeNode {
   data: {
@@ -41,7 +42,8 @@ interface RequirementTreeNode extends TreeNode {
     ButtonModule,
     InputTextModule,
     TooltipModule,
-    RequirementDetailComponent
+    RequirementDetailComponent,
+    RequirementEditComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './requirements-manage.component.html',
@@ -57,7 +59,9 @@ export class RequirementsManageComponent implements OnInit {
   
   // Modal states
   showViewModal = signal<boolean>(false);
+  showEditModal = signal<boolean>(false);
   viewRequirementData = signal<Requirement | null>(null);
+  editRequirementData = signal<Requirement | null>(null);
   viewRequirementId = signal<string>('');
   
   contextMenuItems: MenuItem[] = [
@@ -397,8 +401,13 @@ export class RequirementsManageComponent implements OnInit {
   contextMenuEdit() {
     const selected = this.selectedContextNode;
     if (selected) {
-      console.log('Context menu: Editar', selected.data);
-      // TODO: Open modal with requirement-edit component
+      // Get the full requirement data from database
+      const requirement = this.databaseService.requirements.getById(selected.data.id);
+      if (requirement) {
+        this.editRequirementData.set(requirement);
+        this.showEditModal.set(true);
+        console.log('Opening edit modal for requirement:', selected.data.textualId);
+      }
     }
   }
 
@@ -443,5 +452,47 @@ export class RequirementsManageComponent implements OnInit {
         this.collectNodeIds(node.children, ids);
       }
     });
+  }
+
+  // Modal event handlers
+  onCloseViewModal() {
+    console.log('Closing view modal');
+    this.showViewModal.set(false);
+    this.viewRequirementData.set(null);
+    this.viewRequirementId.set('');
+  }
+
+  onCloseEditModal() {
+    console.log('Closing edit modal');
+    this.showEditModal.set(false);
+    this.editRequirementData.set(null);
+  }
+
+  async onEditSave(updatedRequirement: Requirement) {
+    try {
+      // Ensure we have a valid ID
+      if (!updatedRequirement.id) {
+        throw new Error('Invalid requirement ID');
+      }
+      
+      // Update the requirement in the database
+      this.databaseService.requirements.update(updatedRequirement.id, updatedRequirement);
+      
+      // Close the modal
+      this.onCloseEditModal();
+      
+      // Reload the tree to reflect changes
+      await this.loadRequirements();
+      
+      console.log('Requirement updated successfully:', updatedRequirement.id);
+    } catch (error) {
+      console.error('Error updating requirement:', error);
+      alert('Error al actualizar el requisito. Por favor, inténtelo de nuevo.');
+      
+      // Reset the updating state in child component
+      if (this.editRequirementData()) {
+        // The child component should handle this, but we ensure modal stays open on error
+      }
+    }
   }
 }

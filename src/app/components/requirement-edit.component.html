@@ -1,0 +1,307 @@
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="bg-white rounded-lg border-l-4 border-primary-500 p-6">
+    <h2 class="text-xl font-semibold text-gray-900 mb-2 flex items-center space-x-2">
+      <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+      </svg>
+      <span>Editar Requisito {{requirementId}}</span>
+    </h2>
+    <p class="text-gray-600">Modifica los detalles del requisito seleccionado</p>
+  </div>
+
+  <!-- Status Message -->
+  @if (statusMessage(); as message) {
+    <div [class]="message.type === 'success' ? 'bg-green-100 border-green-400 text-green-700' : 'bg-red-100 border-red-400 text-red-700'" 
+         class="border px-4 py-3 rounded mb-6 flex items-center justify-between">
+      <span>{{message.text}}</span>
+      <button (click)="clearStatusMessage()" class="text-current opacity-70 hover:opacity-100">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+        </svg>
+      </button>
+    </div>
+  }
+
+  <!-- Main Form -->
+  <div class="bg-white rounded-lg shadow p-6">
+    <form (ngSubmit)="saveRequirement()" #editForm="ngForm">
+      
+      <!-- Function and Variable Selection -->
+      <div class="mb-8">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Función y Variable</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- Functions Selection -->
+          <div>
+            <label class="block text-sm font-medium text-blue-700 mb-3">Función del Sistema</label>
+            <div class="space-y-2 max-h-64 overflow-y-auto border rounded-lg p-3 bg-gray-50">
+              @for (func of functions(); track func.id) {
+                <label class="flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                  <input 
+                    type="radio" 
+                    [value]="func.id" 
+                    [ngModel]="formData.function_id()"
+                    (ngModelChange)="formData.function_id.set($event)"
+                    name="function"
+                    class="mr-3 text-blue-600">
+                  <div>
+                    <span class="font-medium text-blue-700">{{func.name}}</span>
+                    @if (func.description) {
+                      <p class="text-sm text-gray-600">{{func.description}}</p>
+                    }
+                  </div>
+                </label>
+              }
+            </div>
+          </div>
+
+          <!-- Variables Selection -->
+          <div>
+            <label class="block text-sm font-medium text-green-700 mb-3">Variable del Sistema</label>
+            <div class="space-y-2 max-h-64 overflow-y-auto border rounded-lg p-3 bg-gray-50">
+              @for (variable of variables(); track variable.id) {
+                <label class="flex items-center p-2 hover:bg-green-50 rounded cursor-pointer">
+                  <input 
+                    type="radio" 
+                    [value]="variable.id" 
+                    [ngModel]="formData.variable_id()"
+                    (ngModelChange)="formData.variable_id.set($event)"
+                    name="variable"
+                    class="mr-3 text-green-600">
+                  <div>
+                    <span class="font-medium text-green-700">{{variable.name}}</span>
+                    @if (variable.description) {
+                      <p class="text-sm text-gray-600">{{variable.description}}</p>
+                    }
+                  </div>
+                </label>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mode and Component Selection -->
+      <div class="mb-8">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Modo y Componente</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- Mode Selection -->
+          <div>
+            <label class="block text-sm font-medium text-purple-700 mb-3">
+              Modo del Sistema
+              @if (formData.component_id()) {
+                <span class="text-sm text-gray-500">(Modos compatibles con el componente seleccionado)</span>
+              }
+            </label>
+            <div class="space-y-2 max-h-64 overflow-y-auto border rounded-lg p-3 bg-gray-50">
+              @for (mode of availableModes(); track mode.id) {
+                <label class="flex items-center p-2 hover:bg-purple-50 rounded cursor-pointer">
+                  <input 
+                    type="radio" 
+                    [value]="mode.id" 
+                    [ngModel]="formData.mode_id()"
+                    (ngModelChange)="formData.mode_id.set($event)"
+                    name="mode"
+                    (change)="onModeChange()"
+                    class="mr-3 text-purple-600">
+                  <div>
+                    <span class="font-medium text-purple-700">{{mode.name}}</span>
+                    @if (mode.description) {
+                      <p class="text-sm text-gray-600">{{mode.description}}</p>
+                    }
+                  </div>
+                </label>
+              }
+            </div>
+            
+            <!-- Mode-Component Validation Message -->
+            @if (formData.component_id() && formData.mode_id() && !isModeComponentValid()) {
+              <div class="mt-2 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-700">
+                <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+                El modo y componente seleccionados no son compatibles. Por favor, selecciona una combinación válida.
+              </div>
+            }
+          </div>
+
+          <!-- Component Selection -->
+          <div>
+            <label class="block text-sm font-medium text-indigo-700 mb-3">
+              Componente del Sistema
+            </label>
+            <div class="space-y-2 max-h-64 overflow-y-auto border rounded-lg p-3 bg-gray-50">
+              @for (component of components(); track component.id) {
+                <label class="flex items-center p-2 hover:bg-indigo-50 rounded cursor-pointer">
+                  <input 
+                    type="radio" 
+                    [value]="component.id" 
+                    [ngModel]="formData.component_id()"
+                    (ngModelChange)="formData.component_id.set($event)"
+                    name="component"
+                    (change)="onComponentChange()"
+                    class="mr-3 text-indigo-600">
+                    <div>
+                      <span class="font-medium text-indigo-700">{{component.name}}</span>
+                      @if (component.description) {
+                        <p class="text-sm text-gray-600">{{component.description}}</p>
+                      }
+                    </div>
+                  </label>
+                }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Parent Requirement Selection -->
+      <div class="mb-8">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Requisito Padre (Opcional)</h3>
+        <div class="border rounded-lg p-4 bg-gray-50">
+          <label class="flex items-center mb-4">
+            <input 
+              type="radio" 
+              [value]="null" 
+              [ngModel]="formData.parent_id()"
+              (ngModelChange)="formData.parent_id.set($event)"
+              name="parent"
+              class="mr-3">
+            <span class="font-medium text-gray-700">Sin padre (Requisito de nivel raíz)</span>
+          </label>
+          
+          @for (req of existingRequirements(); track req.id) {
+            @if (req.id !== requirement?.id) {
+              <label class="flex items-center mb-2">
+                <input 
+                  type="radio" 
+                  [value]="req.id" 
+                  [ngModel]="formData.parent_id()"
+                  (ngModelChange)="formData.parent_id.set($event)"
+                  name="parent"
+                  class="mr-3">
+                <div class="flex-1">
+                  <span class="font-medium text-gray-700">{{req.behavior}}</span>
+                  <span class="text-sm text-gray-500 ml-2">(Nivel {{req.level}})</span>
+                </div>
+              </label>
+            }
+          }
+        </div>
+      </div>
+
+      <!-- Behavior Description -->
+      <div class="mb-8">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Descripción del Comportamiento</h3>
+        
+        <!-- Behavior Suggestions -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Sugerencias de verbos:</label>
+          <div class="flex flex-wrap gap-2">
+            @for (suggestion of behaviorSuggestions; track suggestion) {
+              <button 
+                type="button"
+                (click)="addBehaviorSuggestion(suggestion)"
+                class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition-colors">
+                {{suggestion}}
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Behavior Input -->
+        <div class="mb-4">
+          <label for="behavior" class="block text-sm font-medium text-gray-700 mb-2">
+            Comportamiento <span class="text-red-500">*</span>
+          </label>
+          <textarea 
+            id="behavior"
+            [ngModel]="formData.behavior()"
+            (ngModelChange)="formData.behavior.set($event)"
+            name="behavior"
+            required
+            rows="3"
+            placeholder="Describe qué debe hacer el componente con la variable..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+          </textarea>
+        </div>
+
+        <!-- Condition Input -->
+        <div class="mb-4">
+          <label for="condition" class="block text-sm font-medium text-gray-700 mb-2">Condición (Opcional)</label>
+          <textarea 
+            id="condition"
+            [ngModel]="formData.condition()"
+            (ngModelChange)="formData.condition.set($event)"
+            name="condition"
+            rows="2"
+            placeholder="Condiciones específicas para la aplicación del requisito..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+          </textarea>
+        </div>
+
+        <!-- Justification Input -->
+        <div class="mb-4">
+          <label for="justification" class="block text-sm font-medium text-gray-700 mb-2">Justificación (Opcional)</label>
+          <textarea 
+            id="justification"
+            [ngModel]="formData.justification()"
+            (ngModelChange)="formData.justification.set($event)"
+            name="justification"
+            rows="2"
+            placeholder="Justificación técnica o de negocio para este requisito..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+          </textarea>
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div class="mb-8">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Vista Previa</h3>
+        <div class="bg-primary-50 border-l-4 border-primary-500 p-4 rounded">
+          <h4 class="font-medium text-primary-800 mb-2">Texto del Requisito:</h4>
+          <p class="text-primary-700 text-lg leading-relaxed">{{previewText()}}</p>
+          
+          @if (formData.condition().trim()) {
+            <div class="mt-4">
+              <h4 class="font-medium text-primary-800 mb-1">Condición:</h4>
+              <p class="text-primary-600">{{formData.condition()}}</p>
+            </div>
+          }
+          
+          @if (formData.justification().trim()) {
+            <div class="mt-4">
+              <h4 class="font-medium text-primary-800 mb-1">Justificación:</h4>
+              <p class="text-primary-600">{{formData.justification()}}</p>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex justify-end space-x-4 pt-6 border-t">
+        <button 
+          type="button"
+          (click)="cancel()"
+          class="px-4 py-2 bg-gray-100 text-gray-700 border border-gray-300 rounded-lg transition-all duration-200 hover:bg-gray-200 hover:border-gray-400">
+          Cancelar
+        </button>
+        <button 
+          type="submit"
+          [disabled]="!isFormValid() || isUpdating()"
+          class="px-4 py-2 bg-primary-600 text-white border border-primary-600 rounded-lg transition-all duration-200 hover:bg-primary-500 hover:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2">
+          @if (isUpdating()) {
+            <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+            </svg>
+            <span>Actualizando...</span>
+          } @else {
+            <span>Guardar Cambios</span>
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -206,7 +206,9 @@
   <!-- View Requirement Modal -->
   <p-dialog 
     [header]="'Detalles del Requisito ' + viewRequirementId()"
-    [(visible)]="showViewModal"
+    [visible]="showViewModal()"
+    (onHide)="onCloseViewModal()"
+    (visibleChange)="showViewModal.set($event)"
     [modal]="true"
     [closable]="true"
     [resizable]="false"
@@ -227,9 +229,30 @@
       <button 
         type="button"
         class="px-4 py-2 bg-gray-100 text-gray-700 border border-gray-300 rounded-lg transition-all duration-200 hover:bg-gray-200 hover:border-gray-400"
-        (click)="showViewModal.set(false)">
+        (click)="onCloseViewModal()">
         Cerrar
       </button>
     </ng-template>
+  </p-dialog>
+
+  <!-- Edit Modal -->
+  <p-dialog
+    [header]="'Editar Requisito'"
+    [modal]="true"
+    [draggable]="false"
+    [resizable]="false"
+    [visible]="showEditModal()"
+    (onHide)="onCloseEditModal()"
+    (visibleChange)="showEditModal.set($event)"
+    [style]="{ width: '90vw', maxWidth: '1000px', height: '90vh' }"
+    styleClass="p-dialog-maximized">
+    
+    @if (editRequirementData(); as requirement) {
+      <app-requirement-edit
+        [requirement]="requirement"
+        (onSave)="onEditSave($event)"
+        (onCancel)="onCloseEditModal()">
+      </app-requirement-edit>
+    }
   </p-dialog>
 </div>
