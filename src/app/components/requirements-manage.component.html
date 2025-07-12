@@ -107,8 +107,8 @@
           [columns]="cols"
           [scrollable]="true" 
           scrollHeight="500px"
-          [tableStyle]="{'min-width':'90rem'}"
           [resizableColumns]="true"
+          columnResizeMode="expand"
           [globalFilterFields]="['textualId', 'behavior', 'condition', 'component', 'mode', 'function', 'variable', 'justification']"
           styleClass="p-treetable-sm"
           #tt>
@@ -116,14 +116,14 @@
           <!-- Column Group for width control -->
           <ng-template pTemplate="colgroup" let-columns>
             <colgroup>
-              <col *ngFor="let col of columns" [style.width]="col.width" />
+              <col *ngFor="let col of columns" />
             </colgroup>
           </ng-template>
           
           <!-- Column Headers -->
           <ng-template pTemplate="header" let-columns>
             <tr>
-              <th *ngFor="let col of columns">
+              <th *ngFor="let col of columns" ttResizableColumn>
                 <div class="flex items-center font-semibold text-gray-700">
                   {{ col.header }}
                 </div>

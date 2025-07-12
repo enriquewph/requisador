@@ -48,6 +48,34 @@
   font-weight: 500;
 }
 
+/* Make column resize handles more visible and easier to grab */
+::ng-deep .p-treetable .p-treetable-thead > tr > th .p-column-resizer {
+  width: 6px !important;
+  background-color: transparent !important;
+  border: none !important;
+  cursor: col-resize !important;
+  opacity: 0.7;
+}
+
+::ng-deep .p-treetable .p-treetable-thead > tr > th .p-column-resizer:hover {
+  background-color: rgba(59, 130, 246, 0.3) !important;
+  opacity: 1;
+  width: 8px !important;
+}
+
+::ng-deep .p-treetable .p-treetable-thead > tr > th {
+  position: relative;
+}
+
+/* Add subtle border between columns for better visual separation */
+::ng-deep .p-treetable .p-treetable-thead > tr > th {
+  border-right: 1px solid #e5e7eb;
+}
+
+::ng-deep .p-treetable .p-treetable-thead > tr > th:last-child {
+  border-right: none;
+}
+
 .component-tag {
   background-color: #e0e7ff;
   color: #3730a3;
