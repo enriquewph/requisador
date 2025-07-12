@@ -1,14 +1,75 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="utf-8">
-  <title>Default</title>
+  <title>Requisador de Requisitos - Gestión de Requisitos de Ingeniería</title>
   <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <!-- Viewport -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Aplicación web profesional para la gestión de requisitos de sistemas de ingeniería siguiendo metodología Systems Engineering Handbook">
+  <meta name="keywords" content="requisitos, ingeniería, sistemas, UTN, Angular, TypeScript, SQLite">
+  <meta name="author" content="Enrique - enriquewph">
+  <meta name="robots" content="index, follow">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://enriquewph.com.ar/requisador/">
+  <meta property="og:title" content="Requisador de Requisitos">
+  <meta property="og:description" content="Aplicación web profesional para la gestión de requisitos de sistemas de ingeniería">
+  <meta property="og:image" content="https://enriquewph.com.ar/requisador/assets/logo.svg">
+  <meta property="og:locale" content="es_ES">
+  
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://enriquewph.com.ar/requisador/">
+  <meta property="twitter:title" content="Requisador de Requisitos">
+  <meta property="twitter:description" content="Aplicación web profesional para la gestión de requisitos de sistemas de ingeniería">
+  <meta property="twitter:image" content="https://enriquewph.com.ar/requisador/assets/logo.svg">
+  
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#605DC8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Requisador">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="Requisador">
+  
+  <!-- Favicon -->
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/png" sizes="96x96" href="assets/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/icons/favicon-96x96.png">
+  
+  <!-- Apple Touch Icons -->
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="assets/icons/web-app-manifest-192x192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="assets/icons/web-app-manifest-512x512.png">
+  
+  <!-- Web App Manifest -->
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
 </head>
 <body>
   <app-root></app-root>
+  
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js')
+          .then(function(registration) {
+            console.log('SW registered: ', registration);
+          }, function(registrationError) {
+            console.log('SW registration failed: ', registrationError);
+          });
+      });
+    }
+  </script>
 </body>
 </html>

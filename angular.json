@@ -53,6 +53,10 @@
             "assets": [
               "src/favicon.ico", 
               "src/assets",
+              "src/manifest.json",
+              "src/robots.txt",
+              "src/sitemap.xml",
+              "src/sw.js",
               {
                 "glob": "**/*",
                 "input": "node_modules/sql.js/dist/",
