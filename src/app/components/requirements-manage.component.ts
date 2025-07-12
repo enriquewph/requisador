@@ -2,7 +2,8 @@ import { Component, signal, OnInit, inject } from '@angular/core';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TreeTableModule } from 'primeng/treetable';
-import { TreeNode } from 'primeng/api';
+import { ContextMenuModule } from 'primeng/contextmenu';
+import { TreeNode, MenuItem } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { TooltipModule } from 'primeng/tooltip';
@@ -33,6 +34,7 @@ interface RequirementTreeNode extends TreeNode {
   imports: [
     CommonModule,
     TreeTableModule,
+    ContextMenuModule,
     ButtonModule,
     InputTextModule,
     TooltipModule
@@ -46,7 +48,53 @@ export class RequirementsManageComponent implements OnInit {
   
   requirements = signal<RequirementTreeNode[]>([]);
   selectedRequirement = signal<RequirementTreeNode | null>(null);
+  selectedContextNode: RequirementTreeNode | null = null;
   activeSubTab = signal<'tree' | 'list' | 'reports'>('tree');
+  
+  contextMenuItems: MenuItem[] = [
+    {
+      label: 'Ver Detalles',
+      icon: 'pi pi-eye',
+      command: () => this.contextMenuView()
+    },
+    {
+      label: 'Editar',
+      icon: 'pi pi-pencil',
+      command: () => this.contextMenuEdit()
+    },
+    {
+      separator: true
+    },
+    {
+      label: 'Hacer Hijo',
+      icon: 'pi pi-arrow-down',
+      command: () => this.contextMenuMakeChild(),
+      tooltip: 'Convertir en hijo del requisito superior'
+    },
+    {
+      label: 'Hacer Padre',
+      icon: 'pi pi-arrow-up',
+      command: () => this.contextMenuMakeParent(),
+      tooltip: 'Convertir en padre del requisito inferior'
+    },
+    {
+      separator: true
+    },
+    {
+      label: 'Agregar Hijo',
+      icon: 'pi pi-plus',
+      command: () => this.contextMenuAddChild()
+    },
+    {
+      separator: true
+    },
+    {
+      label: 'Eliminar',
+      icon: 'pi pi-trash',
+      styleClass: 'text-red-600',
+      command: () => this.contextMenuDelete()
+    }
+  ];
   
   cols = [
     { field: 'textualId', header: 'ID', width: '120px' },
@@ -349,6 +397,57 @@ export class RequirementsManageComponent implements OnInit {
     if (confirm(`¿Está seguro de eliminar el requisito ${requirement.textualId}?`)) {
       console.log('Delete requirement:', requirement);
       // TODO: Implement delete functionality
+    }
+  }
+
+  // Context Menu Methods
+  contextMenuView() {
+    const selected = this.selectedContextNode;
+    if (selected) {
+      console.log('Context menu: Ver detalles', selected.data);
+      // TODO: Open modal with requirement-detail component
+    }
+  }
+
+  contextMenuEdit() {
+    const selected = this.selectedContextNode;
+    if (selected) {
+      console.log('Context menu: Editar', selected.data);
+      // TODO: Open modal with requirement-edit component
+    }
+  }
+
+  contextMenuMakeChild() {
+    const selected = this.selectedContextNode;
+    if (selected) {
+      console.log('Context menu: Hacer hijo', selected.data);
+      // TODO: Move requirement down in hierarchy (make it a child of the next requirement up)
+    }
+  }
+
+  contextMenuMakeParent() {
+    const selected = this.selectedContextNode;
+    if (selected) {
+      console.log('Context menu: Hacer padre', selected.data);
+      // TODO: Move requirement up in hierarchy (make it a parent of the next requirement down)
+    }
+  }
+
+  contextMenuAddChild() {
+    const selected = this.selectedContextNode;
+    if (selected) {
+      console.log('Context menu: Agregar hijo', selected.data);
+      // TODO: Open create modal with this requirement as parent
+    }
+  }
+
+  contextMenuDelete() {
+    const selected = this.selectedContextNode;
+    if (selected) {
+      if (confirm(`¿Está seguro de eliminar el requisito ${selected.data.textualId}?`)) {
+        console.log('Context menu: Eliminar', selected.data);
+        // TODO: Implement delete functionality with cascade handling
+      }
     }
   }
 }

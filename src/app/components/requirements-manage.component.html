@@ -112,6 +112,8 @@
           columnResizeMode="expand"
           [globalFilterFields]="['textualId', 'behavior', 'condition', 'component', 'mode', 'function', 'variable', 'justification']"
           styleClass="p-treetable-sm"
+          [(contextMenuSelection)]="selectedContextNode"
+          [contextMenu]="cm"
           #tt>
           
           <!-- Column Group for width control -->
@@ -134,7 +136,7 @@
 
           <!-- Row Content -->
           <ng-template pTemplate="body" let-rowNode let-rowData="rowData" let-columns="columns">
-            <tr [ttRow]="rowNode">
+            <tr [ttRow]="rowNode" [ttContextMenuRow]="rowNode">
               <td *ngFor="let col of columns; let i = index" class="text-sm">
                 <p-treeTableToggler [rowNode]="rowNode" *ngIf="i === 0"></p-treeTableToggler>
                 <span 
@@ -165,6 +167,9 @@
             </tr>
           </ng-template>
         </p-treeTable>
+
+        <!-- Context Menu -->
+        <p-contextMenu #cm [model]="contextMenuItems"></p-contextMenu>
         </div>
       }
       @case ('list') {
