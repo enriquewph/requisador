@@ -202,4 +202,34 @@
       }
     }
   </div>
+
+  <!-- View Requirement Modal -->
+  <p-dialog 
+    [header]="'Detalles del Requisito ' + viewRequirementId()"
+    [(visible)]="showViewModal"
+    [modal]="true"
+    [closable]="true"
+    [resizable]="false"
+    [draggable]="false"
+    styleClass="w-11/12 max-w-6xl"
+    [style]="{ 'max-height': '90vh' }"
+    [contentStyle]="{ 'overflow-y': 'auto', 'max-height': 'calc(90vh - 120px)' }">
+    
+    @if (viewRequirementData(); as requirement) {
+      <app-requirement-detail 
+        [requirement]="requirement"
+        [requirementId]="viewRequirementId()"
+        [showTechnicalDetails]="true">
+      </app-requirement-detail>
+    }
+    
+    <ng-template pTemplate="footer">
+      <button 
+        type="button"
+        class="px-4 py-2 bg-gray-100 text-gray-700 border border-gray-300 rounded-lg transition-all duration-200 hover:bg-gray-200 hover:border-gray-400"
+        (click)="showViewModal.set(false)">
+        Cerrar
+      </button>
+    </ng-template>
+  </p-dialog>
 </div>

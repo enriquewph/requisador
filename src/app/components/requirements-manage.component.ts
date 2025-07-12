@@ -3,12 +3,14 @@ import { ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TreeTableModule } from 'primeng/treetable';
 import { ContextMenuModule } from 'primeng/contextmenu';
+import { DialogModule } from 'primeng/dialog';
 import { TreeNode, MenuItem } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { TooltipModule } from 'primeng/tooltip';
 import { DatabaseService } from '../services/database.service';
 import { Requirement } from '../services/database/interfaces';
+import { RequirementDetailComponent } from './requirement-detail.component';
 
 interface RequirementTreeNode extends TreeNode {
   data: {
@@ -35,9 +37,11 @@ interface RequirementTreeNode extends TreeNode {
     CommonModule,
     TreeTableModule,
     ContextMenuModule,
+    DialogModule,
     ButtonModule,
     InputTextModule,
-    TooltipModule
+    TooltipModule,
+    RequirementDetailComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './requirements-manage.component.html',
@@ -50,6 +54,11 @@ export class RequirementsManageComponent implements OnInit {
   selectedRequirement = signal<RequirementTreeNode | null>(null);
   selectedContextNode: RequirementTreeNode | null = null;
   activeSubTab = signal<'tree' | 'list' | 'reports'>('tree');
+  
+  // Modal states
+  showViewModal = signal<boolean>(false);
+  viewRequirementData = signal<Requirement | null>(null);
+  viewRequirementId = signal<string>('');
   
   contextMenuItems: MenuItem[] = [
     {
@@ -374,8 +383,14 @@ export class RequirementsManageComponent implements OnInit {
   contextMenuView() {
     const selected = this.selectedContextNode;
     if (selected) {
-      console.log('Context menu: Ver detalles', selected.data);
-      // TODO: Open modal with requirement-detail component
+      // Get the full requirement data from database
+      const requirement = this.databaseService.requirements.getById(selected.data.id);
+      if (requirement) {
+        this.viewRequirementData.set(requirement);
+        this.viewRequirementId.set(selected.data.textualId);
+        this.showViewModal.set(true);
+        console.log('Opening view modal for requirement:', selected.data.textualId);
+      }
     }
   }
 
