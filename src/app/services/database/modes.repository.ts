@@ -2,7 +2,10 @@ import { Database } from 'sql.js';
 import { Mode, ModeComponent } from './interfaces';
 
 export class ModesRepository {
-  constructor(private db: Database | null) {}
+  constructor(
+    private db: Database | null,
+    private saveCallback?: () => void
+  ) {}
 
   getAll(): Mode[] {
     if (!this.db) return [];
@@ -21,6 +24,7 @@ export class ModesRepository {
     stmt.run([mode.name, mode.description, mode.order_index]);
     const result = this.db.exec('SELECT last_insert_rowid()')[0];
     stmt.free();
+    this.saveCallback?.(); // Save to localStorage after write operation
     return result.values[0][0] as number;
   }
 
@@ -30,6 +34,7 @@ export class ModesRepository {
     stmt.run([mode.name, mode.description, mode.order_index, id]);
     const changes = this.db.getRowsModified();
     stmt.free();
+    this.saveCallback?.(); // Save to localStorage after write operation
     return changes > 0;
   }
 
@@ -39,6 +44,7 @@ export class ModesRepository {
     stmt.run([id]);
     const changes = this.db.getRowsModified();
     stmt.free();
+    this.saveCallback?.(); // Save to localStorage after write operation
     return changes > 0;
   }
 
@@ -60,6 +66,7 @@ export class ModesRepository {
       const stmt = this.db.prepare('INSERT INTO mode_components (mode_id, component_id) VALUES (?, ?)');
       stmt.run([modeId, componentId]);
       stmt.free();
+      this.saveCallback?.(); // Save to localStorage after write operation
       return true;
     } catch (error) {
       console.error('Error adding mode-component association:', error);
@@ -73,6 +80,7 @@ export class ModesRepository {
     stmt.run([modeId, componentId]);
     const changes = this.db.getRowsModified();
     stmt.free();
+    this.saveCallback?.(); // Save to localStorage after write operation
     return changes > 0;
   }
 

@@ -31,6 +31,7 @@ export type {
 export class DatabaseService {
   private db: Database | null = null;
   private isInitialized = signal(false);
+  private readonly STORAGE_KEY = 'requisador_database';
 
   // Repository instances
   public functions: FunctionsRepository;
@@ -62,6 +63,19 @@ export class DatabaseService {
         locateFile: (file: string) => `/assets/${file}`
       });
       
+      // Try to load from localStorage first
+      const savedData = this.loadFromLocalStorage();
+      if (savedData) {
+        console.log('Loading database from localStorage...');
+        this.db = new SQL.Database(savedData);
+        this.updateRepositoryDatabases();
+        this.isInitialized.set(true);
+        console.log('Database loaded from localStorage successfully');
+        return;
+      }
+
+      // If no saved data, create new database and load initial data
+      console.log('No saved database found, creating new database...');
       this.db = new SQL.Database();
       
       // Update all repositories with the database instance
@@ -70,8 +84,9 @@ export class DatabaseService {
       // Create tables and load initial data
       if (this.schema.createTables()) {
         await this.schema.loadInitialData();
+        this.saveToLocalStorage(); // Save after loading initial data
         this.isInitialized.set(true);
-        console.log('Database initialized successfully');
+        console.log('Database initialized with initial data and saved to localStorage');
       } else {
         throw new Error('Failed to create database tables');
       }
@@ -81,14 +96,16 @@ export class DatabaseService {
   }
 
   private updateRepositoryDatabases(): void {
-    this.functions = new FunctionsRepository(this.db);
-    this.variables = new VariablesRepository(this.db);
-    this.components = new ComponentsRepository(this.db);
-    this.modes = new ModesRepository(this.db);
-    this.latencySpecifications = new LatencySpecificationsRepository(this.db);
-    this.toleranceSpecifications = new ToleranceSpecificationsRepository(this.db);
-    this.requirements = new RequirementsRepository(this.db);
-    this.schema = new SchemaManager(this.db);
+    const saveCallback = () => this.saveToLocalStorage();
+    
+    this.functions = new FunctionsRepository(this.db, saveCallback);
+    this.variables = new VariablesRepository(this.db, saveCallback);
+    this.components = new ComponentsRepository(this.db, saveCallback);
+    this.modes = new ModesRepository(this.db, saveCallback);
+    this.latencySpecifications = new LatencySpecificationsRepository(this.db, saveCallback);
+    this.toleranceSpecifications = new ToleranceSpecificationsRepository(this.db, saveCallback);
+    this.requirements = new RequirementsRepository(this.db, saveCallback);
+    this.schema = new SchemaManager(this.db, saveCallback);
   }
 
   // Utility methods
@@ -103,6 +120,7 @@ export class DatabaseService {
   async resetDatabase(): Promise<void> {
     if (this.schema.clearAllData()) {
       await this.schema.loadInitialData();
+      this.saveToLocalStorage(); // Save after reset
       console.log('Database reset successfully');
     }
   }
@@ -120,12 +138,68 @@ export class DatabaseService {
       
       this.db = new SQL.Database(data);
       this.updateRepositoryDatabases();
+      this.saveToLocalStorage(); // Save after import
       this.isInitialized.set(true);
       console.log('Database imported successfully');
       return true;
     } catch (error) {
       console.error('Failed to import database:', error);
       return false;
+    }
+  }
+
+  // LocalStorage management methods
+  private saveToLocalStorage(): void {
+    try {
+      if (!this.db) return;
+      
+      const data = this.db.export();
+      const base64Data = this.arrayBufferToBase64(data);
+      localStorage.setItem(this.STORAGE_KEY, base64Data);
+      console.log('Database saved to localStorage');
+    } catch (error) {
+      console.error('Failed to save database to localStorage:', error);
+    }
+  }
+
+  private loadFromLocalStorage(): Uint8Array | null {
+    try {
+      const base64Data = localStorage.getItem(this.STORAGE_KEY);
+      if (!base64Data) return null;
+      
+      return this.base64ToArrayBuffer(base64Data);
+    } catch (error) {
+      console.error('Failed to load database from localStorage:', error);
+      return null;
+    }
+  }
+
+  private arrayBufferToBase64(buffer: Uint8Array): string {
+    const binary = Array.from(buffer).map(byte => String.fromCharCode(byte)).join('');
+    return btoa(binary);
+  }
+
+  private base64ToArrayBuffer(base64: string): Uint8Array {
+    const binary = atob(base64);
+    const buffer = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      buffer[i] = binary.charCodeAt(i);
+    }
+    return buffer;
+  }
+
+  // Public method to manually save database (for use by repositories)
+  saveDatabase(): void {
+    this.saveToLocalStorage();
+  }
+
+  // Method to clear localStorage
+  clearStoredDatabase(): void {
+    try {
+      localStorage.removeItem(this.STORAGE_KEY);
+      console.log('Stored database cleared from localStorage');
+    } catch (error) {
+      console.error('Failed to clear stored database:', error);
     }
   }
 }

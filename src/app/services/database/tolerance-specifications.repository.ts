@@ -2,7 +2,10 @@ import { Database } from 'sql.js';
 import { ToleranceSpecification } from './interfaces';
 
 export class ToleranceSpecificationsRepository {
-  constructor(private db: Database | null) {}
+  constructor(
+    private db: Database | null,
+    private saveCallback?: () => void
+  ) {}
 
   getAll(): ToleranceSpecification[] {
     if (!this.db) return [];
@@ -21,6 +24,7 @@ export class ToleranceSpecificationsRepository {
     stmt.run([toleranceSpec.name, toleranceSpec.type, toleranceSpec.value, toleranceSpec.units, toleranceSpec.physical_interpretation, toleranceSpec.justification]);
     const result = this.db.exec('SELECT last_insert_rowid()')[0];
     stmt.free();
+    this.saveCallback?.(); // Save to localStorage after write operation
     return result.values[0][0] as number;
   }
 
@@ -30,6 +34,7 @@ export class ToleranceSpecificationsRepository {
     stmt.run([toleranceSpec.name, toleranceSpec.type, toleranceSpec.value, toleranceSpec.units, toleranceSpec.physical_interpretation, toleranceSpec.justification, id]);
     const changes = this.db.getRowsModified();
     stmt.free();
+    this.saveCallback?.(); // Save to localStorage after write operation
     return changes > 0;
   }
 
@@ -39,6 +44,7 @@ export class ToleranceSpecificationsRepository {
     stmt.run([id]);
     const changes = this.db.getRowsModified();
     stmt.free();
+    this.saveCallback?.(); // Save to localStorage after write operation
     return changes > 0;
   }
 }

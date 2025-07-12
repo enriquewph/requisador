@@ -2,7 +2,10 @@ import { Database } from 'sql.js';
 import { Requirement } from './interfaces';
 
 export class RequirementsRepository {
-  constructor(private db: Database | null) {}
+  constructor(
+    private db: Database | null,
+    private saveCallback?: () => void
+  ) {}
 
   getAll(): Requirement[] {
     if (!this.db) return [];
@@ -145,6 +148,7 @@ export class RequirementsRepository {
         requirement.order_index
       ]);
       stmt.free();
+      this.saveCallback?.(); // Save to localStorage after write operation
       return true;
     } catch (error) {
       stmt.free();
@@ -201,6 +205,7 @@ export class RequirementsRepository {
     stmt.run(values);
     const changes = this.db.getRowsModified();
     stmt.free();
+    this.saveCallback?.(); // Save to localStorage after write operation
     return changes > 0;
   }
 
@@ -216,6 +221,7 @@ export class RequirementsRepository {
       stmt.run([id]);
       const changes = this.db.getRowsModified();
       stmt.free();
+      this.saveCallback?.(); // Save to localStorage after write operation
       return changes > 0;
     } catch (error) {
       console.error('Error deleting requirement:', error);

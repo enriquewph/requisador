@@ -2,7 +2,10 @@ import { Database } from 'sql.js';
 import { InitialData } from './interfaces';
 
 export class SchemaManager {
-  constructor(private db: Database | null) {}
+  constructor(
+    private db: Database | null,
+    private saveCallback?: () => void
+  ) {}
 
   createTables(): boolean {
     if (!this.db) return false;
@@ -256,6 +259,7 @@ export class SchemaManager {
           'functions', 'tolerance_specifications', 'latency_specifications'
         );
       `);
+      this.saveCallback?.(); // Save to localStorage after clearing data
       return true;
     } catch (error) {
       console.error('Error clearing data:', error);
