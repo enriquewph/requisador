@@ -14,7 +14,7 @@
     "crypto": false
   },
   "dependencies": {
-    "@angular/animations": "^20.1.0",
+    "@angular/animations": "^20.1.0-next",
     "@angular/common": "^20.1.0-next",
     "@angular/compiler": "^20.1.0-next",
     "@angular/core": "^20.1.0-next",
