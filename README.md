@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Requisador Logo](src/assets/logo.svg)
+<img src="src/assets/logo.svg" alt="Requisador Logo" width="96" height="96" />
 
 **Una aplicación web profesional para la gestión de requisitos de sistemas de ingeniería**
 
@@ -47,7 +47,7 @@
 | Frontend | Database | Styling | Build & Deploy |
 |----------|----------|---------|----------------|
 | ![Angular](https://img.shields.io/badge/Angular-20+-DD0031?logo=angular&logoColor=white) | ![SQLite](https://img.shields.io/badge/SQLite-003B57?logo=sqlite&logoColor=white) | ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-06B6D4?logo=tailwindcss&logoColor=white) | ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?logo=github-actions&logoColor=white) |
-| ![TypeScript](https://img.shields.io/badge/TypeScript-5.8+-3178C6?logo=typescript&logoColor=white) | ![sql.js](https://img.shields.io/badge/sql.js-1.13.0-orange) | ![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white) | ![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=node.js&logoColor=white) |
+| ![TypeScript](https://img.shields.io/badge/TypeScript-5.8+-3178C6?logo=typescript&logoColor=white) | ![sql.js](https://img.shields.io/badge/sql.js-1.13.0-orange) | ![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white) | ![Node.js](https://img.shields.io/badge/Node.js-22+-339933?logo=node.js&logoColor=white) |
 
 </div>
 
