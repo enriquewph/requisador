@@ -108,6 +108,7 @@
           [scrollable]="true" 
           scrollHeight="500px"
           [resizableColumns]="true"
+          [reorderableColumns]="true"
           columnResizeMode="expand"
           [globalFilterFields]="['textualId', 'behavior', 'condition', 'component', 'mode', 'function', 'variable', 'justification']"
           styleClass="p-treetable-sm"
@@ -123,7 +124,7 @@
           <!-- Column Headers -->
           <ng-template pTemplate="header" let-columns>
             <tr>
-              <th *ngFor="let col of columns" ttResizableColumn>
+              <th *ngFor="let col of columns" ttResizableColumn ttReorderableColumn>
                 <div class="flex items-center font-semibold text-gray-700">
                   {{ col.header }}
                 </div>
