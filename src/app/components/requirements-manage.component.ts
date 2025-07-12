@@ -66,29 +66,6 @@ export class RequirementsManageComponent implements OnInit {
       separator: true
     },
     {
-      label: 'Hacer Hijo',
-      icon: 'pi pi-arrow-down',
-      command: () => this.contextMenuMakeChild(),
-      tooltip: 'Convertir en hijo del requisito superior'
-    },
-    {
-      label: 'Hacer Padre',
-      icon: 'pi pi-arrow-up',
-      command: () => this.contextMenuMakeParent(),
-      tooltip: 'Convertir en padre del requisito inferior'
-    },
-    {
-      separator: true
-    },
-    {
-      label: 'Agregar Hijo',
-      icon: 'pi pi-plus',
-      command: () => this.contextMenuAddChild()
-    },
-    {
-      separator: true
-    },
-    {
       label: 'Eliminar',
       icon: 'pi pi-trash',
       styleClass: 'text-red-600',
@@ -393,13 +370,6 @@ export class RequirementsManageComponent implements OnInit {
     return baseClasses.join(' ');
   }
 
-  deleteRequirement(requirement: any) {
-    if (confirm(`¿Está seguro de eliminar el requisito ${requirement.textualId}?`)) {
-      console.log('Delete requirement:', requirement);
-      // TODO: Implement delete functionality
-    }
-  }
-
   // Context Menu Methods
   contextMenuView() {
     const selected = this.selectedContextNode;
@@ -417,37 +387,46 @@ export class RequirementsManageComponent implements OnInit {
     }
   }
 
-  contextMenuMakeChild() {
+  async contextMenuDelete() {
     const selected = this.selectedContextNode;
-    if (selected) {
-      console.log('Context menu: Hacer hijo', selected.data);
-      // TODO: Move requirement down in hierarchy (make it a child of the next requirement up)
-    }
-  }
+    if (!selected) return;
 
-  contextMenuMakeParent() {
-    const selected = this.selectedContextNode;
-    if (selected) {
-      console.log('Context menu: Hacer padre', selected.data);
-      // TODO: Move requirement up in hierarchy (make it a parent of the next requirement down)
-    }
-  }
+    const hasChildren = selected.children && selected.children.length > 0;
+    const confirmMessage = hasChildren 
+      ? `¿Está seguro de eliminar el requisito ${selected.data.textualId} y todos sus hijos (${this.countNodes([selected]) - 1} requisitos)?`
+      : `¿Está seguro de eliminar el requisito ${selected.data.textualId}?`;
 
-  contextMenuAddChild() {
-    const selected = this.selectedContextNode;
-    if (selected) {
-      console.log('Context menu: Agregar hijo', selected.data);
-      // TODO: Open create modal with this requirement as parent
-    }
-  }
+    if (confirm(confirmMessage)) {
+      try {
+        // Collect all IDs to delete (requirement and all its children)
+        const idsToDelete: number[] = [];
+        this.collectNodeIds([selected], idsToDelete);
 
-  contextMenuDelete() {
-    const selected = this.selectedContextNode;
-    if (selected) {
-      if (confirm(`¿Está seguro de eliminar el requisito ${selected.data.textualId}?`)) {
-        console.log('Context menu: Eliminar', selected.data);
-        // TODO: Implement delete functionality with cascade handling
+        // Delete from database
+        for (const id of idsToDelete) {
+          this.databaseService.requirements.delete(id);
+        }
+
+        // Reload the tree
+        await this.loadRequirements();
+        
+        console.log(`Deleted ${idsToDelete.length} requirement(s):`, idsToDelete);
+      } catch (error) {
+        console.error('Error deleting requirement:', error);
+        alert('Error al eliminar el requisito. Por favor, inténtelo de nuevo.');
       }
     }
+  }
+
+  /**
+   * Recursively collect all node IDs in a subtree
+   */
+  private collectNodeIds(nodes: RequirementTreeNode[], ids: number[]): void {
+    nodes.forEach(node => {
+      ids.push(node.data.id);
+      if (node.children && node.children.length > 0) {
+        this.collectNodeIds(node.children, ids);
+      }
+    });
   }
 }
