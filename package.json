@@ -1,6 +1,6 @@
 {
-  "name": "angular.dev",
-  "version": "0.0.0",
+  "name": "requisador",
+  "version": "2.0.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -8,6 +8,11 @@
     "watch": "ng build --watch --configuration development"
   },
   "private": true,
+  "browser": {
+    "fs": false,
+    "path": false,
+    "crypto": false
+  },
   "dependencies": {
     "@angular/animations": "^20.1.0",
     "@angular/common": "^20.1.0-next",

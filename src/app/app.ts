@@ -130,7 +130,7 @@ import { RequirementsManageComponent } from './components/requirements-manage.co
               </a>
             </p>
             <p class="text-xs text-gray-500 mt-1">
-              UTN FRC 2025 - para los Gladiadores Electrónicos
+              UTN FRC 2025 - para los Gladiadores Electrónicos | v2.0.0
             </p>
             <p class="text-xs text-gray-500">
               Requisador de Requisitos siguiendo metodología del Systems Engineering Handbook
@@ -176,6 +176,7 @@ import { RequirementsManageComponent } from './components/requirements-manage.co
                   <li>• Estructura jerárquica de requisitos</li>
                   <li>• Exportación en múltiples formatos</li>
                   <li>• Base de datos SQLite local</li>
+                  <li class="text-green-600 font-medium">• ✨ v2.0.0: Persistencia en localStorage</li>
                 </ul>
               </div>
             </div>
@@ -232,7 +233,7 @@ import { RequirementsManageComponent } from './components/requirements-manage.co
                 </div>
                 <div>
                   <p class="font-medium text-gray-900">Versión:</p>
-                  <p class="text-gray-600">1.0.0 - Enero 2025</p>
+                  <p class="text-gray-600">2.0.0 - Enero 2025</p>
                 </div>
               </div>
             </div>
