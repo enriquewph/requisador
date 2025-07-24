@@ -125,6 +125,12 @@
   ],
   "modes": [
     {
+      "id": 0,
+      "name": "Genérico",
+      "description": "Modo genérico usado para requisitos padre que aplican a múltiples modos",
+      "order_index": 0
+    },
+    {
       "id": 1,
       "name": "Normal",
       "description": "Standard operating mode",
@@ -144,6 +150,9 @@
     }
   ],
   "mode_components": [
+    { "mode_id": 0, "component_id": 1 },
+    { "mode_id": 0, "component_id": 2 },
+    { "mode_id": 0, "component_id": 3 },
     { "mode_id": 1, "component_id": 1 },
     { "mode_id": 1, "component_id": 2 },
     { "mode_id": 1, "component_id": 3 },

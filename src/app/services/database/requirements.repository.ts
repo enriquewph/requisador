@@ -124,8 +124,8 @@ export class RequirementsRepository {
     }
   }
 
-  add(requirement: Omit<Requirement, 'id' | 'created_at' | 'updated_at'>): boolean {
-    if (!this.db) return false;
+  add(requirement: Omit<Requirement, 'id' | 'created_at' | 'updated_at'>): number | null {
+    if (!this.db) return null;
     
     const stmt = this.db.prepare(`
       INSERT INTO requirements (
@@ -147,13 +147,20 @@ export class RequirementsRepository {
         requirement.level,
         requirement.order_index
       ]);
+      
+      // Get the last inserted row ID
+      const lastIdStmt = this.db.prepare('SELECT last_insert_rowid() as id');
+      lastIdStmt.step();
+      const insertedId = lastIdStmt.getAsObject()['id'] as number;
+      lastIdStmt.free();
       stmt.free();
+      
       this.saveCallback?.(); // Save to localStorage after write operation
-      return true;
+      return insertedId;
     } catch (error) {
       stmt.free();
       console.error('Error adding requirement:', error);
-      return false;
+      return null;
     }
   }
 

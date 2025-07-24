@@ -31,6 +31,9 @@ interface RequirementDraft {
 export class RequirementsCreatorComponent implements OnInit {
   private db = inject(DatabaseService);
   
+  // Constants
+  private readonly GENERIC_MODE_ID = 0; // ID del modo genérico para requisitos padre
+  
   // State signals
   functions = signal<Function[]>([]);
   variables = signal<Variable[]>([]);
@@ -40,6 +43,9 @@ export class RequirementsCreatorComponent implements OnInit {
   modes = signal<Mode[]>([]);
   modeComponents = signal<{mode_id: number, component_id: number}[]>([]);
   existingRequirements = signal<Requirement[]>([]);
+  
+  // Multi-selection signal (only for modes, component is single selection)
+  selectedModes = signal<number[]>([]);
   
   currentStep = signal(1);
   isCreating = signal(false);
@@ -197,7 +203,8 @@ export class RequirementsCreatorComponent implements OnInit {
       case 2:
         return true; // Parent is optional
       case 3:
-        return !!(this.requirementDraft.component_id && this.requirementDraft.mode_id);
+        // Always use single component + multiple modes
+        return !!(this.requirementDraft.component_id && this.selectedModes().length > 0);
       case 4:
         return !!this.requirementDraft.behavior.trim();
       case 5:
@@ -212,7 +219,7 @@ export class RequirementsCreatorComponent implements OnInit {
       this.requirementDraft.function_id &&
       this.requirementDraft.variable_id &&
       this.requirementDraft.component_id &&
-      this.requirementDraft.mode_id &&
+      this.selectedModes().length > 0 &&
       this.requirementDraft.behavior.trim()
     );
   }
@@ -226,6 +233,56 @@ export class RequirementsCreatorComponent implements OnInit {
     return this.modes().filter(mode => 
       mode.id && associatedModeIds.includes(mode.id)
     );
+  }
+
+  getModesForMultipleComponents(componentIds: number[]): Mode[] {
+    if (componentIds.length === 0) return [];
+    
+    // Get mode IDs that are associated with ALL selected components
+    const modeIdSets = componentIds.map(componentId => {
+      const associatedModeIds = this.modeComponents()
+        .filter(mc => mc.component_id === componentId)
+        .map(mc => mc.mode_id);
+      return new Set(associatedModeIds);
+    });
+    
+    // Find intersection of all mode ID sets
+    const commonModeIds = modeIdSets.reduce((intersection, currentSet) => {
+      return new Set([...intersection].filter(id => currentSet.has(id)));
+    });
+    
+    return this.modes().filter(mode => 
+      mode.id && commonModeIds.has(mode.id)
+    );
+  }
+
+  // Multi-selection methods (only for modes, component is single selection)
+  toggleModeSelection(modeId: number) {
+    const current = this.selectedModes();
+    const index = current.indexOf(modeId);
+    if (index > -1) {
+      // Remove mode
+      const updated = [...current];
+      updated.splice(index, 1);
+      this.selectedModes.set(updated);
+    } else {
+      // Add mode
+      this.selectedModes.set([...current, modeId]);
+    }
+  }
+
+  isModeSelected(modeId: number): boolean {
+    return this.selectedModes().includes(modeId);
+  }
+
+  // Get available modes for selected components
+  getAvailableModesForSelectedComponents(): Mode[] {
+    if (!this.requirementDraft.component_id) {
+      return [];
+    }
+
+    // Get modes that are associated with the selected component
+    return this.getModesForComponent(this.requirementDraft.component_id!);
   }
 
   addBehaviorSuggestion(suggestion: string) {
@@ -256,27 +313,92 @@ export class RequirementsCreatorComponent implements OnInit {
   getPreviewRequirementText(): string {
     const component = this.getSelectedComponent();
     const variable = this.getSelectedVariable();
-    const mode = this.getSelectedMode();
     const behavior = this.requirementDraft.behavior;
+    const selectedModeCount = this.selectedModes().length;
 
-    if (!component || !variable || !mode || !behavior) {
+    if (!component || !variable || !behavior || selectedModeCount === 0) {
       return 'Completa todos los campos para ver la vista previa...';
     }
 
-    return `El ${component.name} deberá ${behavior} ${variable.name} cuando el sistema esté en modo ${mode.name}`;
+    if (selectedModeCount === 1) {
+      const mode = this.modes().find(m => m.id === this.selectedModes()[0]);
+      return `El ${component.name} deberá ${behavior} ${variable.name} cuando el sistema esté en modo ${mode?.name}`;
+    } else {
+      return `Se crearán ${selectedModeCount + 1} requisitos: 1 padre genérico + ${selectedModeCount} hijos (uno por cada modo seleccionado)`;
+    }
   }
 
   getPreviewRequirementId(): string {
-    if (this.requirementDraft.parent_id) {
-      const parent = this.existingRequirements().find(r => r.id === this.requirementDraft.parent_id);
-      if (parent) {
-        const parentId = this.db.requirements.generateRequirementId(parent);
-        const nextChildIndex = this.db.requirements.getNextRequirementOrderIndex(this.requirementDraft.parent_id);
-        return `${parentId}-${nextChildIndex}`;
+    const selectedModeCount = this.selectedModes().length;
+    
+    if (selectedModeCount === 1) {
+      // Single mode - show normal ID
+      if (this.requirementDraft.parent_id) {
+        const parent = this.existingRequirements().find(r => r.id === this.requirementDraft.parent_id);
+        if (parent) {
+          const parentId = this.db.requirements.generateRequirementId(parent);
+          const nextChildIndex = this.db.requirements.getNextRequirementOrderIndex(this.requirementDraft.parent_id);
+          return `${parentId}-${nextChildIndex}`;
+        }
       }
+      const nextTopIndex = this.db.requirements.getNextRequirementOrderIndex(null);
+      return `R${nextTopIndex}`;
+    } else {
+      // Multiple modes - show range
+      return 'Se generarán IDs automáticamente según la jerarquía';
     }
-    const nextTopIndex = this.db.requirements.getNextRequirementOrderIndex(null);
-    return `R${nextTopIndex}`;
+  }
+
+  // Get preview information for multiple creation
+  getMultipleCreationPreview(): { componentName: string, modes: string[] }[] {
+    if (!this.requirementDraft.component_id) return [];
+    
+    const component = this.components().find(c => c.id === this.requirementDraft.component_id);
+    const selectedModeNames = this.selectedModes()
+      .map(modeId => this.modes().find(m => m.id === modeId)?.name)
+      .filter(name => name) as string[];
+    
+    return [{
+      componentName: component?.name || 'Componente desconocido',
+      modes: selectedModeNames
+    }];
+  }
+
+  getMultipleRequirementsCount(): number {
+    if (!this.requirementDraft.component_id || this.selectedModes().length === 0) return 0;
+    
+    // Create 1 parent + N children (one per mode)
+    return 1 + this.selectedModes().length;
+  }
+
+  getMultipleRequirementsPreview(): { id: string, text: string }[] {
+    if (!this.requirementDraft.component_id || this.selectedModes().length === 0) return [];
+    
+    const previews: { id: string, text: string }[] = [];
+    const variable = this.variables().find(v => v.id === this.requirementDraft.variable_id);
+    const component = this.components().find(c => c.id === this.requirementDraft.component_id);
+    
+    if (!variable || !component) return [];
+
+    // Parent requirement ID and text
+    const parentId = this.requirementDraft.parent_id 
+      ? `${this.getParentRequirementId()}-0`
+      : `R0`;
+    
+    const parentText = `El ${component.name} deberá ${this.requirementDraft.behavior} ${variable.name}`;
+    previews.push({ id: parentId, text: parentText });
+    
+    // Child requirements for each selected mode
+    this.selectedModes().forEach((modeId, index) => {
+      const mode = this.modes().find(m => m.id === modeId);
+      if (mode) {
+        const childId = `${parentId}-${index}`;
+        const childText = `El ${component.name} deberá ${this.requirementDraft.behavior} ${variable.name} cuando el sistema esté en modo ${mode.name}`;
+        previews.push({ id: childId, text: childText });
+      }
+    });
+    
+    return previews;
   }
 
   getParentRequirementId(): string {
@@ -298,7 +420,12 @@ export class RequirementsCreatorComponent implements OnInit {
       return 'Error: Datos incompletos';
     }
 
-    return `El ${component.name} deberá ${requirement.behavior} ${variable.name} cuando el sistema esté en modo ${mode.name}`;
+    // Handle generic mode (parent requirement) differently
+    if (requirement.mode_id === this.GENERIC_MODE_ID) {
+      return `El ${component.name} deberá ${requirement.behavior} ${variable.name}`;
+    } else {
+      return `El ${component.name} deberá ${requirement.behavior} ${variable.name} cuando el sistema esté en modo ${mode.name}`;
+    }
   }
 
   getSelectedVariableLatency(): LatencySpecification | null {
@@ -313,36 +440,123 @@ export class RequirementsCreatorComponent implements OnInit {
 
     this.isCreating.set(true);
     try {
-      // Determine level and order index
-      const level = this.requirementDraft.parent_id ? 2 : 1;
-      const orderIndex = this.db.requirements.getNextRequirementOrderIndex(this.requirementDraft.parent_id);
+      if (this.selectedModes().length === 1) {
+        // Single mode - create one requirement
+        await this.createSingleRequirement();
+      } else {
+        // Multiple modes - create parent + children
+        await this.createMultipleRequirements();
+      }
+    } catch (error) {
+      this.showStatus('Error al crear requisito(s): ' + error, 'error');
+    } finally {
+      this.isCreating.set(false);
+    }
+  }
 
-      const newRequirement: Omit<Requirement, 'id'> = {
+  private async createSingleRequirement() {
+    // Determine level and order index
+    const level = this.requirementDraft.parent_id ? 2 : 1;
+    const orderIndex = this.db.requirements.getNextRequirementOrderIndex(this.requirementDraft.parent_id);
+
+    const newRequirement: Omit<Requirement, 'id'> = {
+      function_id: this.requirementDraft.function_id!,
+      variable_id: this.requirementDraft.variable_id!,
+      component_id: this.requirementDraft.component_id!,
+      mode_id: this.selectedModes()[0], // Use first selected mode
+      parent_id: this.requirementDraft.parent_id || undefined,
+      behavior: this.requirementDraft.behavior.trim(),
+      condition: this.requirementDraft.condition.trim() || undefined,
+      justification: this.requirementDraft.justification.trim() || undefined,
+      level: level,
+      order_index: orderIndex
+    };
+
+    const insertedId = this.db.requirements.add(newRequirement);
+    
+    if (insertedId) {
+      this.showStatus('Requisito creado exitosamente', 'success');
+      await this.loadAllData();
+      this.resetWizard();
+    } else {
+      throw new Error('Error al insertar en la base de datos');
+    }
+  }
+
+  private async createMultipleRequirements() {
+    let createdCount = 0;
+    const errors: string[] = [];
+
+    try {
+      // Create parent requirement (using generic mode)
+      const parentOrderIndex = this.db.requirements.getNextRequirementOrderIndex(this.requirementDraft.parent_id);
+      
+      const parentRequirement: Omit<Requirement, 'id'> = {
         function_id: this.requirementDraft.function_id!,
         variable_id: this.requirementDraft.variable_id!,
         component_id: this.requirementDraft.component_id!,
-        mode_id: this.requirementDraft.mode_id!,
+        mode_id: this.GENERIC_MODE_ID, // Use generic mode for parent requirement
         parent_id: this.requirementDraft.parent_id || undefined,
         behavior: this.requirementDraft.behavior.trim(),
         condition: this.requirementDraft.condition.trim() || undefined,
         justification: this.requirementDraft.justification.trim() || undefined,
-        level: level,
-        order_index: orderIndex
+        level: this.requirementDraft.parent_id ? 2 : 1,
+        order_index: parentOrderIndex
       };
 
-      const success = this.db.requirements.add(newRequirement);
-      
-      if (success) {
-        this.showStatus('Requisito creado exitosamente', 'success');
-        await this.loadAllData(); // Refresh data
-        this.resetWizard();
+      const parentId = this.db.requirements.add(parentRequirement);
+      if (parentId) {
+        createdCount++;
+
+        // Create child requirements (one per selected mode)
+        for (const modeId of this.selectedModes()) {
+          try {
+            const childOrderIndex = this.db.requirements.getNextRequirementOrderIndex(parentId);
+            
+            const childRequirement: Omit<Requirement, 'id'> = {
+              function_id: this.requirementDraft.function_id!,
+              variable_id: this.requirementDraft.variable_id!,
+              component_id: this.requirementDraft.component_id!,
+              mode_id: modeId,
+              parent_id: parentId,
+              behavior: this.requirementDraft.behavior.trim(),
+              condition: this.requirementDraft.condition.trim() || undefined,
+              justification: this.requirementDraft.justification.trim() || undefined,
+              level: (this.requirementDraft.parent_id ? 2 : 1) + 1, // One level deeper than parent
+              order_index: childOrderIndex
+            };
+
+            const childId = this.db.requirements.add(childRequirement);
+            if (childId) {
+              createdCount++;
+            } else {
+              const mode = this.modes().find(m => m.id === modeId);
+              errors.push(`Error creando requisito hijo para modo ${mode?.name || modeId}`);
+            }
+          } catch (error) {
+            const mode = this.modes().find(m => m.id === modeId);
+            errors.push(`Error creando requisito hijo para modo ${mode?.name || modeId}: ${error}`);
+          }
+        }
       } else {
-        throw new Error('Error al insertar en la base de datos');
+        errors.push(`Error creando requisito padre`);
       }
+
+      // Show results
+      if (errors.length > 0) {
+        this.showStatus(`Creados ${createdCount} requisitos con ${errors.length} errores`, 'error');
+        console.error('Errores en creación múltiple:', errors);
+      } else {
+        this.showStatus(`${createdCount} requisitos creados exitosamente (1 padre + ${this.selectedModes().length} hijos)`, 'success');
+      }
+
+      await this.loadAllData();
+      this.resetWizard();
+      this.currentStep.set(1);
+
     } catch (error) {
-      this.showStatus('Error al crear requisito: ' + error, 'error');
-    } finally {
-      this.isCreating.set(false);
+      console.error('Error in createMultipleRequirements:', error);
+      this.showStatus(`Error al crear requisitos: ${error}`, 'error');
     }
   }
 
@@ -359,6 +573,8 @@ export class RequirementsCreatorComponent implements OnInit {
       level: 1,
       justification: ''
     };
+    // Reset mode selection (no longer need component selection)
+    this.selectedModes.set([]);
     this.wizardSteps.forEach(step => step.completed = false);
   }
 

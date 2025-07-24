@@ -339,7 +339,7 @@ import { DatabaseService } from './services/database.service';
   styleUrls: ['./app.css'],
 })
 export class App {
-  title = 'Requisador de Requisitos';
+  title = 'Requisador de Requisitos v2.2.0';
   activeTab = signal<'config' | 'especificaciones' | 'create' | 'manage' | 'export'>('config');
   showAboutModal = signal(false);
   showLoadDefaultConfirm = signal(false);
