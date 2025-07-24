@@ -1,6 +1,7 @@
 import { Component, signal, inject, OnInit, ChangeDetectionStrategy, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DatabaseService, Requirement } from '../services/database.service';
+import { jsPDF } from 'jspdf';
 
 interface ExportData {
   id: string;
@@ -15,6 +16,24 @@ interface ExportData {
   order_index: number;
   created_at: string;
   updated_at: string;
+}
+
+interface RequirementTreeNode {
+  id: string;
+  textualId: string;
+  function_name: string;
+  variable_name: string;
+  component_name: string;
+  mode_name: string;
+  behavior: string;
+  condition: string;
+  justification: string;
+  level: number;
+  order_index: number;
+  created_at: string;
+  updated_at: string;
+  children: RequirementTreeNode[];
+  parent_id?: number;
 }
 
 @Component({
@@ -37,7 +56,7 @@ interface ExportData {
       </div>
 
       <!-- Export Options -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- CSV Export -->
         <div class="border border-gray-200 rounded-lg p-6 hover:border-primary-300 transition-colors">
           <div class="flex items-center space-x-3 mb-4">
@@ -119,6 +138,49 @@ interface ExportData {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
               </svg>
               <span>Descargar JSON</span>
+            }
+          </button>
+        </div>
+
+        <!-- PDF Export -->
+        <div class="border border-gray-200 rounded-lg p-6 hover:border-primary-300 transition-colors">
+          <div class="flex items-center space-x-3 mb-4">
+            <div class="flex-shrink-0">
+              <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-medium text-gray-900">Exportar a PDF</h3>
+              <p class="text-sm text-gray-600">Documento con estructura jerárquica</p>
+            </div>
+          </div>
+          
+          <div class="space-y-3 mb-4">
+            <div class="text-sm text-gray-600">
+              <strong>Incluye:</strong>
+              <ul class="mt-2 space-y-1 text-xs text-gray-500 ml-4">
+                <li>• Vista de árbol desplegado</li>
+                <li>• Indentación visual por nivel</li>
+                <li>• Información completa de requisitos</li>
+                <li>• Formato profesional para reportes</li>
+                <li>• Compatible con impresión</li>
+              </ul>
+            </div>
+          </div>
+
+          <button 
+            (click)="exportToPDF()"
+            [disabled]="isExporting() || totalRequirements() === 0"
+            class="w-full px-4 py-2 bg-red-600 text-white border border-red-600 rounded-lg transition-all duration-200 hover:bg-red-500 hover:border-red-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2">
+            @if (isExporting()) {
+              <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              <span>Exportando...</span>
+            } @else {
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              <span>Descargar PDF</span>
             }
           </button>
         </div>
@@ -280,6 +342,73 @@ export class ExportComponent implements OnInit {
     }));
   }
 
+  private buildRequirementTree(): RequirementTreeNode[] {
+    const requirements = this.requirements();
+    const functions = this.databaseService.functions.getAll();
+    const variables = this.databaseService.variables.getAll();
+    const components = this.databaseService.components.getAll();
+    const modes = this.databaseService.modes.getAll();
+
+    // Create lookup maps
+    const functionMap = new Map(functions.map(f => [f.id!, f.name]));
+    const variableMap = new Map(variables.map(v => [v.id!, v.name]));
+    const componentMap = new Map(components.map(c => [c.id!, c.name]));
+    const modeMap = new Map(modes.map(m => [m.id!, m.name]));
+
+    // Create node map
+    const nodeMap = new Map<number, RequirementTreeNode>();
+    const rootNodes: RequirementTreeNode[] = [];
+
+    // First pass: create all nodes
+    requirements.forEach(req => {
+      const node: RequirementTreeNode = {
+        id: req.id!.toString(),
+        textualId: this.generateRequirementId(req),
+        function_name: functionMap.get(req.function_id) || 'Unknown',
+        variable_name: variableMap.get(req.variable_id) || 'Unknown',
+        component_name: componentMap.get(req.component_id) || 'Unknown',
+        mode_name: modeMap.get(req.mode_id) || 'Unknown',
+        behavior: req.behavior,
+        condition: req.condition || '',
+        justification: req.justification || '',
+        level: req.level,
+        order_index: req.order_index,
+        created_at: this.formatDate(req.created_at || ''),
+        updated_at: this.formatDate(req.updated_at || ''),
+        children: [],
+        parent_id: req.parent_id
+      };
+      nodeMap.set(req.id!, node);
+    });
+
+    // Second pass: build hierarchy
+    requirements.forEach(req => {
+      const node = nodeMap.get(req.id!)!;
+      
+      if (req.parent_id) {
+        const parentNode = nodeMap.get(req.parent_id);
+        if (parentNode) {
+          parentNode.children.push(node);
+        }
+      } else {
+        rootNodes.push(node);
+      }
+    });
+
+    // Sort nodes at each level
+    const sortNodes = (nodes: RequirementTreeNode[]) => {
+      nodes.sort((a, b) => a.order_index - b.order_index);
+      nodes.forEach(node => {
+        if (node.children.length > 0) {
+          sortNodes(node.children);
+        }
+      });
+    };
+
+    sortNodes(rootNodes);
+    return rootNodes;
+  }
+
   async exportToCSV() {
     try {
       this.isExporting.set(true);
@@ -368,7 +497,7 @@ export class ExportComponent implements OnInit {
         metadata: {
           export_date: new Date().toISOString(),
           total_requirements: exportData.length,
-          version: '2.0.0',
+          version: '2.1.0',
           source: 'Requisador de Requisitos'
         },
         requirements: exportData
@@ -399,6 +528,207 @@ export class ExportComponent implements OnInit {
     } finally {
       this.isExporting.set(false);
     }
+  }
+
+  async exportToPDF() {
+    try {
+      this.isExporting.set(true);
+      this.exportStatus.set(null);
+
+      const treeData = this.buildRequirementTree();
+      
+      if (treeData.length === 0) {
+        this.setExportStatus('No hay requisitos para exportar', 'error');
+        return;
+      }
+
+      // Create PDF document
+      const doc = new (jsPDF as any)();
+      
+      // Set document properties
+      doc.setProperties({
+        title: 'Requisitos del Sistema - Vista Jerárquica',
+        subject: 'Documento generado por Requisador de Requisitos',
+        author: 'Requisador de Requisitos v2.1.0',
+        creator: 'Sistema de Gestión de Requisitos'
+      });
+
+      // Document settings
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 20;
+      const maxWidth = pageWidth - (2 * margin);
+      let yPosition = margin;
+
+      // Header
+      doc.setFontSize(20);
+      doc.setTextColor(96, 93, 200); // Primary color
+      doc.text('Requisitos del Sistema', margin, yPosition);
+      yPosition += 10;
+
+      doc.setFontSize(12);
+      doc.setTextColor(100, 100, 100);
+      doc.text('Vista Jerárquica - Estructura de Árbol', margin, yPosition);
+      yPosition += 5;
+
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Generado el: ${new Date().toLocaleDateString('es-ES')}`, margin, yPosition);
+      yPosition += 5;
+
+      doc.text(`Total de requisitos: ${this.totalRequirements()}`, margin, yPosition);
+      yPosition += 15;
+
+      // Draw separator line
+      doc.setDrawColor(200, 200, 200);
+      doc.line(margin, yPosition, pageWidth - margin, yPosition);
+      yPosition += 10;
+
+      // Render tree
+      yPosition = this.renderTreeToPDF(doc, treeData, margin, yPosition, maxWidth, pageHeight, margin);
+
+      // Add additional sections
+      yPosition = await this.addVariablesSection(doc, yPosition, margin, maxWidth, pageHeight);
+      yPosition = await this.addLatencyDefinitionsSection(doc, yPosition, margin, maxWidth, pageHeight);
+      yPosition = await this.addToleranceDefinitionsSection(doc, yPosition, margin, maxWidth, pageHeight);
+
+      // Add footer to all pages
+      const totalPages = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        
+        // Footer line
+        doc.setDrawColor(200, 200, 200);
+        doc.line(margin, pageHeight - 25, pageWidth - margin, pageHeight - 25);
+        
+        // Footer text
+        doc.setFontSize(8);
+        doc.setTextColor(120, 120, 120);
+        doc.text('Requisador de Requisitos v2.1.0', margin, pageHeight - 15);
+        doc.text(`Página ${i} de ${totalPages}`, pageWidth - margin - 30, pageHeight - 15);
+        doc.text(`Generado: ${new Date().toLocaleDateString('es-ES')}`, pageWidth - margin - 80, pageHeight - 10);
+      }
+
+      // Save the PDF
+      const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+      const filename = `requisitos-jerarquicos-${timestamp}.pdf`;
+      
+      doc.save(filename);
+
+      this.setExportStatus(`PDF exportado exitosamente: ${filename} (${this.totalRequirements()} requisitos)`, 'success');
+      
+    } catch (error) {
+      console.error('Error exporting to PDF:', error);
+      this.setExportStatus('Error al exportar a PDF', 'error');
+    } finally {
+      this.isExporting.set(false);
+    }
+  }
+
+  private renderTreeToPDF(doc: any, nodes: RequirementTreeNode[], xStart: number, yStart: number, maxWidth: number, pageHeight: number, margin: number): number {
+    let yPosition = yStart;
+    const lineHeight = 6;
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    const renderNode = (node: RequirementTreeNode, level: number): void => {
+      // Check if we need a new page (allow more space for complete requirement data)
+      if (yPosition > pageHeight - 70) {
+        doc.addPage();
+        yPosition = margin + 20;
+      }
+
+      // Create a card-like layout for each requirement (no indentation)
+      const cardX = xStart;
+      const cardWidth = maxWidth;
+      
+      // Calculate total height needed for this requirement
+      const hierarchyPrefix = '▸ '.repeat(level);
+      const idText = `${hierarchyPrefix}${node.textualId}`;
+      const idWidth = Math.max(doc.getTextWidth(idText) + 12, 60);
+      
+      const fullText = `El ${node.component_name} deberá ${node.behavior} ${node.variable_name} cuando el sistema esté en modo ${node.mode_name}`;
+      const textStartX = cardX + idWidth + 10;
+      const textWidth = cardWidth - idWidth - 15;
+      
+      // Calculate split text first to get accurate height
+      doc.setFontSize(10);
+      const splitText = doc.splitTextToSize(fullText, textWidth);
+      
+      // Calculate total card height based on actual text height plus metadata sections
+      const textSectionHeight = Math.max(10, splitText.length * 5);
+      const metadataSectionHeight = 30; // Fixed height for the 3 metadata rows
+      const totalCardHeight = textSectionHeight + metadataSectionHeight + 10; // +10 for padding
+      
+      // Background card with proper height
+      doc.setFillColor(248, 249, 250);
+      doc.setDrawColor(220, 220, 220);
+      doc.rect(cardX, yPosition - 5, cardWidth, totalCardHeight, 'FD');
+      
+      // Requirement ID header with hierarchy indicator
+      doc.setFontSize(11);
+      doc.setTextColor(255, 255, 255);
+      doc.setFillColor(96, 93, 200);
+      doc.roundedRect(cardX + 3, yPosition - 3, idWidth, 10, 2, 2, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.text(idText, cardX + 7, yPosition + 3);
+
+      // Full requirement text (right side of ID)
+      doc.setFontSize(10);
+      doc.setTextColor(40, 40, 40);
+      doc.setFont('helvetica', 'normal');
+      
+      // Add subtle background for requirement text with accurate height
+      const textHeight = splitText.length * 5 + 4; // Proper height calculation
+      doc.setFillColor(255, 255, 255);
+      doc.setDrawColor(230, 230, 230);
+      doc.rect(textStartX - 2, yPosition - 2, textWidth + 4, textHeight, 'FD');
+      
+      doc.text(splitText, textStartX, yPosition + 3);
+      
+      yPosition += textSectionHeight;
+
+      // Detailed information section
+      doc.setFontSize(8);
+      doc.setTextColor(80, 80, 80);
+      doc.setFont('helvetica', 'normal');
+      
+      // First row: Function and Variable
+      doc.setTextColor(30, 64, 175); // Blue for function
+      doc.text(`Función: ${node.function_name}`, cardX + 7, yPosition + 5);
+      doc.setTextColor(22, 163, 74); // Green for variable
+      doc.text(`Variable: ${node.variable_name}`, cardX + 7 + (cardWidth / 2), yPosition + 5);
+      
+      yPosition += 8;
+      
+      // Second row: Component and Mode
+      doc.setTextColor(99, 102, 241); // Indigo for component
+      doc.text(`Componente: ${node.component_name}`, cardX + 7, yPosition + 5);
+      doc.setTextColor(147, 51, 234); // Purple for mode
+      doc.text(`Modo: ${node.mode_name}`, cardX + 7 + (cardWidth / 2), yPosition + 5);
+      
+      yPosition += 8;
+      
+      // Third row: Level and children count only (removed dates)
+      doc.setTextColor(107, 114, 128); // Gray for metadata
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Nivel: ${level}`, cardX + 7, yPosition + 5);
+      const childrenCount = node.children.length;
+      doc.text(`Sub-requisitos: ${childrenCount}`, cardX + 7 + (cardWidth / 2), yPosition + 5);
+      
+      // Move yPosition to the end of the card plus spacing
+      yPosition += 20; // Space between cards
+
+      // Render children
+      node.children.forEach(child => {
+        renderNode(child, level + 1);
+      });
+    };
+
+    // Render all root nodes
+    nodes.forEach(node => {
+      renderNode(node, 0);
+    });
+
+    return yPosition;
   }
 
   private escapeCsvValue(value: string | number): string {
@@ -440,5 +770,317 @@ export class ExportComponent implements OnInit {
     } catch {
       return dateString;
     }
+  }
+
+  private async addVariablesSection(doc: any, yPosition: number, margin: number, maxWidth: number, pageHeight: number): Promise<number> {
+    // Check if we need a new page
+    if (yPosition > pageHeight - 100) {
+      doc.addPage();
+      yPosition = margin + 20;
+    }
+
+    // Section title
+    yPosition += 20;
+    doc.setFontSize(14);
+    doc.setTextColor(22, 163, 74); // Green for variables
+    doc.setFont('helvetica', 'bold');
+    doc.text('Variables del Sistema', margin, yPosition);
+    yPosition += 15;
+
+    try {
+      const variables = await this.databaseService.variables.getAll();
+      const latencySpecs = await this.databaseService.latencySpecifications.getAll();
+      const toleranceSpecs = await this.databaseService.toleranceSpecifications.getAll();
+
+      // Create a map for quick lookup
+      const latencyMap = new Map(latencySpecs.map((spec: any) => [spec.variable_id, spec]));
+      const toleranceMap = new Map(toleranceSpecs.map((spec: any) => [spec.variable_id, spec]));
+
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+
+      for (const variable of variables) {
+        // Check if we need a new page
+        if (yPosition > pageHeight - 100) {
+          doc.addPage();
+          yPosition = margin + 20;
+        }
+
+        // Get associated specs
+        const latencySpec: any = latencyMap.get(variable.id);
+        const toleranceSpec: any = toleranceMap.get(variable.id);
+
+        // Calculate card height based on content
+        const baseHeight = 45;
+        const additionalHeight = (latencySpec ? 25 : 0) + (toleranceSpec ? 25 : 0);
+        const cardHeight = baseHeight + additionalHeight;
+
+        // Variable card with dynamic height
+        doc.setFillColor(240, 253, 244);
+        doc.setDrawColor(34, 197, 94);
+        doc.rect(margin, yPosition - 3, maxWidth, cardHeight, 'FD');
+
+        // Variable header
+        doc.setTextColor(22, 163, 74);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.text(variable.name, margin + 5, yPosition + 5);
+
+        // Variable description
+        doc.setTextColor(60, 60, 60);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        const descText = doc.splitTextToSize(variable.description || 'Sin descripción', maxWidth - 10);
+        doc.text(descText, margin + 5, yPosition + 12);
+
+        yPosition += Math.max(15, descText.length * 4);
+
+        // Variable details
+        doc.setFontSize(8);
+        doc.setTextColor(100, 100, 100);
+        doc.text(`ID: ${variable.id} | Orden: ${variable.order_index}`, margin + 5, yPosition + 5);
+        yPosition += 10;
+
+        // Associated Latency Specification
+        if (latencySpec) {
+          doc.setFillColor(235, 245, 255);
+          doc.setDrawColor(59, 130, 246);
+          doc.rect(margin + 10, yPosition, maxWidth - 20, 20, 'FD');
+          
+          doc.setTextColor(59, 130, 246);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(9);
+          doc.text(`Latencia Asociada: ${latencySpec.name}`, margin + 15, yPosition + 6);
+          
+          doc.setTextColor(80, 80, 80);
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8);
+          doc.text(`Tipo: ${latencySpec.type} | Valor: ${latencySpec.value} ${latencySpec.units}`, margin + 15, yPosition + 12);
+          doc.text(`Interpretación: ${latencySpec.physical_interpretation}`, margin + 15, yPosition + 17);
+          
+          yPosition += 25;
+        }
+
+        // Associated Tolerance Specification
+        if (toleranceSpec) {
+          doc.setFillColor(250, 245, 255);
+          doc.setDrawColor(168, 85, 247);
+          doc.rect(margin + 10, yPosition, maxWidth - 20, 20, 'FD');
+          
+          doc.setTextColor(168, 85, 247);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(9);
+          doc.text(`Tolerancia Asociada: ${toleranceSpec.name}`, margin + 15, yPosition + 6);
+          
+          doc.setTextColor(80, 80, 80);
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8);
+          doc.text(`Tipo: ${toleranceSpec.type} | Valor: ${toleranceSpec.value} ${toleranceSpec.units}`, margin + 15, yPosition + 12);
+          doc.text(`Interpretación: ${toleranceSpec.physical_interpretation}`, margin + 15, yPosition + 17);
+          
+          yPosition += 25;
+        }
+
+        // Show if no specs are associated
+        if (!latencySpec && !toleranceSpec) {
+          doc.setTextColor(150, 150, 150);
+          doc.setFont('helvetica', 'italic');
+          doc.setFontSize(8);
+          doc.text('Sin especificaciones de latencia o tolerancia asociadas', margin + 10, yPosition + 5);
+          yPosition += 10;
+        }
+
+        yPosition += 15; // Space between variables
+      }
+    } catch (error) {
+      console.error('Error loading variables:', error);
+      doc.setTextColor(200, 50, 50);
+      doc.text('Error al cargar variables', margin, yPosition);
+      yPosition += 10;
+    }
+
+    return yPosition;
+  }
+
+  private async addLatencyDefinitionsSection(doc: any, yPosition: number, margin: number, maxWidth: number, pageHeight: number): Promise<number> {
+    // Check if we need a new page
+    if (yPosition > pageHeight - 80) {
+      doc.addPage();
+      yPosition = margin + 20;
+    }
+
+    // Section title
+    yPosition += 20;
+    doc.setFontSize(14);
+    doc.setTextColor(59, 130, 246); // Blue for latency
+    doc.setFont('helvetica', 'bold');
+    doc.text('Definiciones de Latencia', margin, yPosition);
+    yPosition += 15;
+
+    try {
+      const latencySpecs = await this.databaseService.latencySpecifications.getAll();
+
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+
+      for (const spec of latencySpecs) {
+        // Check if we need a new page
+        if (yPosition > pageHeight - 80) {
+          doc.addPage();
+          yPosition = margin + 20;
+        }
+
+        // Calculate card height based on content
+        const interpretationText = doc.splitTextToSize(spec.physical_interpretation || 'Sin interpretación', maxWidth - 10);
+        const justificationText = doc.splitTextToSize(spec.justification || 'Sin justificación', maxWidth - 10);
+        const cardHeight = 50 + (interpretationText.length * 4) + (justificationText.length * 4);
+
+        // Latency specification card
+        doc.setFillColor(239, 246, 255);
+        doc.setDrawColor(59, 130, 246);
+        doc.rect(margin, yPosition - 3, maxWidth, cardHeight, 'FD');
+
+        // Specification header
+        doc.setTextColor(59, 130, 246);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.text(spec.name, margin + 5, yPosition + 5);
+
+        // Type and value
+        doc.setTextColor(80, 80, 80);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.text(`Tipo: ${spec.type}`, margin + 5, yPosition + 12);
+        doc.text(`Valor: ${spec.value} ${spec.units}`, margin + 5 + (maxWidth / 2), yPosition + 12);
+
+        yPosition += 18;
+
+        // Physical interpretation
+        doc.setTextColor(60, 60, 60);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.text('Interpretación Física:', margin + 5, yPosition);
+        yPosition += 5;
+
+        doc.setFont('helvetica', 'normal');
+        doc.text(interpretationText, margin + 5, yPosition);
+        yPosition += interpretationText.length * 4 + 3;
+
+        // Justification
+        doc.setFont('helvetica', 'bold');
+        doc.text('Justificación:', margin + 5, yPosition);
+        yPosition += 5;
+
+        doc.setFont('helvetica', 'normal');
+        doc.text(justificationText, margin + 5, yPosition);
+        yPosition += justificationText.length * 4;
+
+        // Metadata
+        doc.setTextColor(120, 120, 120);
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(7);
+        doc.text(`ID: ${spec.id}`, margin + 5, yPosition + 8);
+        
+        yPosition += 20; // Space between specifications
+      }
+    } catch (error) {
+      console.error('Error loading latency specifications:', error);
+      doc.setTextColor(200, 50, 50);
+      doc.text('Error al cargar especificaciones de latencia', margin, yPosition);
+      yPosition += 10;
+    }
+
+    return yPosition;
+  }
+
+  private async addToleranceDefinitionsSection(doc: any, yPosition: number, margin: number, maxWidth: number, pageHeight: number): Promise<number> {
+    // Check if we need a new page
+    if (yPosition > pageHeight - 80) {
+      doc.addPage();
+      yPosition = margin + 20;
+    }
+
+    // Section title
+    yPosition += 20;
+    doc.setFontSize(14);
+    doc.setTextColor(168, 85, 247); // Purple for tolerance
+    doc.setFont('helvetica', 'bold');
+    doc.text('Definiciones de Tolerancia', margin, yPosition);
+    yPosition += 15;
+
+    try {
+      const toleranceSpecs = await this.databaseService.toleranceSpecifications.getAll();
+
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+
+      for (const spec of toleranceSpecs) {
+        // Check if we need a new page
+        if (yPosition > pageHeight - 80) {
+          doc.addPage();
+          yPosition = margin + 20;
+        }
+
+        // Calculate card height based on content
+        const interpretationText = doc.splitTextToSize(spec.physical_interpretation || 'Sin interpretación', maxWidth - 10);
+        const justificationText = doc.splitTextToSize(spec.justification || 'Sin justificación', maxWidth - 10);
+        const cardHeight = 50 + (interpretationText.length * 4) + (justificationText.length * 4);
+
+        // Tolerance specification card
+        doc.setFillColor(250, 245, 255);
+        doc.setDrawColor(168, 85, 247);
+        doc.rect(margin, yPosition - 3, maxWidth, cardHeight, 'FD');
+
+        // Specification header
+        doc.setTextColor(168, 85, 247);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.text(spec.name, margin + 5, yPosition + 5);
+
+        // Type and value
+        doc.setTextColor(80, 80, 80);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.text(`Tipo: ${spec.type}`, margin + 5, yPosition + 12);
+        doc.text(`Valor: ${spec.value} ${spec.units}`, margin + 5 + (maxWidth / 2), yPosition + 12);
+
+        yPosition += 18;
+
+        // Physical interpretation
+        doc.setTextColor(60, 60, 60);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.text('Interpretación Física:', margin + 5, yPosition);
+        yPosition += 5;
+
+        doc.setFont('helvetica', 'normal');
+        doc.text(interpretationText, margin + 5, yPosition);
+        yPosition += interpretationText.length * 4 + 3;
+
+        // Justification
+        doc.setFont('helvetica', 'bold');
+        doc.text('Justificación:', margin + 5, yPosition);
+        yPosition += 5;
+
+        doc.setFont('helvetica', 'normal');
+        doc.text(justificationText, margin + 5, yPosition);
+        yPosition += justificationText.length * 4;
+
+        // Metadata
+        doc.setTextColor(120, 120, 120);
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(7);
+        doc.text(`ID: ${spec.id}`, margin + 5, yPosition + 8);
+        
+        yPosition += 20; // Space between specifications
+      }
+    } catch (error) {
+      console.error('Error loading tolerance specifications:', error);
+      doc.setTextColor(200, 50, 50);
+      doc.text('Error al cargar especificaciones de tolerancia', margin, yPosition);
+      yPosition += 10;
+    }
+
+    return yPosition;
   }
 }
