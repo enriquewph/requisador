@@ -3,11 +3,12 @@ import { ConfigurationComponent } from './components/configuration.component';
 import { SpecificationsManagementComponent } from './components/specifications-management.component';
 import { RequirementsCreatorComponent } from './components/requirements-creator.component';
 import { RequirementsManageComponent } from './components/requirements-manage.component';
+import { ExportComponent } from './components/export.component';
 import { DatabaseService } from './services/database.service';
 
 @NgComponent({
   selector: 'app-root',
-  imports: [ConfigurationComponent, SpecificationsManagementComponent, RequirementsCreatorComponent, RequirementsManageComponent],
+  imports: [ConfigurationComponent, SpecificationsManagementComponent, RequirementsCreatorComponent, RequirementsManageComponent, ExportComponent],
   template: `
     <!-- Header -->
     <header class="bg-white shadow-sm border-b border-gray-200">
@@ -128,16 +129,7 @@ import { DatabaseService } from './services/database.service';
             <app-requirements-manage></app-requirements-manage>
           }
           @case ('export') {
-            <div class="text-center py-16">
-              <div class="max-w-md mx-auto">
-                <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-                <h2 class="text-2xl font-semibold text-gray-900 mb-4">Exportar</h2>
-                <p class="text-gray-600">Exporta requisitos en formato JSON o CSV</p>
-                <p class="text-sm text-gray-500 mt-2">Funcionalidad próximamente disponible</p>
-              </div>
-            </div>
+            <app-export (navigateToCreate)="activeTab.set('create')"></app-export>
           }
         }
       </div>
