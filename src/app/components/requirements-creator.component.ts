@@ -631,6 +631,108 @@ export class RequirementsCreatorComponent implements OnInit {
     }
   }
 
+  generateAIPrompt(): string {
+    const selectedFunction = this.getSelectedFunction();
+    const selectedVariable = this.getSelectedVariable();
+    const selectedComponent = this.getSelectedComponent();
+    const selectedLatencySpec = this.latencySpecs().find(s => s.id === this.selectedLatencySpecId());
+    const selectedToleranceSpec = this.toleranceSpecs().find(s => s.id === this.selectedToleranceSpecId());
+    const selectedModeNames = this.selectedModes().map(id => 
+      this.modes().find(m => m.id === id)?.name
+    ).filter(Boolean).join(", ");
+
+    const prompt = `# Prompt para Generación de Requisito de Sistema
+
+## Contexto del Sistema
+Estoy desarrollando requisitos para un sistema de ingeniería siguiendo la metodología del Systems Engineering Handbook. Necesito que me ayudes a completar un requisito con campos muy específicos y concisos.
+
+## Información del Requisito Actual
+
+**Función del Sistema:** ${selectedFunction?.name || 'No especificado'}
+${selectedFunction?.description ? `- Descripción: ${selectedFunction.description}` : ''}
+
+**Variable a Controlar:** ${selectedVariable?.name || 'No especificado'}  
+${selectedVariable?.description ? `- Descripción: ${selectedVariable.description}` : ''}
+
+**Componente Responsable:** ${selectedComponent?.name || 'No especificado'}
+${selectedComponent?.description ? `- Descripción: ${selectedComponent.description}` : ''}
+
+**Modo(s) del Sistema:** ${selectedModeNames || 'No especificado'}
+
+## Especificaciones Técnicas Aplicables
+
+${selectedLatencySpec ? `**Especificación de Latencia:**
+- Nombre: ${selectedLatencySpec.name}
+- Tipo: ${selectedLatencySpec.type}
+- Valor: ${selectedLatencySpec.value} ${selectedLatencySpec.units}
+- Interpretación: ${selectedLatencySpec.physical_interpretation}` : '**Especificación de Latencia:** No asignada'}
+
+${selectedToleranceSpec ? `**Especificación de Tolerancia:**
+- Nombre: ${selectedToleranceSpec.name}
+- Tipo: ${selectedToleranceSpec.type}
+- Valor: ${selectedToleranceSpec.value} ${selectedToleranceSpec.units}
+- Interpretación: ${selectedToleranceSpec.physical_interpretation}` : '**Especificación de Tolerancia:** No asignada'}
+
+## Entidades del Sistema Completo
+
+### Funciones Disponibles:
+${this.functions().map(f => `- **${f.name}**: ${f.description || 'Sin descripción'}`).join('\n')}
+
+### Variables del Sistema:
+${this.variables().map(v => `- **${v.name}**: ${v.description || 'Sin descripción'}`).join('\n')}
+
+### Componentes del Sistema:
+${this.components().map(c => `- **${c.name}**: ${c.description || 'Sin descripción'}`).join('\n')}
+
+### Modos de Operación:  
+${this.modes().map(m => `- **${m.name}**: ${m.description || 'Sin descripción'}`).join('\n')}
+
+### Especificaciones de Latencia:
+${this.latencySpecs().map(s => `- **${s.name}** (${s.type}): ${s.value} ${s.units} - ${s.physical_interpretation}`).join('\n')}
+
+### Especificaciones de Tolerancia:
+${this.toleranceSpecs().map(s => `- **${s.name}** (${s.type}): ${s.value} ${s.units} - ${s.physical_interpretation}`).join('\n')}
+
+## IMPORTANTE - Formato Requerido:
+
+Necesito que completes ÚNICAMENTE estos 3 campos con las restricciones específicas:
+
+### 1. **Comportamiento Requerido** (MÁXIMO 8 PALABRAS)
+- Un verbo de acción técnico + objeto directo
+- Ejemplos: "controlar velocidad del motor", "monitorear temperatura del sensor", "procesar datos de navegación"
+- NO explicaciones largas, solo la acción específica
+
+### 2. **Condición** (MÁXIMO 10 PALABRAS)  
+- Las condiciones mínimas para aplicar el requisito
+- Ejemplos: "cuando temperatura > 50°C", "durante modo de emergencia", "cada 100ms"
+- Enfócate en umbrales, frecuencias o estados específicos
+
+### 3. **Justificación** (2-3 LÍNEAS MÁXIMO)
+- Por qué es necesario ESTE REQUISITO específico (no las especificaciones técnicas)
+- Impacto en seguridad, rendimiento, cumplimiento normativo o funcionalidad del sistema
+- Referencias a estándares si aplica
+
+## Ejemplo de Respuesta Correcta:
+**Comportamiento:** controlar velocidad del motor
+**Condición:** cuando velocidad excede límite configurado  
+**Justificación:** Evita daños mecánicos por sobrevelocidad y asegura operación segura del sistema según norma ISO 26262 para sistemas automotrices críticos.
+
+## Tu Respuesta:`;
+
+    return prompt;
+  }
+
+  async copyAIPromptToClipboard() {
+    try {
+      const prompt = this.generateAIPrompt();
+      await navigator.clipboard.writeText(prompt);
+      this.showStatus('Prompt copiado al portapapeles exitosamente', 'success');
+    } catch (error) {
+      console.error('Error copying to clipboard:', error);
+      this.showStatus('Error al copiar al portapapeles', 'error');
+    }
+  }
+
   async updateVariableToleranceSpec(toleranceSpecId: number | string | null) {
     // Convert empty string to null, and string numbers to numbers
     const specId = toleranceSpecId === "" || toleranceSpecId === null ? null : Number(toleranceSpecId);

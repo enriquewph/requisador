@@ -5,6 +5,10 @@ import { RequirementsCreatorComponent } from './components/requirements-creator.
 import { RequirementsManageComponent } from './components/requirements-manage.component';
 import { ExportComponent } from './components/export.component';
 import { DatabaseService } from './services/database.service';
+import packageInfo from '../../package.json';
+
+// Versión extraída del package.json para uso en templates (debe ser estática)
+const APP_VERSION = '2.3.0';
 
 @NgComponent({
   selector: 'app-root',
@@ -149,7 +153,7 @@ import { DatabaseService } from './services/database.service';
               </a>
             </p>
             <p class="text-xs text-gray-500 mt-1">
-              UTN FRC 2025 - para los Gladiadores Electrónicos | v2.1.0
+              UTN FRC 2025 - para los Gladiadores Electrónicos | v${APP_VERSION}
             </p>
             <p class="text-xs text-gray-500">
               Requisador de Requisitos siguiendo metodología del Systems Engineering Handbook
@@ -207,7 +211,7 @@ import { DatabaseService } from './services/database.service';
                   <li>• Estructura jerárquica de requisitos</li>
                   <li>• Exportación en múltiples formatos</li>
                   <li>• Base de datos SQLite local</li>
-                  <li class="text-green-600 font-medium">• ✨ v2.1.0: Exportación PDF mejorada con especificaciones</li>
+                  <li class="text-green-600 font-medium">• ✨ v${APP_VERSION}: Exportación PDF mejorada con especificaciones</li>
                 </ul>
               </div>
             </div>
@@ -264,7 +268,7 @@ import { DatabaseService } from './services/database.service';
                 </div>
                 <div>
                   <p class="font-medium text-gray-900">Versión:</p>
-                  <p class="text-gray-600">2.1.0 - Enero 2025</p>
+                  <p class="text-gray-600">${APP_VERSION} - Enero 2025</p>
                 </div>
               </div>
             </div>
@@ -339,10 +343,13 @@ import { DatabaseService } from './services/database.service';
   styleUrls: ['./app.css'],
 })
 export class App {
-  title = 'Requisador de Requisitos v2.2.0';
+  title = `Requisador de Requisitos v${APP_VERSION}`;
   activeTab = signal<'config' | 'especificaciones' | 'create' | 'manage' | 'export'>('config');
   showAboutModal = signal(false);
   showLoadDefaultConfirm = signal(false);
+  
+  // Versión dinámica del package.json (disponible para uso en código TypeScript)
+  packageVersion = packageInfo.version;
   
   private databaseService = inject(DatabaseService);
 

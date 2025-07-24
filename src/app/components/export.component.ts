@@ -2,6 +2,7 @@ import { Component, signal, inject, OnInit, ChangeDetectionStrategy, output } fr
 import { CommonModule } from '@angular/common';
 import { DatabaseService, Requirement } from '../services/database.service';
 import { jsPDF } from 'jspdf';
+import packageInfo from '../../../package.json';
 
 interface ExportData {
   id: string;
@@ -497,7 +498,7 @@ export class ExportComponent implements OnInit {
         metadata: {
           export_date: new Date().toISOString(),
           total_requirements: exportData.length,
-          version: '2.1.0',
+          version: packageInfo.version,
           source: 'Requisador de Requisitos'
         },
         requirements: exportData
