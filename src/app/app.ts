@@ -8,7 +8,7 @@ import { DatabaseService } from './services/database.service';
 import packageInfo from '../../package.json';
 
 // Versión extraída del package.json para uso en templates (debe ser estática)
-const APP_VERSION = '2.3.0';
+const APP_VERSION = '2.4.0';
 
 @NgComponent({
   selector: 'app-root',

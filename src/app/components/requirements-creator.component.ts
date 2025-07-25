@@ -111,9 +111,18 @@ export class RequirementsCreatorComponent implements OnInit {
 
   // Generate a preview requirement object from the draft
   previewRequirement = computed(() => {
+    // For single mode: check selectedModes, for multiple modes: we don't show individual preview
+    const selectedModeCount = this.selectedModes().length;
+    const modeId = selectedModeCount === 1 ? this.selectedModes()[0] : null;
+    
     if (!this.requirementDraft.function_id || !this.requirementDraft.variable_id || 
-        !this.requirementDraft.component_id || !this.requirementDraft.mode_id || 
+        !this.requirementDraft.component_id || selectedModeCount === 0 || 
         !this.requirementDraft.behavior.trim()) {
+      return null;
+    }
+    
+    // Only show individual preview for single mode
+    if (selectedModeCount !== 1) {
       return null;
     }
     
@@ -122,7 +131,7 @@ export class RequirementsCreatorComponent implements OnInit {
       function_id: this.requirementDraft.function_id,
       variable_id: this.requirementDraft.variable_id,
       component_id: this.requirementDraft.component_id,
-      mode_id: this.requirementDraft.mode_id,
+      mode_id: modeId!, // Use the selected mode for single mode case
       parent_id: this.requirementDraft.parent_id,
       behavior: this.requirementDraft.behavior,
       condition: this.requirementDraft.condition,
@@ -365,14 +374,14 @@ export class RequirementsCreatorComponent implements OnInit {
   }
 
   getMultipleRequirementsCount(): number {
-    if (!this.requirementDraft.component_id || this.selectedModes().length === 0) return 0;
+    if (!this.requirementDraft.component_id || this.selectedModes().length <= 1) return 0;
     
-    // Create 1 parent + N children (one per mode)
+    // Create 1 parent + N children (one per mode) - only for multiple modes
     return 1 + this.selectedModes().length;
   }
 
   getMultipleRequirementsPreview(): { id: string, text: string }[] {
-    if (!this.requirementDraft.component_id || this.selectedModes().length === 0) return [];
+    if (!this.requirementDraft.component_id || this.selectedModes().length <= 1) return [];
     
     const previews: { id: string, text: string }[] = [];
     const variable = this.variables().find(v => v.id === this.requirementDraft.variable_id);
